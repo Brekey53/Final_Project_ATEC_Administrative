@@ -1,0 +1,70 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.credentials-login {
+  background-color: #e5f0f0;
+}
+
+.title-login {
+  position: absolute;
+  color: #ffffff;
+  top: 30vh;
+}
+
+.banner-login {
+  position: relative;
+  height: 100vh;
+  background: #014d4e;
+  overflow: hidden;
+  padding: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.eyebrow-login {
+  position: absolute;
+  padding: 15px 35px;
+  border: solid 1px black;
+  border-radius: 999px;
+  top: 25vh;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.cards-login {
+  position: absolute;
+  top: 60vh;
+}
+
+.card-login {
+  color: #ffffff;
+  border: 1px solid black;
+  padding: 5px;
+}
+
+/* base das bolas */
+.ball {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* bola superior direita */
+.ball-1 {
+  width: 28vw;
+  height: 28vw;
+  top: -12vw;
+  right: -10vw;
+}
+
+/* bola inferior esquerda */
+.ball-2 {
+  width: 55vw;
+  height: 55vw;
+  bottom: -30vw;
+  left: -25vw;
+  background: rgba(0, 0, 0, 0.12);
+}
