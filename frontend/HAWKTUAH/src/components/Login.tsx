@@ -1,10 +1,7 @@
 import "../css/login.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
-import { faCalendar } from "@fortawesome/free-solid-svg-icons";
-import { faSchool } from "@fortawesome/free-solid-svg-icons";
-import { faRobot } from "@fortawesome/free-solid-svg-icons";
+import { faGraduationCap, faCalendar, faRobot, faSchool } from "@fortawesome/free-solid-svg-icons";
 
 export default function Login() {
   return (
