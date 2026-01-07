@@ -1,19 +1,14 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
 
-{/*import Login from "./components/Login";*/}
-import Dashboard from "./pages/LandingPage";
+import AppRoutes from './routes/AppRoutes'
 
 function App() {
   return (
-    <>
-      {/*
-        <Login></Login>
-      */}
-      <Dashboard></Dashboard>
-      <h1>gello</h1>
-    </>
+     <AppRoutes>
+      
+     </AppRoutes>
   );
 }
 
