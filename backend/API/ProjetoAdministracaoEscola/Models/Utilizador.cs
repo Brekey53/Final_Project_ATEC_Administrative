@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ProjetoAdministracaoEscola.Models;
 
-public partial class Utilizadore
+public partial class Utilizador
 {
     public int IdUtilizador { get; set; }
 
