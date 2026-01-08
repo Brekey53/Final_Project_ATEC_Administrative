@@ -1,24 +1,15 @@
-const AUTH_KEY = "123";
-
-export function setAuth(token: string) {
-  localStorage.setItem(AUTH_KEY, token);
-}
+import axios from 'axios';
 
 
-/**
- TODO: RETIRAR ISTO, SÓ PARA TESTAR
- */
-export async function login(
-  email: string,
-  password: string
-): Promise<void> {
-
-  await new Promise((res) => setTimeout(res, 700));
-
-  if (email === "admin@admin.pt" && password === "1234") {
-    setAuth("fake-token");
-    return;
+export async function login(email: string, password: string) {
+    try {
+      const res = await axios.post('http://localhost:5056/api/auth/login', { email, password }  );
+      console.log('Status:', res.status);
+      console.log('Response data:', res.data);
+  }catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error("Credenciais inválidas");
+    }
+    throw new Error("Erro ao ligar ao servidor");
   }
-
-  throw new Error("Credenciais inválidas");
 }
