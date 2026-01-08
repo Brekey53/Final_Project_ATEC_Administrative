@@ -1,9 +1,40 @@
 import "../css/login.css";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGraduationCap, faCalendar, faRobot, faSchool } from "@fortawesome/free-solid-svg-icons";
+import {
+  faGraduationCap,
+  faCalendar,
+  faRobot,
+  faSchool,
+} from "@fortawesome/free-solid-svg-icons";
+
+import { login } from "../auth/AuthService";
+
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await login(email, password);
+      navigate("/Dashboard", { replace: true });
+    } catch (err) {
+      setError("Email ou password inválidos");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="container-login">
       <div className="row h-100 g-0">
@@ -61,16 +92,33 @@ export default function Login() {
               <p className="text-muted text-center">
                 Entre na sua conta para continuar
               </p>
-              <form action="" className="d-flex flex-column justify-content-center" >
+              <form
+                onSubmit={handleSubmit}
+                className="d-flex flex-column justify-content-center"
+              >
                 <div className="mb-3">
                   <label className="form-label">Email</label>
-                  <input type="email" className="form-control" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="form-control"
+                  />
                 </div>
                 <div className="mb-3">
-                    <label className="form-label">Password</label>
-                    <input type="password" className="form-control" />
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="form-control"
+                  />
                 </div>
-                <button>Submit</button>
+                {error && <p className="text-danger text-center">{error}</p>}
+
+                <button className="btn btn-primary" disabled={loading}>
+                  {loading ? "Bem vindo, a entrar..." : "Entrar"}
+                </button>
               </form>
               <hr></hr>
               <p className="text-center">Ou</p>
