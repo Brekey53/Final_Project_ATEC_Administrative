@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
-//using Microsoft.AspNetCore.Authentication.Google;
-//using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Facebook;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +19,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add Authentication services
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+}).AddCookie(options =>
+{
+    options.LoginPath = "/api/auth/login";
+})
+.AddCookie("ExternalCookieScheme") // Esquema temporário para controller
+.AddGoogle(GoogleOptions =>
+{
+    GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    GoogleOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
+})
+.AddFacebook(FacebookOptions =>
+{
+    FacebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
+    FacebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+    FacebookOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -28,8 +50,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseHttpsRedirection();
 
+app.UseAuthorization();
+
+app.UseRouting();
+
+// Habilitar autenticação e autorização (sempre por esta ordem)
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
