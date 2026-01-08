@@ -27,7 +27,7 @@ export default function Login() {
 
     try {
       await login(email, password);
-      navigate("/Dashboard", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError("Email ou password inválidos");
     } finally {
@@ -46,18 +46,17 @@ export default function Login() {
               Sistema de <br />
               Gestão de Notas
             </h1>
-            <p className="description-login">
+            <p className="description-login mb-5 mt-3">
               Gerir cursos, formandos, formadores e horários
               <br />
-              de forma eficiente e intuitiva
+              de forma eficiente e intuitiva.
             </p>
-            <div className="cards-login">
+            <div className="cards-login ">
               <div className="row">
                 <div className="col-6">
                   <div className="card-login card-1">
-                    <i className="fa-solid fa-graduation-cap"></i>
                     <FontAwesomeIcon icon={faGraduationCap} className="icon" />
-                    <p>Gestão de Formandos</p>
+                    <p >Gestão de Formandos</p>
                   </div>
                 </div>
                 <div className="col-6">
