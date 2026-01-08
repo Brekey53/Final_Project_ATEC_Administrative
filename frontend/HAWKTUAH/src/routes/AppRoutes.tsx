@@ -5,12 +5,17 @@ import Dashboard from "../pages/LandingPage";
 import Cursos from "../pages/Cursos";
 import Formandos from "../pages/Formandos";
 import Perfil from "../pages/Perfil";
+import Login from "../pages/Login";
+import LoginLayout from "../layouts/LoginLayout"
 
 function AppRoutes() {
   return (
     <Routes>
+      <Route element={<LoginLayout />}>
+        <Route path="/login" element={<Login />} />
+      </Route>
       <Route element={<MainLayout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/cursos" element={<Cursos />} />
         <Route path="/formandos" element={<Formandos />} />
         <Route path="/perfil" element={<Perfil />} />
