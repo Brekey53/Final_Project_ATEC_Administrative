@@ -41,7 +41,22 @@ builder.Services.AddAuthentication(options =>
     FacebookOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
 });
 
+// Add Authorization services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirTudo",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
+
+app.UseCors("PermitirTudo");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
