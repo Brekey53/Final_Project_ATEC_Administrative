@@ -1,6 +1,8 @@
 import "../css/login.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import Google from "../img/google.png";
+import Facebook from "../img/facebook.jpg";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,7 +13,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { login } from "../auth/AuthService";
-
 
 export default function Login() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function Login() {
                 <div className="col-6">
                   <div className="card-login card-1">
                     <FontAwesomeIcon icon={faGraduationCap} className="icon" />
-                    <p >Gestão de Formandos</p>
+                    <p>Gestão de Formandos</p>
                   </div>
                 </div>
                 <div className="col-6">
@@ -119,11 +120,19 @@ export default function Login() {
                   {loading ? "Bem vindo, a entrar..." : "Entrar"}
                 </button>
               </form>
-              <hr></hr>
-              <p className="text-center">Ou</p>
-              <div className="socials-login">
-                <div className="email-login">Entrar com o Google</div>
-                <div className="facebok-login">Entrar com Facebook</div>
+              <div className="divisor">
+                <p className="text-center">ou</p>
+              </div>
+              <div className="socials-login d-flex flex-column gap-3">
+                <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
+                  <img src={Google} alt="Símbolo Google" />
+                  <span>Continuar com o Google</span>
+                </div>
+
+                <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
+                  <img src={Facebook} alt="Símbolo Facebook" />
+                  <span>Continuar com o Facebook</span>
+                </div>
               </div>
             </div>
           </div>
