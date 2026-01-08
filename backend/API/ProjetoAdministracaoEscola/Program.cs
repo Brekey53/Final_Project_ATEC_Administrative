@@ -1,4 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using ProjetoAdministracaoEscola.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Conect to database
+builder.Services.AddDbContext<SistemaGestaoContext>(options => 
+options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 // Add services to the container.
 
