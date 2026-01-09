@@ -3,10 +3,17 @@ using ProjetoAdministracaoEscola.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Facebook;
+using dotenv.net;
+
+DotEnv.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Configuration.AddEnvironmentVariables();
+
+var connectionString = builder.Configuration["DB_CONNECTION"];
+
 
 // Conect to database
 builder.Services.AddDbContext<SistemaGestaoContext>(options => 
@@ -30,14 +37,14 @@ builder.Services.AddAuthentication(options =>
 .AddCookie("ExternalCookieScheme") // Esquema temporário para controller
 .AddGoogle(GoogleOptions =>
 {
-    GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    GoogleOptions.ClientId = builder.Configuration["GOOGLE_API_ID"];
+    GoogleOptions.ClientSecret = builder.Configuration["GOOGLE_API_KEY"];
     GoogleOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
 })
 .AddFacebook(FacebookOptions =>
 {
-    FacebookOptions.AppId = builder.Configuration["Authentication:Facebook:AppId"];
-    FacebookOptions.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+    FacebookOptions.AppId = builder.Configuration["FACEBOOK_API_ID"];
+    FacebookOptions.AppSecret = builder.Configuration["FACEBOOK_API_KEY"];
     FacebookOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
 });
 
@@ -56,7 +63,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("PermitirTudo");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -67,10 +73,9 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.UseRouting();
+
+app.UseCors("PermitirTudo");
 
 // Habilitar autenticação e autorização (sempre por esta ordem)
 app.UseAuthentication();
