@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,11 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (utilizador == null)
             {
                 return Unauthorized(new { message = "Credenciais inválidas." });
+            }
+
+            if (utilizador.StatusAtivacao != true)
+            {
+                return BadRequest("Necessita de ativar a conta via email antes do login.");
             }
 
             // Verificar a senha (implemente a lógica de verificação de senha conforme necessário)
@@ -76,7 +82,10 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             // Lógica para lidar com o callback do Google OAuth
-            return Ok(new { message = "Callback do Google recebido." /* token = "Token Aqui :D" */ });
+            // return Ok(new { message = "Callback do Google recebido." /* token = "Token Aqui :D" */ });
+
+            return Redirect("http://localhost:5173/Dashboard");
+            // EXEMPLO: Redirect("http://localhost:front_port/login-success?token=" + token);
         }
 
         [HttpGet("callback-facebook")]
@@ -113,7 +122,20 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             // Lógica para lidar com o callback do Google OAuth
-            return Ok(new { message = "Callback do Facebook recebido." /* token = "Token Aqui :D" */ });
+            //return Ok(new { message = "Callback do Facebook recebido." /* token = "Token Aqui :D" */ });
+            return Redirect("http://localhost:5173/Dashboard");
+            // EXEMPLO Redirect("http://localhost:front_port/login-success?token=" + token);
+        }
+
+        [HttpGet("login-google")]
+        public IActionResult LoginGoogle()
+        {
+            var propriedades = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("GoogleCallback")
+            };
+
+            return Challenge(propriedades, GoogleDefaults.AuthenticationScheme);
         }
     }
 }

@@ -35,6 +35,14 @@ export default function Login() {
     }
   }
 
+  
+function loginGoogle(){
+
+  window.location.href = 'http://localhost:5056/api/auth/login-google';
+
+}
+
+
   return (
     <div className="container-login">
       <div className="row h-100 g-0">
@@ -125,7 +133,7 @@ export default function Login() {
               <div className="socials-login d-flex flex-column gap-3">
                 <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
                   <img src={Google} alt="Símbolo Google" />
-                  <span>Continuar com o Google</span>
+                  <span onClick={loginGoogle}>Continuar com o Google</span>
                 </div>
 
                 <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
