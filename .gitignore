@@ -104,6 +104,7 @@ secrets.json
 *.bak
 *.tmp
 *.orig
+*.env
 
 # Folders
 [Bb]in/
