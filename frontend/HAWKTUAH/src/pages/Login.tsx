@@ -11,6 +11,7 @@ import {
   faSchool,
 } from "@fortawesome/free-solid-svg-icons";
 
+import { Link } from "react-router-dom";
 import { login } from "../auth/AuthService";
 
 export default function Login() {
@@ -35,13 +36,9 @@ export default function Login() {
     }
   }
 
-  
-function loginGoogle(){
-
-  window.location.href = 'http://localhost:5056/api/auth/login-google';
-
-}
-
+  function loginGoogle() {
+    window.location.href = "http://localhost:5056/api/auth/login-google";
+  }
 
   return (
     <div className="container-login">
@@ -112,7 +109,7 @@ function loginGoogle(){
                     className="form-control"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="form-label">Password</label>
                   <input
                     type="password"
@@ -121,6 +118,12 @@ function loginGoogle(){
                     className="form-control"
                   />
                 </div>
+                <Link
+                  to="/login/forgot-password"
+                  className="text-muted password-reset-text mb-4"
+                >
+                  Esqueceu a palavra passe?
+                </Link>
                 {error && <p className="text-danger text-center">{error}</p>}
 
                 <button className="btn btn-primary" disabled={loading}>
@@ -140,6 +143,11 @@ function loginGoogle(){
                   <img src={Facebook} alt="Símbolo Facebook" />
                   <span>Continuar com o Facebook</span>
                 </div>
+              </div>
+              <div className="social-btn shadow-sm p-3 rounded gap-3 mt-5 text-center">
+                <Link to="/create-account" className="criar-conta-link">
+                  Não tem uma conta? <span className="criar-conta-span">Inscreva-se</span>
+                </Link>
               </div>
             </div>
           </div>

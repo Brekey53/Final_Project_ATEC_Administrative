@@ -136,7 +136,7 @@ p {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin: 1.5rem 0;
+  margin: 1.5rem 0 1rem 0;
   color: #666;
   font-size: 0.85rem;
 }
@@ -147,6 +147,29 @@ p {
   flex: 1;
   height: 1px;
   background-color: #ddd;
+}
+
+.password-reset-text {
+  display: flex;
+  justify-content: end;
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.password-reset-text:hover {
+  text-decoration: underline;
+}
+
+.criar-conta-link {
+  text-decoration: none;
+  color: black;
+  text-align: center;
+}
+
+.criar-conta-span {
+  color: #014d4e;
+  font-weight: 800;
+  text-decoration: underline 2px;
 }
 
 @media (max-width: 768px) {

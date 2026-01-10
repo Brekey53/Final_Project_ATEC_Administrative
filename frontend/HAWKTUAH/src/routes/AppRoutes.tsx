@@ -13,6 +13,7 @@ function AppRoutes() {
     <Routes>
       <Route element={<LoginLayout />}>
         <Route path="/login" element={<Login />} />
+        <Route path="login/forgot-password" element={<Login></Login>} />
       </Route>
       <Route element={<MainLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
