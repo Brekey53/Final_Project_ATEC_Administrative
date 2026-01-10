@@ -6,12 +6,18 @@
   box-sizing: border-box;
 }
 
-.credentials-login {
-  background-color: #d7e4e4;
+.login-layout {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh;
 }
+
+.credentials-login {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 
 .banner-login {
   min-height: 100vh;
@@ -102,7 +108,7 @@ p {
   color: #ffffff;
 }
 
-.modal-login {
+.modal-login, .modal-forgot-password {
   max-width: 420px;
   width: 100%;
   background-color: #ffffff;
@@ -170,6 +176,10 @@ p {
   color: #014d4e;
   font-weight: 800;
   text-decoration: underline 2px;
+}
+
+.required-star {
+  color:red;
 }
 
 @media (max-width: 768px) {
