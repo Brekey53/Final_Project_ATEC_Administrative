@@ -472,6 +472,9 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.StatusAtivacao)
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("status_ativacao");
+            entity.Property(e => e.TokenAtivacao)
+                .HasMaxLength(255)
+                .HasColumnName("token_ativacao");
 
             entity.HasOne(d => d.IdTipoUtilizadorNavigation).WithMany(p => p.Utilizadores)
                 .HasForeignKey(d => d.IdTipoUtilizador)
