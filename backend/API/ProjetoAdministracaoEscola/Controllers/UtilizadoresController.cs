@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
+using ProjetoAdministracaoEscola.Models.ModelsDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,15 +78,22 @@ namespace ProjetoAdministracaoEscola.Controllers
         // POST: api/Utilizadores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Utilizador>> PostUtilizador(Utilizador utilizador)
+        public async Task<ActionResult<Utilizador>> PostUtilizador(UtilizadorRegisterDTO utilizador)
         {
 
-            utilizador.PasswordHash = BCrypt.Net.BCrypt.HashPassword(utilizador.PasswordHash);
+            utilizador.Password = BCrypt.Net.BCrypt.HashPassword(utilizador.Password);
 
-            _context.Utilizadores.Add(utilizador);
+            var newUser = new Utilizador
+            {
+                Email = utilizador.Email,
+                PasswordHash = utilizador.Password,
+                IdTipoUtilizador = 5
+            };
+
+            _context.Utilizadores.Add(newUser);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUtilizadores", new { id = utilizador.IdUtilizador }, utilizador);
+            return CreatedAtAction("GetUtilizadores", new { id = newUser.IdUtilizador }, newUser);
         }
 
         // DELETE: api/Utilizadores/5

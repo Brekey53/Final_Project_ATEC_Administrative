@@ -11,11 +11,11 @@ public partial class Utilizador
 
     public string PasswordHash { get; set; } = null!;
 
-    public string? IdGoogle { get; set; }
+    public string? IdGoogle { get; set; } = string.Empty!;
 
-    public string? IdFacebook { get; set; }
+    public string? IdFacebook { get; set; } = string.Empty!;
 
-    public int IdTipoUtilizador { get; set; }
+    public int IdTipoUtilizador { get; set; } = 5; // Default 5 = Geral
 
     public bool? StatusAtivacao { get; set; }
 

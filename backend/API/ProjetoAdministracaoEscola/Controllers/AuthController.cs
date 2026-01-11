@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
+using ProjetoAdministracaoEscola.Models.ModelsDTO;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
@@ -21,7 +22,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Models.UtilizadorLoginDTO loginDto)
+        public async Task<IActionResult> Login([FromBody] UtilizadorLoginDTO loginDto)
         {
             var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
@@ -36,12 +37,12 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             // Verificar a senha (implemente a lógica de verificação de senha conforme necessário)
-            //bool isValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, utilizador.PasswordHash);
+            bool isValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, utilizador.PasswordHash);
 
-            //if (!isValid)
-            //{
-            //    return Unauthorized(new { message = "Credenciais inválidas." });
-            //}
+            if (!isValid)
+            {
+                return Unauthorized(new { message = "Credenciais inválidas." });
+            }
 
             // Aqui você pode gerar um token JWT ou outra forma de autenticação
             return Ok(new { message = "Login bem-sucedido.", utilizadorId = utilizador.IdUtilizador });
