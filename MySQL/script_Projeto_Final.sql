@@ -22,7 +22,7 @@ CREATE TABLE utilizadores (
     password_hash VARCHAR(255) NOT NULL,
     id_google VARCHAR(255),
     id_facebook VARCHAR(255),
-    id_tipo_utilizador INT NOT NULL,
+    id_tipo_utilizador INT NOT NULL DEFAULT 5,
     -- tipo_utilizador ENUM('admin', 'formador', 'formando', 'administrativo') NOT NULL, -- criar tabela
     status_ativacao BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (id_tipo_utilizador) REFERENCES tipo_utilizadores(id_tipo_utilizador)
@@ -183,7 +183,8 @@ INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES
 ('admin'),
 ('formador'),
 ('formando'),
-('administrativo');
+('administrativo'),
+('geral');
 
 INSERT INTO utilizadores (email, password_hash, id_tipo_utilizador, status_ativacao) VALUES
 ('admin@atec.pt', 'hash_admin', 1, TRUE),
