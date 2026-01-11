@@ -1,9 +1,10 @@
+using dotenv.net;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication.Facebook;
-using dotenv.net;
+using ProjetoAdministracaoEscola.Services;
 
 DotEnv.Load();
 
@@ -47,6 +48,9 @@ builder.Services.AddAuthentication(options =>
     FacebookOptions.AppSecret = builder.Configuration["FACEBOOK_API_KEY"];
     FacebookOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
 });
+
+// Email services
+builder.Services.AddScoped<EmailService>();
 
 // Add Authorization services
 builder.Services.AddCors(options =>
