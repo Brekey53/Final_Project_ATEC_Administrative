@@ -1,6 +1,6 @@
 import "../css/login.css";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Google from "../img/google.png";
 import Facebook from "../img/facebook.jpg";
 import { Link } from "react-router-dom";
@@ -9,28 +9,44 @@ import { API_BASE_URL } from "../config.constants";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // Hook para ler a URL
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(""); // Estado para mensagem de sucesso
   const [loading, setLoading] = useState(false);
+
+  // useEffect para verificar os parâmetros da URL assim que o componente carrega
+  useEffect(() => {
+    if (searchParams.get("ativado") === "true") {
+      setSuccessMessage("Conta ativada com sucesso! Já pode fazer login.");
+    }
+    navigate("/login", { replace: true }); // Navega para a página de login
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSuccessMessage(""); // Limpa mensagem de sucesso ao tentar novo login
     setLoading(true);
 
     try {
       await login(email, password);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Email ou password inválidos");
     } finally {
       setLoading(false);
     }
   }
 
   function LoginGoogle() {
-    window.location.href = `${API_BASE_URL}/auth/login-google`;  //http://localhost:5056/api/auth/login-google";
+    window.location.href = `${API_BASE_URL}/auth/login-google`; //http://localhost:5056/api/auth/login-google";
+  }
+
+  function LoginFacebook() {
+    window.location.href = `${API_BASE_URL}/auth/login-facebook`;
   }
 
   return (
@@ -85,7 +101,7 @@ export default function Login() {
 
           <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
             <img src={Facebook} alt="Símbolo Facebook" />
-            <span>Continuar com o Facebook</span>
+            <span onClick={LoginFacebook}>Continuar com o Facebook</span>
           </div>
         </div>
         <div className="social-btn shadow-sm p-3 rounded gap-3 mt-5 text-center">
