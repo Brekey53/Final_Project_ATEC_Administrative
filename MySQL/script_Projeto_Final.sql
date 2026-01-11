@@ -25,6 +25,7 @@ CREATE TABLE utilizadores (
     id_tipo_utilizador INT NOT NULL DEFAULT 5,
     -- tipo_utilizador ENUM('admin', 'formador', 'formando', 'administrativo') NOT NULL, -- criar tabela
     status_ativacao BOOLEAN DEFAULT FALSE,
+    token_ativacao VARCHAR(255),
     FOREIGN KEY (id_tipo_utilizador) REFERENCES tipo_utilizadores(id_tipo_utilizador)
 );
 
