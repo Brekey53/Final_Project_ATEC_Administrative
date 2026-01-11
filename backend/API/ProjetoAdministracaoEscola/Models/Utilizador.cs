@@ -19,9 +19,13 @@ public partial class Utilizador
 
     public bool? StatusAtivacao { get; set; }
 
+    public string? TokenAtivacao { get; set; } // Usado para ativação de conta via email
+
     public virtual ICollection<Formadore> Formadores { get; set; } = new List<Formadore>();
 
     public virtual ICollection<Formando> Formandos { get; set; } = new List<Formando>();
 
     public virtual TipoUtilizadore IdTipoUtilizadorNavigation { get; set; } = null!;
+
+    
 }
