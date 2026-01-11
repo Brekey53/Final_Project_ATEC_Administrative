@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ProjetoAdministracaoEscola.Models;
+namespace ProjetoAdministracaoEscola.Models.ModelsDTO;
 
 public partial class UtilizadorLoginDTO
 {
