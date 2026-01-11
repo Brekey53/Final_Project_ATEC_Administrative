@@ -5,6 +5,7 @@ import Google from "../img/google.png";
 import Facebook from "../img/facebook.jpg";
 import { Link } from "react-router-dom";
 import { login } from "../auth/AuthService";
+import { API_BASE_URL } from "../config.constants";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -21,15 +22,15 @@ export default function Login() {
     try {
       await login(email, password);
       navigate("/dashboard", { replace: true });
-    } catch (err) {
-      setError("Email ou password inválidos");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   }
 
-  function loginGoogle() {
-    window.location.href = "http://localhost:5056/api/auth/login-google";
+  function LoginGoogle() {
+    window.location.href = `${API_BASE_URL}/auth/login-google`;  //http://localhost:5056/api/auth/login-google";
   }
 
   return (
@@ -79,7 +80,7 @@ export default function Login() {
         <div className="socials-login d-flex flex-column gap-3">
           <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
             <img src={Google} alt="Símbolo Google" />
-            <span onClick={loginGoogle}>Continuar com o Google</span>
+            <span onClick={LoginGoogle}>Continuar com o Google</span>
           </div>
 
           <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
