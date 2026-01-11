@@ -2,14 +2,13 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import Google from "../img/google.png";
-import Facebook from "../img/facebook.jpg";
 import { Register } from "../auth/ResgisterService";
-import { API_BASE_URL } from "../config.constants";
+
 
 export default function CreateAccount() {
 
   const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,16 +22,17 @@ export default function CreateAccount() {
 
       if (password !== confirmPassword) {
         setError("As passwords não coincidem");
+        setLoading(false);
         return;
       }
   
       try {
-        await Register(email, password);
+        await Register(name, email, password);
+        alert("Registado com sucesso, verifique o seu email!");
         navigate("/Login", { replace: true });
-      } catch (err) {
-        setError("Email ou password inválidos");
+      } catch (err: any) {
+        setError(err.mensagem);
       } finally {
-        alert("Registado com sucesso!");
         setLoading(false);
       }
     }
@@ -51,12 +51,10 @@ export default function CreateAccount() {
         </h2>
 
         <form className="d-flex flex-column justify-content-center mt-4" onSubmit={handleSubmit}>
-          {/*TODO: Comentado porque não é necessario colocar nome no registo, ALTERAMOS O REGISTO??
           <div className="mb-3">
             <label className="form-label">Nome <span className='required-star'>*</span></label>
-            <input type="text" className="form-control" required/>
+            <input type="text" className="form-control" value={name} onChange={(e) => setName(e.target.value)} required/>
           </div>
-          */}
           <div className="mb-3">
             <label className="form-label">Email <span className='required-star'>*</span></label>
             <input type="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required/>
@@ -71,7 +69,7 @@ export default function CreateAccount() {
           </div>
 
           <button className="btn btn-primary" disabled={loading}>
-            {loading ? "Conta Registada com sucesso..." : "Enviar"}
+            {loading ? "A registar..." : "Enviar"}
           </button>
         </form>
       </div>
