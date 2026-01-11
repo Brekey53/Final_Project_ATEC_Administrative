@@ -3,11 +3,12 @@ import LoginBanner from "../components/LoginBanner";
 
 export default function LoginLayout() {
   return (
-    <div>
-      <div className="login-layout">
-        <LoginBanner></LoginBanner>
-        <Outlet></Outlet>
+    <div className="container-fluid vh-100">
+      <div className="row h-100">
+        <LoginBanner />
+        <Outlet />
       </div>
     </div>
   );
 }
+
