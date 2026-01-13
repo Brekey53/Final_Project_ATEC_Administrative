@@ -26,13 +26,13 @@ export const authService = {
 
     if (res.data.token) {
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userRole", res.data.tipoUtilizador);
     }
     return res.data;
   },
 
   logout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("tipoUtilizador");
     window.location.href = "/login";
   },
 };

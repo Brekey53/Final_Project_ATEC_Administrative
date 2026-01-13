@@ -52,7 +52,6 @@ export default function Login() {
   async function handleVerify2FA(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (code.length !== 6) {
         toast.error("O código deve ter 6 dígitos.");
@@ -72,7 +71,6 @@ export default function Login() {
       setLoading(false);
     }
   }
-
   function LoginGoogle() {
     window.location.href = `${API_BASE_URL}/auth/login-google`;
   }

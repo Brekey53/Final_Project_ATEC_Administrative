@@ -1,4 +1,5 @@
 import "../css/landingPage.css";
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom";
 import CardsDashboard from "../components/CardsDashboard";
 import {
@@ -11,8 +12,27 @@ import {
 } from "lucide-react";
 
 export default function LandingPage() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+  const tipo = localStorage.getItem("tipoUtilizador");
+
+  if (!tipo) {
+    setIsAdmin(false);
+    return;
+  }
+
+  const tipoNum = Number(tipo);
+
+  if (tipoNum === 1 || tipoNum === 4) {
+    setIsAdmin(true);
+  } else {
+    setIsAdmin(false);
+  }
+}, []);
   return (
     <>
+    {isAdmin ? (
       <div className="main-layout mt-5">
         <div className="container">
           <div className="title-dashboard d-flex justify-content-between w-100">
@@ -24,6 +44,9 @@ export default function LandingPage() {
               <span className="text-muted">
                 Informação Rápida sobre o Sistema
               </span>
+            </div>
+            <div className="quick-accessions-menu">
+
             </div>
             <div className="title-dashboard-right justify-content-end">
               <Link to="/assistenteAI" className="btn rounded">
@@ -146,7 +169,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div> )
+      : 
+        <div>CALABOCA</div>
+        }
     </>
   );
 }

@@ -7,7 +7,7 @@ namespace ProjetoAdministracaoEscola.Services
 {
     public class JWTService
     {
-        public string GerarJwtToken(string email)
+        public string GerarJwtToken(string email, int idTipoUtilizador)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -20,6 +20,7 @@ namespace ProjetoAdministracaoEscola.Services
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.Email, email),
+                    new Claim("tipoUtilizador", idTipoUtilizador.ToString()),
                     new Claim("projeto", "HawkTuah")
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),

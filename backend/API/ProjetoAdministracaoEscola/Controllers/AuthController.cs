@@ -140,6 +140,13 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost("verify-2fa")]
         public IActionResult Verify2FA([FromBody] Verify2FADTO tfaDTO)
         {
+            var utilizador = _context.Utilizadores.FirstOrDefault(u => u.Email == tfaDTO.Email);
+
+            if (utilizador == null)
+            {
+                return Unauthorized(new { message = "Utilizador não encontrado." });
+            }
+
             if (tfaDTO == null)
                 return BadRequest("Body inválido");
 
@@ -157,11 +164,15 @@ namespace ProjetoAdministracaoEscola.Controllers
                     _cache.Remove($"2FA_{tfaDTO.Email}");
 
                     // Gerar JWT token para local storage
-                    var token = _tokenService.GerarJwtToken(tfaDTO.Email);
+                    var token = _tokenService.GerarJwtToken(
+                        utilizador.Email,
+                        utilizador.IdTipoUtilizador
+                    );
 
                     return Ok(new
                     {
                         token = token,
+                        tipoUtilizador = utilizador.IdTipoUtilizador,
                         message = "Login concluído com sucesso!"
                     });
                 }
