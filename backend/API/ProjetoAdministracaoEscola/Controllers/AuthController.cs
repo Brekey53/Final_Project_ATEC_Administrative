@@ -5,12 +5,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.Models.ModelsDTO;
 using ProjetoAdministracaoEscola.ModelsDTO;
 using ProjetoAdministracaoEscola.Services;
+using System.Configuration;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -23,14 +27,16 @@ namespace ProjetoAdministracaoEscola.Controllers
         private readonly EmailService _emailService;
         private readonly JWTService _tokenService;
         private readonly IMemoryCache _cache;
+        private readonly IConfiguration _configuration;
 
         public AuthController(SistemaGestaoContext context, EmailService emailService, 
-            JWTService tokenService, IMemoryCache cache)
+            JWTService tokenService, IMemoryCache cache, IConfiguration configuration)
         {
             _context = context;
             _emailService = emailService;
             _tokenService = tokenService;
             _cache = cache;
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
@@ -134,6 +140,15 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost("verify-2fa")]
         public IActionResult Verify2FA([FromBody] Verify2FADTO tfaDTO)
         {
+            if (tfaDTO == null)
+                return BadRequest("Body inválido");
+
+            if (string.IsNullOrWhiteSpace(tfaDTO.Email) ||
+                string.IsNullOrWhiteSpace(tfaDTO.Code))
+            {
+                return BadRequest("Email ou código em falta");
+            }
+
             // Tenta recuperar o código da cache usando o email
             if (_cache.TryGetValue($"2FA_{tfaDTO.Email}", out string saveCode))
             {
@@ -151,8 +166,77 @@ namespace ProjetoAdministracaoEscola.Controllers
                     });
                 }
             }
+            return Unauthorized(new { message = "Código 2FA inválido ou expirado." });  
+        }
 
-            return BadRequest(new { message = "Código inválido ou expirado." });
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO forgotPasswordDto)
+        {
+
+            var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == forgotPasswordDto.Email);
+
+            if (utilizador == null)
+            {
+                return Ok(new { message = "Se o email existir, receberá instruções." });
+            }
+
+            // Tempo de expiração Token
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Email, utilizador.Email),
+                new Claim("Purpose", "ResetPassword") // para garantir que o token é apenas para reset de password
+            };
+
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_SECRET"]));
+
+            var token = new JwtSecurityToken(
+                expires: DateTime.Now.AddMinutes(30), // O TOKEN MORRE EM 30 MINUTOS
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+            );
+
+            string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            string resetLink = $"http://localhost:5173/reset-password?token={tokenString}";
+            await _emailService.SendResetEmail(utilizador.Email, resetLink);
+
+            return Ok(new { message = "Se o email existir, receberá instruções." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetDto)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["JWT_SECRET"]);
+
+            try
+            {
+                // Validar o Token
+                tokenHandler.ValidateToken(resetDto.Token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                var email = jwtToken.Claims.First(x => x.Type == ClaimTypes.Email).Value;
+
+                // Procurar utilizador e atualizar
+                var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
+                if (utilizador == null) return BadRequest(new { message = "Utilizador inválido." });
+
+                utilizador.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetDto.NewPassword);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Password alterada com sucesso!" });
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "Link inválido ou expirado." });
+            }
         }
 
         [HttpGet("callback-google")]
