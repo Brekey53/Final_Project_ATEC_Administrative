@@ -53,14 +53,13 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
 
-            var token = _tokenService.GerarJwtToken(utilizador.Email);
+            var _token = _tokenService.GerarJwtToken(utilizador.Email);
 
             // Aqui você pode gerar um token JWT ou outra forma de autenticação
             return Ok(new
             {
                 message = "Login bem-sucedido.",
-                token = token,
-                utilizadorId = utilizador.IdUtilizador,
+                token = _token,
                 tipoUtilizador = utilizador.IdTipoUtilizador 
             });
         }
