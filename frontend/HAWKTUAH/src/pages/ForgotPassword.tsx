@@ -2,25 +2,24 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
     try {
       const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, {
         email,
       });
-      setMessage("Se o email existir, irá receber um email com instruções.");
+      toast.success("Irá receber um email com instruções.");
       return res.data;
     } catch (err: any) {
-      setMessage(
+      toast.error(
         err.mensagem || "Ocorreu um erro. Tente novamente mais tarde."
       );
     } finally {
@@ -37,9 +36,6 @@ export default function ForgotPassword() {
 
         <h2 className="text-center">Recuperar password</h2>
 
-        {message && (
-          <p className="alert alert-info text-center mt-3">{message}</p>
-        )}
 
         <form
           className="d-flex flex-column justify-content-center mt-4"

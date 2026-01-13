@@ -2,13 +2,15 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./App.css";
 
-import AppRoutes from './routes/AppRoutes'
+import AppRoutes from "./routes/AppRoutes";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
-     <AppRoutes>
-      
-     </AppRoutes>
+    <>
+      <Toaster position="top-center" reverseOrder={false} />
+      <AppRoutes></AppRoutes>
+    </>
   );
 }
 

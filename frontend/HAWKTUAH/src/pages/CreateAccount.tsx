@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Register } from "../auth/ResgisterService";
+import toast from "react-hot-toast";
+
 
 export default function CreateAccount() {
   const navigate = useNavigate();
@@ -10,27 +12,25 @@ export default function CreateAccount() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     if (password !== confirmPassword) {
-      setError("As passwords não coincidem");
+      toast.error("As passwords não coincidem");
       setLoading(false);
       return;
     }
 
     try {
       await Register(name, email, password);
-      alert("Registado com sucesso, verifique o seu email!");
+      toast.success("Registado com sucesso, verifique o seu email!");
       navigate("/Login", { replace: true });
     } catch (err: any) {
-      setError(err.mensagem);
+      toast.error(err.mensagem);
     } finally {
       setLoading(false);
     }
@@ -114,7 +114,6 @@ export default function CreateAccount() {
             </label>
           </div>
 
-          {error && <p className="text-danger text-center">{error}</p>}
 
           <button className="btn btn-primary" disabled={loading}>
             {loading ? "A registar..." : "Enviar"}
