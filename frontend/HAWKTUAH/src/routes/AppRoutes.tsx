@@ -9,6 +9,7 @@ import Login from "../pages/Login";
 import LoginLayout from "../layouts/LoginLayout"
 import CreateAccount from "../pages/CreateAccount"
 import ForgotPassword from "../pages/ForgotPassword"
+import ResetPassword from "../pages/ResetPassword"
 
 function AppRoutes() {
   return (
@@ -18,6 +19,7 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword></ForgotPassword>} />
         <Route path="create-account" element={<CreateAccount></CreateAccount>} />
+        <Route path="reset-password" element={<ResetPassword></ResetPassword>} />
       </Route>
       <Route element={<MainLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />

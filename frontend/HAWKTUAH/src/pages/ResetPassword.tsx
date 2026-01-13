@@ -23,8 +23,8 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       await axios.post(`${API_BASE_URL}/auth/reset-password`, {
-        token: token,
-        newPassword: newPassword,
+        Token: token,
+        NewPassword: newPassword,
       });
       alert("Password alterada com sucesso!");
       navigate("/login");
