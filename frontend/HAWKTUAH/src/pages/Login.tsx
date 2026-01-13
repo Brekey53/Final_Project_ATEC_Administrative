@@ -17,6 +17,8 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState(""); // Estado para mensagem de sucesso
   const [loading, setLoading] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
+
   // useEffect para verificar os parâmetros da URL assim que o componente carrega
   useEffect(() => {
     if (searchParams.get("ativado") === "true") {
@@ -35,6 +37,7 @@ export default function Login() {
       await login(email, password);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
+      // TODO: Quando finalizado apagar o err.message
       setError(err.message || "Email ou password inválidos");
     } finally {
       setLoading(false);
@@ -72,11 +75,27 @@ export default function Login() {
           <div className="mb-1">
             <label className="form-label">Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="form-control"
             />
+          </div>
+          <div className="mb-3 form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="showPass"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            />
+            <label
+              className="form-check-label text-muted"
+              htmlFor="showPass"
+              style={{ fontSize: "0.9rem" }}
+            >
+              Mostrar palavra-passe
+            </label>
           </div>
           <Link
             to="/forgot-password"
