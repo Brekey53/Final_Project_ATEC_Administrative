@@ -97,7 +97,7 @@ export default function CreateAccount() {
               required
             />
           </div>
-          <div className="mb-3 form-check align-self-center">
+          <div className="mb-3 form-check">
             <input
               type="checkbox"
               className="form-check-input"
