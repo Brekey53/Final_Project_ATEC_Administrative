@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 
 import Dashboard from "../pages/LandingPage";
@@ -13,6 +13,7 @@ import ForgotPassword from "../pages/ForgotPassword"
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route element={<LoginLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword></ForgotPassword>} />
