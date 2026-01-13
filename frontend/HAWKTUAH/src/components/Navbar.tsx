@@ -1,5 +1,6 @@
 import "../css/navbar.css";
 import { Link } from "react-router-dom";
+import { authService } from "../auth/AuthService";
 
 export default function Navbar() {
   return (
@@ -37,7 +38,7 @@ export default function Navbar() {
                 <a className="dropdown-item" href="#">
                   Perfil
                 </a>
-                <a className="dropdown-item" href="#">
+                <a className="dropdown-item" href="#" onClick={authService.logout}>
                   Logout
                 </a>
               </div>

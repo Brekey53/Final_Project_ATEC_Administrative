@@ -12,6 +12,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,7 +57,7 @@ export default function ResetPassword() {
           <div className="form-group">
             <label className="form-label">Nova Password:</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="form-control"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -67,12 +68,28 @@ export default function ResetPassword() {
           <div className="form-group">
             <label className="form-label">Confirmar Password:</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="form-control"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
+          </div>
+          <div className="mb-3 form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="showPass"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            />
+            <label
+              className="form-check-label text-muted"
+              htmlFor="showPass"
+              style={{ fontSize: "0.9rem" }}
+            >
+              Mostrar palavra-passe
+            </label>
           </div>
 
           <button className="btn btn-primary" disabled={loading}>
