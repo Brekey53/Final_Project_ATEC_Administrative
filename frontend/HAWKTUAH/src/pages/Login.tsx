@@ -39,9 +39,13 @@ export default function Login() {
       localStorage.setItem("token", token);
 
       if (socialSuccessF === "success") {
-        toast.success("Facebook login efetuado com sucesso!");
+        toast.success("Facebook login efetuado com sucesso!", {
+          id: "social-toast",
+        });
       } else if (socialSuccessG === "success") {
-        toast.success("Google login efetuado com sucesso!");
+        toast.success("Google login efetuado com sucesso!", {
+          id: "social-toast",
+        });
       }
 
       const currentPath = window.location.pathname;
