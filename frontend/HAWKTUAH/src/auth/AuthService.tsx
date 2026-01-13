@@ -32,6 +32,7 @@ export const authService = {
 
   logout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("tipoUtilizador");
     window.location.href = "/login";
   },
 };
