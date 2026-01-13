@@ -6,6 +6,7 @@ import Facebook from "../img/facebook.jpg";
 import { Link } from "react-router-dom";
 import { authService } from "../auth/AuthService";
 import { API_BASE_URL } from "../config.constants";
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -186,6 +187,11 @@ export default function Login() {
               <button className="btn btn-success" disabled={loading}>
                 {loading ? "A verificar..." : "Confirmar Código"}
               </button>
+              <Toaster
+                position="bottom-right"
+                reverseOrder={false}
+              />
+              {toast.success('Successfully toasted!')}
               <button
                 type="button"
                 className="btn btn-link mt-2 text-muted"
