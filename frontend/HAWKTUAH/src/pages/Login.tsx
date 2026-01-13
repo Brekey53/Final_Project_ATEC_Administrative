@@ -22,11 +22,36 @@ export default function Login() {
 
   // useEffect para verificar os parâmetros da URL assim que o componente carrega
   useEffect(() => {
-    if (searchParams.get("ativado") === "true") {
+    const ativado = searchParams.get("ativado");
+    const socialSuccessG = searchParams.get("socialLoginG");
+    const socialSuccessF = searchParams.get("socialLoginF");
+    const token = searchParams.get("token");
+
+    if (!ativado && !socialSuccessG && !socialSuccessF) return;
+
+    if (ativado === "true") {
       toast.success("Conta ativada com sucesso! Já pode fazer login.");
+      navigate("/login", { replace: true });
+      return;
     }
-    navigate("/login", { replace: true }); // Navega para a página de login
-  }, [searchParams]);
+
+    if (token) {
+      localStorage.setItem("token", token);
+
+      if (socialSuccessF === "success") {
+        toast.success("Facebook login efetuado com sucesso!");
+      } else if (socialSuccessG === "success") {
+        toast.success("Google login efetuado com sucesso!");
+      }
+
+      const currentPath = window.location.pathname;
+      window.history.replaceState({}, "", currentPath);
+
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 1000);
+    }
+  }, [searchParams, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

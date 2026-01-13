@@ -284,10 +284,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             // Lógica para lidar com o callback do Google OAuth
-            // return Ok(new { message = "Callback do Google recebido." /* token = "Token Aqui :D" */ });
-
-            return Redirect("http://localhost:5173/Dashboard");
-            // EXEMPLO: Redirect("http://localhost:front_port/login-success?token=" + token);
+            var token = _tokenService.GerarJwtToken(utilizador.Email, utilizador.IdTipoUtilizador);
+            return Redirect($"http://localhost:5173/login?socialLoginG=success&token={token}");
         }
 
         [HttpGet("login-google")]
@@ -327,17 +325,16 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
             }
 
-            // Vincular ID do Google ao utilizador, se necessário
+            // Vincular ID do Facebook ao utilizador, se necessário
             if (string.IsNullOrEmpty(utilizador.IdFacebook))
             {
                 utilizador.IdFacebook = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
                 await _context.SaveChangesAsync();
             }
 
-            // Lógica para lidar com o callback do Google OAuth
-            //return Ok(new { message = "Callback do Facebook recebido." /* token = "Token Aqui :D" */ });
-            return Redirect("http://localhost:5173/Dashboard");
-            // EXEMPLO Redirect("http://localhost:front_port/login-success?token=" + token);
+            // Lógica para lidar com o callback do Facebook OAuth
+            var token = _tokenService.GerarJwtToken(utilizador.Email, utilizador.IdTipoUtilizador);
+            return Redirect($"http://localhost:5173/login?socialLoginF=success&token={token}");
         }
 
         [HttpGet("login-facebook")]
