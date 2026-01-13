@@ -68,7 +68,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             _cache.Set($"2FA_{utilizador.Email}", codigo2FA, TimeSpan.FromMinutes(5));
 
-            await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é: {codigo2FA}");
+            await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é:<h2><b> {codigo2FA}</b></h2>");
 
             return Ok(new
             {
