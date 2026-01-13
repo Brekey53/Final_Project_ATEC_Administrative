@@ -6,6 +6,7 @@ import Facebook from "../img/facebook.jpg";
 import { Link } from "react-router-dom";
 import { authService } from "../auth/AuthService";
 import { API_BASE_URL } from "../config.constants";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,7 +15,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // Estado para mensagem de sucesso
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState("");
   const [show2FA, setShow2FA] = useState(false);
@@ -23,15 +23,13 @@ export default function Login() {
   // useEffect para verificar os parâmetros da URL assim que o componente carrega
   useEffect(() => {
     if (searchParams.get("ativado") === "true") {
-      setSuccessMessage("Conta ativada com sucesso! Já pode fazer login.");
+      toast.success("Conta ativada com sucesso! Já pode fazer login.");
     }
     navigate("/login", { replace: true }); // Navega para a página de login
   }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    setSuccessMessage(""); // Limpa mensagem de sucesso ao tentar novo login
     setLoading(true);
 
     try {
@@ -40,12 +38,12 @@ export default function Login() {
       if (loginData.requires2FA) {
         setShow2FA(true);
         setEmail(loginData.email);
-        setSuccessMessage("Código de verificação enviado para o seu e-mail.");
+        toast.success("Código de verificação enviado para o seu e-mail.");
       }
       //navigate("/dashboard", { replace: true });
     } catch (err: any) {
       // TODO: Quando finalizado apagar o err.message
-      setError(err.message || "Email ou password inválidos");
+      toast.error(err.message || "Email ou password inválidos");
     } finally {
       setLoading(false);
     }
@@ -53,31 +51,28 @@ export default function Login() {
 
   async function handleVerify2FA(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    if (code.length !== 6) {
-      setError("O código deve ter 6 dígitos.");
-      return;
-    }
     setLoading(true);
     try {
+      if (code.length !== 6) {
+        toast.error("O código deve ter 6 dígitos.");
+        return;
+      }
+
       const data = await authService.verify2FA(email, code);
 
       if (data.token) {
         localStorage.setItem("token", data.token);
-        if (data.tipoUtilizador) {
-          localStorage.setItem("tipoUtilizador", data.tipoUtilizador);
-        }
-
+        toast.success("Bem-vindo de volta!");
         navigate("/dashboard", { replace: true });
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Código inválido ou expirado.");
+      toast.error("Código inválido ou expirado.");
     } finally {
       setLoading(false);
     }
   }
   function LoginGoogle() {
-    window.location.href = `${API_BASE_URL}/auth/login-google`; //http://localhost:5056/api/auth/login-google";
+    window.location.href = `${API_BASE_URL}/auth/login-google`;
   }
 
   function LoginFacebook() {
