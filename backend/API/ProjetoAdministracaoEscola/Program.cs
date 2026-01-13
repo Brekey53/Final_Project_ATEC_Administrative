@@ -67,6 +67,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<JWTService>();
 
+builder.Services.AddMemoryCache();
+
 var app = builder.Build();
 
 

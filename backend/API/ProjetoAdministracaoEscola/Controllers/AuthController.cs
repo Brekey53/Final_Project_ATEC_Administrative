@@ -134,6 +134,15 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost("verify-2fa")]
         public IActionResult Verify2FA([FromBody] Verify2FADTO tfaDTO)
         {
+            if (tfaDTO == null)
+                return BadRequest("Body inválido");
+
+            if (string.IsNullOrWhiteSpace(tfaDTO.Email) ||
+                string.IsNullOrWhiteSpace(tfaDTO.Code))
+            {
+                return BadRequest("Email ou código em falta");
+            }
+
             // Tenta recuperar o código da cache usando o email
             if (_cache.TryGetValue($"2FA_{tfaDTO.Email}", out string saveCode))
             {
