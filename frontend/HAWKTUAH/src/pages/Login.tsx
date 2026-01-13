@@ -6,7 +6,6 @@ import Facebook from "../img/facebook.jpg";
 import { Link } from "react-router-dom";
 import { authService } from "../auth/AuthService";
 import { API_BASE_URL } from "../config.constants";
-import toast, { Toaster } from 'react-hot-toast';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -55,17 +54,20 @@ export default function Login() {
   async function handleVerify2FA(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    if (code.length !== 6) {
+      setError("O código deve ter 6 dígitos.");
+      return;
+    }
     setLoading(true);
-
     try {
       const data = await authService.verify2FA(email, code);
-      if (code.length !== 6) {
-        setError("O código deve ter 6 dígitos.");
-        return;
-      }
 
       if (data.token) {
         localStorage.setItem("token", data.token);
+        if (data.tipoUtilizador) {
+          localStorage.setItem("tipoUtilizador", data.tipoUtilizador);
+        }
+
         navigate("/dashboard", { replace: true });
       }
     } catch (err: any) {
@@ -74,7 +76,6 @@ export default function Login() {
       setLoading(false);
     }
   }
-
   function LoginGoogle() {
     window.location.href = `${API_BASE_URL}/auth/login-google`; //http://localhost:5056/api/auth/login-google";
   }
@@ -187,11 +188,6 @@ export default function Login() {
               <button className="btn btn-success" disabled={loading}>
                 {loading ? "A verificar..." : "Confirmar Código"}
               </button>
-              <Toaster
-                position="bottom-right"
-                reverseOrder={false}
-              />
-              {toast.success('Successfully toasted!')}
               <button
                 type="button"
                 className="btn btn-link mt-2 text-muted"

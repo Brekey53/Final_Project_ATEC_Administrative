@@ -26,7 +26,6 @@ export const authService = {
 
     if (res.data.token) {
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userRole", res.data.tipoUtilizador);
     }
     return res.data;
   },
