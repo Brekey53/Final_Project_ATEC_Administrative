@@ -12,7 +12,7 @@ export default function LoginBanner() {
   return (
       <div className="col-12 col-lg-4 banner-login">
         <div className="ball ball-1"></div>
-        <div>
+        <div className="container-login">
           <p className="eyebrow-login">Manager HAWKTUAH</p>
           <h1 className="title-login">
             Sistema de <br />
@@ -28,7 +28,7 @@ export default function LoginBanner() {
               <div className="col-6">
                 <div className="card-login card-1">
                   <FontAwesomeIcon icon={faGraduationCap} className="icon" />
-                  <p>Gestão de Formandos</p>
+                  <p>Gestão de Alunos</p>
                 </div>
               </div>
               <div className="col-6">
