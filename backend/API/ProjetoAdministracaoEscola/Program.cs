@@ -65,6 +65,8 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddScoped<JWTService>();
+
 var app = builder.Build();
 
 

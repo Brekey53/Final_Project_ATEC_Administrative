@@ -7,6 +7,11 @@ export async function login(email: string, password: string) {
       email,
       password,
     });
+    if (res.data && res.data.token) {
+      localStorage.setItem("token", res.data.token);
+      
+      localStorage.setItem("utilizadorId", res.data.tipoUtilizador);
+    }
     return res.data;
     // console.log("Status:", res.status);
     // console.log("Response data:", res.data);

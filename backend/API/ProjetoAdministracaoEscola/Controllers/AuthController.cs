@@ -9,6 +9,7 @@ using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.Models.ModelsDTO;
 using ProjetoAdministracaoEscola.Services;
 using System.Security.Claims;
+using ProjetoAdministracaoEscola.Services;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -19,11 +20,14 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         private readonly SistemaGestaoContext _context;
         private readonly EmailService _emailService;
+        private readonly JWTService _tokenService;
 
-        public AuthController(SistemaGestaoContext context, EmailService emailService)
+        public AuthController(SistemaGestaoContext context, EmailService emailService, 
+            JWTService tokenService)
         {
             _context = context;
             _emailService = emailService;
+            _tokenService = tokenService;
         }
 
         [HttpPost("login")]
@@ -49,9 +53,16 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
 
-            // Aqui você pode gerar um token JWT ou outra forma de autenticação
-            return Ok(new { message = "Login bem-sucedido.", utilizadorId = utilizador.IdUtilizador });
+            var token = _tokenService.GerarJwtToken(utilizador.Email);
 
+            // Aqui você pode gerar um token JWT ou outra forma de autenticação
+            return Ok(new
+            {
+                message = "Login bem-sucedido.",
+                token = token,
+                utilizadorId = utilizador.IdUtilizador,
+                tipoUtilizador = utilizador.IdTipoUtilizador 
+            });
         }
 
         [HttpPost("register")]
