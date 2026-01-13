@@ -73,5 +73,40 @@ namespace ProjetoAdministracaoEscola.Services
                 return false;
             }
         }
+
+        public async Task<bool> SendResetEmail(string toEmail, string link)
+        {
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse("sistema@hawkportal.pt"));
+            email.To.Add(MailboxAddress.Parse(toEmail));
+            email.Subject = "Recuperar password";
+
+            email.Body = new TextPart(TextFormat.Html)
+            {
+                Text = $@"
+                <h2>Hawk Portal, </h2>
+                <p>Caso se tenha esquecido da sua password por favor clink no link em baixo:</p>
+                <a href='{link}' style='padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Recuperar password</a>
+                <p>Se não pediu para recuperar a password, por favor ignore este email.</p>
+                <br/>
+                <p>Atenciosamente,<br/>Equipe Hawk Portal</p>"
+            };
+
+            try
+            {
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync("croaemoita@gmail.com", "rhzm lvru aacx mucs");
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao enviar email: {ex.Message}");
+                return false;
+            }
+        }
     }
 }
