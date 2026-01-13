@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.Models.ModelsDTO;
+using ProjetoAdministracaoEscola.ModelsDTO;
 using ProjetoAdministracaoEscola.Services;
 using System.Security.Claims;
-using ProjetoAdministracaoEscola.Services;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -21,13 +22,15 @@ namespace ProjetoAdministracaoEscola.Controllers
         private readonly SistemaGestaoContext _context;
         private readonly EmailService _emailService;
         private readonly JWTService _tokenService;
+        private readonly IMemoryCache _cache;
 
         public AuthController(SistemaGestaoContext context, EmailService emailService, 
-            JWTService tokenService)
+            JWTService tokenService, IMemoryCache cache)
         {
             _context = context;
             _emailService = emailService;
             _tokenService = tokenService;
+            _cache = cache;
         }
 
         [HttpPost("login")]
@@ -42,10 +45,10 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (utilizador.StatusAtivacao != true)
             {
-                return BadRequest("Necessita de ativar a conta via email antes do login.");
+                return BadRequest( new { message = "Necessita de ativar a conta via email antes do login." });
             }
 
-            // Verificar a senha (implemente a lógica de verificação de senha conforme necessário)
+            // Verificar a senha
             bool isValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, utilizador.PasswordHash);
 
             if (!isValid)
@@ -53,14 +56,19 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
 
-            var _token = _tokenService.GerarJwtToken(utilizador.Email);
+            Random rnd = new Random();
 
-            // Aqui você pode gerar um token JWT ou outra forma de autenticação
+            string codigo2FA = rnd.Next(000000, 999999).ToString("D6"); // gerar codigo 2FA
+
+            _cache.Set($"2FA_{utilizador.Email}", codigo2FA, TimeSpan.FromMinutes(5));
+
+            await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é: {codigo2FA}");
+
             return Ok(new
             {
-                message = "Login bem-sucedido.",
-                token = _token,
-                tipoUtilizador = utilizador.IdTipoUtilizador 
+                requires2FA = true,
+                message = "Código enviado para o e-mail.",
+                email = utilizador.Email
             });
         }
 
@@ -121,6 +129,30 @@ namespace ProjetoAdministracaoEscola.Controllers
             await _context.SaveChangesAsync(); // atualizar BD
 
             return Redirect("http://localhost:5173/login?ativado=true");
+        }
+
+        [HttpPost("verify-2fa")]
+        public IActionResult Verify2FA([FromBody] Verify2FADTO tfaDTO)
+        {
+            // Tenta recuperar o código da cache usando o email
+            if (_cache.TryGetValue($"2FA_{tfaDTO.Email}", out string saveCode))
+            {
+                if (saveCode == tfaDTO.Code)
+                {
+                    _cache.Remove($"2FA_{tfaDTO.Email}");
+
+                    // Gerar JWT token para local storage
+                    var token = _tokenService.GerarJwtToken(tfaDTO.Email);
+
+                    return Ok(new
+                    {
+                        token = token,
+                        message = "Login concluído com sucesso!"
+                    });
+                }
+            }
+
+            return BadRequest(new { message = "Código inválido ou expirado." });
         }
 
         [HttpGet("callback-google")]

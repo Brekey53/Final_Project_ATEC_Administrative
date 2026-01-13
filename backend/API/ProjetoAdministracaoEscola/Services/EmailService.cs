@@ -44,5 +44,34 @@ namespace ProjetoAdministracaoEscola.Services
                 return false;
             }
         }
+
+        public async Task<bool> SendEmailAsync(string toEmail, string subject, string htmlContent)
+        {
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse("sistema@hawkportal.pt"));
+            email.To.Add(MailboxAddress.Parse(toEmail));
+            email.Subject = subject;
+
+            email.Body = new TextPart(TextFormat.Html)
+            {
+                Text = htmlContent
+            };
+
+            try
+            {
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync("croaemoita@gmail.com", "rhzm lvru aacx mucs");
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao enviar email: {ex.Message}");
+                return false;
+            }
+        }
     }
 }
