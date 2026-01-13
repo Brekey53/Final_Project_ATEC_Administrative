@@ -29,7 +29,6 @@ export default function LandingPage() {
   } else {
     setIsAdmin(false);
   }
-  console.log(isAdmin)
 }, []);
   return (
     <>
@@ -45,6 +44,9 @@ export default function LandingPage() {
               <span className="text-muted">
                 Informação Rápida sobre o Sistema
               </span>
+            </div>
+            <div className="quick-accessions-menu">
+
             </div>
             <div className="title-dashboard-right justify-content-end">
               <Link to="/assistenteAI" className="btn rounded">
@@ -169,7 +171,7 @@ export default function LandingPage() {
         </div>
       </div> )
       : 
-        <div>OLÁ</div>
+        <div>CALABOCA</div>
         }
     </>
   );
