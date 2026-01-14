@@ -10,6 +10,12 @@ import LoginLayout from "../layouts/LoginLayout"
 import CreateAccount from "../pages/CreateAccount"
 import ForgotPassword from "../pages/ForgotPassword"
 import ResetPassword from "../pages/ResetPassword"
+import NewModule from "../pages/NewModule"
+import NewCourse from "../pages/NewCourse"
+import NewStudent from "../pages/NewStudent"
+import NewTeacher from "../pages/NewTeacher"
+import NewSchedule from "../pages/NewSchedule"
+import NewRoom from "../pages/NewRoom";
 
 function AppRoutes() {
   return (
@@ -26,6 +32,12 @@ function AppRoutes() {
         <Route path="/cursos" element={<Cursos />} />
         <Route path="/formandos" element={<Formandos />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/gerir-modulos" element={<NewModule />} />
+        <Route path="/gerir-salas" element={<NewRoom />} />
+        <Route path="/gerir-cursos" element={<NewCourse />} />
+        <Route path="/gerir-formandos" element={<NewStudent />} />
+        <Route path="/gerir-formadores" element={<NewTeacher />} />
+        <Route path="/gerir-horarios" element={<NewSchedule />} />
       </Route>
     </Routes>
   );

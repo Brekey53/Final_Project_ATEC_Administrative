@@ -59,7 +59,7 @@ export default function LandingPage() {
             <div className="quick-access-menu mt-3 p-3 shadow-sm">
               <h3>Ações Rápidas</h3>
               <div className="row row-cols-2 row-cols-md-6 g-3">
-                <Link to="">
+                <Link to="/gerir-modulos">
                   <div className="col">
                     <QuickActionsCards
                       title="Novo Módulo"
@@ -67,36 +67,46 @@ export default function LandingPage() {
                     />
                   </div>
                 </Link>
-                <div className="col">
-                  <QuickActionsCards
-                    title="Nova Sala"
-                    icon={<GraduationCap size={20} color="#28a745" />}
-                  />
-                </div>
-                <div className="col">
-                  <QuickActionsCards
-                    title="Novo Curso"
-                    icon={<GraduationCap size={20} color="#28a745" />}
-                  />
-                </div>
-                <div className="col">
-                  <QuickActionsCards
-                    title="Gerir Formandos"
-                    icon={<GraduationCap size={20} color="#28a745" />}
-                  />
-                </div>
-                <div className="col">
-                  <QuickActionsCards
-                    title="Gerir Formadores"
-                    icon={<GraduationCap size={20} color="#28a745" />}
-                  />
-                </div>
-                <div className="col">
-                  <QuickActionsCards
-                    title="Criar Horário"
-                    icon={<GraduationCap size={20} color="#28a745" />}
-                  />
-                </div>
+                <Link to="/gerir-salas">
+                  <div className="col">
+                    <QuickActionsCards
+                      title="Nova Sala"
+                      icon={<GraduationCap size={20} color="#28a745" />}
+                    />
+                  </div>
+                </Link>
+                <Link to="/gerir-cursos">
+                  <div className="col">
+                    <QuickActionsCards
+                      title="Novo Curso"
+                      icon={<GraduationCap size={20} color="#28a745" />}
+                    />
+                  </div>
+                </Link>
+                <Link to="/gerir-formandos">
+                  <div className="col">
+                    <QuickActionsCards
+                      title="Gerir Formandos"
+                      icon={<GraduationCap size={20} color="#28a745" />}
+                    />
+                  </div>
+                </Link>
+                <Link to="/gerir-formadores">
+                  <div className="col">
+                    <QuickActionsCards
+                      title="Gerir Formadores"
+                      icon={<GraduationCap size={20} color="#28a745" />}
+                    />
+                  </div>
+                </Link>
+                <Link to="/gerir-horarios">
+                  <div className="col">
+                    <QuickActionsCards
+                      title="Criar Horário"
+                      icon={<GraduationCap size={20} color="#28a745" />}
+                    />
+                  </div>
+                </Link>
               </div>
             </div>
             <div className="row row-cols-1 row-cols-md-3 g-3 mt-3">
