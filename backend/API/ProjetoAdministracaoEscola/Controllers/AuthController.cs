@@ -39,6 +39,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             _configuration = configuration;
         }
 
+        
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UtilizadorLoginDTO loginDto)
         {
@@ -141,15 +142,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost("verify-2fa")]
         public IActionResult Verify2FA([FromBody] Verify2FADTO tfaDTO)
         {
-            var utilizador = _context.Utilizadores.FirstOrDefault(u => u.Email == tfaDTO.Email);
-
-            if (utilizador == null)
-            {
-                return Unauthorized(new { message = "Utilizador não encontrado." });
-            }
-
             if (tfaDTO == null)
-                return BadRequest("Body inválido");
+                return BadRequest("Corpo inválido");
 
             if (string.IsNullOrWhiteSpace(tfaDTO.Email) ||
                 string.IsNullOrWhiteSpace(tfaDTO.Code))
@@ -157,28 +151,36 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest("Email ou código em falta");
             }
 
-            // Tenta recuperar o código da cache usando o email
-            if (_cache.TryGetValue($"2FA_{tfaDTO.Email}", out string saveCode))
+            if (!_cache.TryGetValue($"2FA_{tfaDTO.Email}", out string savedCode))
             {
-                if (saveCode == tfaDTO.Code)
-                {
-                    _cache.Remove($"2FA_{tfaDTO.Email}");
-
-                    // Gerar JWT token para local storage
-                    var token = _tokenService.GerarJwtToken(
-                        utilizador.Email,
-                        utilizador.IdTipoUtilizador
-                    );
-
-                    return Ok(new
-                    {
-                        token = token,
-                        tipoUtilizador = utilizador.IdTipoUtilizador,
-                        message = "Login concluído com sucesso!"
-                    });
-                }
+                return Unauthorized(new { message = "Código 2FA expirado." });
             }
-            return Unauthorized(new { message = "Código 2FA inválido ou expirado." });  
+
+            if (savedCode != tfaDTO.Code)
+            {
+                return Unauthorized(new { message = "Código 2FA inválido." });
+            }
+
+            _cache.Remove($"2FA_{tfaDTO.Email}");
+
+            var utilizador = _context.Utilizadores.AsNoTracking().FirstOrDefault(u => u.Email == tfaDTO.Email);
+
+            if (utilizador == null)
+            {
+                return Unauthorized(new { message = "Utilizador não encontrado." });
+            }
+
+            // Gerar o token
+            var token = _tokenService.GerarJwtToken(
+                utilizador.Email,
+                utilizador.IdTipoUtilizador
+            );
+
+            return Ok(new
+            {
+                token,
+                message = "Login concluído com sucesso!"
+            });
         }
 
         [HttpPost("forgot-password")]

@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
+using ProjetoAdministracaoEscola.ModelsDTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -23,9 +24,16 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Formandos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Formando>>> GetFormandos()
+        public async Task<ActionResult<IEnumerable<FormandoDto>>> GetFormandos()
         {
-            return await _context.Formandos.ToListAsync();
+            var formandos = await _context.Formandos.Select(f => new FormandoDto
+            {
+                IdFormando = f.IdFormando,
+                Nome = f.Nome,
+                Email = f.IdUtilizadorNavigation.Email //a chave estrangeira tem esse nome
+            }).ToListAsync();
+
+            return Ok(formandos);
         }
 
         // GET: api/Formandos/5

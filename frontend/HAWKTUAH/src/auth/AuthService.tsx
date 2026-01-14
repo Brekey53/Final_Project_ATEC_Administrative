@@ -1,5 +1,12 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
+import { jwtDecode } from "jwt-decode";
+
+interface JwtToken {
+  email: string;
+  tipoUtilizador: string;
+  exp: number;
+}
 
 export const authService = {
   async login(email: string, password: string) {
@@ -31,7 +38,36 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem("token");
     window.location.href = "/login";
+  },
+
+  decodeToken(): JwtToken | null {
+    const token = localStorage.getItem("token");
+    if (!token) 
+      return null;
+
+    try {
+      return jwtDecode<JwtToken>(token);
+    } catch {
+      return null;
+    }
+  },
+
+  isAdmin(): boolean {
+    const decoded = this.decodeToken();
+    if (!decoded) 
+      return false;
+
+    const tipo = Number(decoded.tipoUtilizador);
+    return tipo === 1 || tipo === 4;
+  },
+
+  /* TODO: oq eufa */
+  isAuthenticated(): boolean {
+    const decoded = this.decodeToken();
+    if (!decoded) 
+      return false;
+
+    return decoded.exp * 1000 > Date.now();
   },
 };
