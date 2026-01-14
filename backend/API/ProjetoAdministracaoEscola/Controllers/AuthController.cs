@@ -39,6 +39,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             _configuration = configuration;
         }
 
+        
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UtilizadorLoginDTO loginDto)
         {
