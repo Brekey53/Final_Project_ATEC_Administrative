@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getFormandos, type Formando } from "../services/formandoService";
+import "../css/newStudent.css"
 
 export default function NewStudent() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
@@ -26,12 +27,9 @@ export default function NewStudent() {
           </p>
         </div>
 
-        <Link
-          to="/adicionar-formando"
-          className="btn btn-success px-4 py-2 rounded-pill"
-        >
+        <div className="btn btn-success px-4 py-2 rounded-pill">
           + Novo Formando
-        </Link>
+        </div>
       </div>
 
       <div className="card shadow-sm border-0 rounded-4 mb-4">
@@ -44,26 +42,40 @@ export default function NewStudent() {
         </div>
       </div>
 
-      {!loading &&
-        (formandos.length > 0 ? (
-          <div className="list-group list-group-flush">
-            {formandos.map((f) => (
-              <div
-                key={f.id}
-                className="list-group-item d-flex justify-content-between align-items-center"
-              >
-                <div>
-                  <div className="fw-semibold">{f.nome}</div>
-                  <small className="text-muted">{f.email}</small>
+      <div className="card shadow-sm border-0 rounded-4">
+        <div className="card-body p-0">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
+            <div>Formando</div>
+            <div>Email</div>
+            <div>Telefone</div>
+            <div className="text-end">Ações</div>
+          </div>
+          {formandos.map((f) => (
+            <div key={f.id} className="px-4 py-3 border-bottom tabela-alunos">
+              <div className="d-flex align-items-center gap-3">
+                <div
+                  className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                  {f.nome.charAt(0)}
                 </div>
+                <span className="fw-medium">{f.nome}</span>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-muted py-5">
-            <h5>Nenhum formando encontrado</h5>
-          </div>
-        ))}
+
+              <div className="d-flex align-items-center gap-2 text-muted">
+                <span>{f.email || "-"}</span>
+              </div>
+
+              <div className="text-muted">{f.telefone || "-"}</div> {/*telefone não existe na bd. falta criar*/}
+
+              <div className="d-flex justify-content-end gap-3">
+                <div className="text-dark">
+                  Editar
+                </div>
+                <button className="btn btn-link text-danger p-0">Apagar</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
