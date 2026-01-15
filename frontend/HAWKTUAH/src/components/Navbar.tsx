@@ -1,6 +1,7 @@
 import "../css/navbar.css";
 import { Link } from "react-router-dom";
 import { authService } from "../auth/AuthService";
+import foto  from "../img/hawktu.png"
 
 export default function Navbar() {
   return (
@@ -9,7 +10,7 @@ export default function Navbar() {
         <div className="container">
           <div className="d-flex align-items-center gap-3">
             <Link to="/dashboard">
-              <p className="mb-0">Imagem</p>
+              <img src={foto} alt="" className="foto"/>
             </Link>
             <button
               className="navbar-toggler"

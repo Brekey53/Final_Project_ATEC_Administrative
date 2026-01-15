@@ -2,3 +2,7 @@
      background: #014d4e !important;
      color: #ffffff;
 }
+
+.foto {
+     max-width: 4em;
+}

@@ -1,4 +1,4 @@
-import Foto from '../img/IMG_20211208_143421.jpg'
+import Foto from '../img/hawktu.png'
 
 export default function Perfil() {
   return (
