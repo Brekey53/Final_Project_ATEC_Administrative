@@ -219,6 +219,9 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.Nome)
                 .HasMaxLength(100)
                 .HasColumnName("nome");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(13)
+                .HasColumnName("telefone");
 
             entity.HasOne(d => d.IdUtilizadorNavigation).WithMany(p => p.Formadores)
                 .HasForeignKey(d => d.IdUtilizador)
@@ -254,6 +257,9 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.Nome)
                 .HasMaxLength(100)
                 .HasColumnName("nome");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(13)
+                .HasColumnName("telefone");
 
             entity.HasOne(d => d.IdUtilizadorNavigation).WithMany(p => p.Formandos)
                 .HasForeignKey(d => d.IdUtilizador)

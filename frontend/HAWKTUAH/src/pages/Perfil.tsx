@@ -20,7 +20,7 @@ export default function Perfil() {
                 <label className="form-label">Email</label>
                 <input type="email" className="form-control"></input>
             </form>
-            <button className="btn">Alterar palavra Passe</button>
+            <button className="btn">Alterar a Password</button>
           </div>
         </div>
       </div>
