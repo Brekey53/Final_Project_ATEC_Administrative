@@ -30,7 +30,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 IdFormando = f.IdFormando,
                 Nome = f.Nome,
-                Email = f.IdUtilizadorNavigation.Email //a chave estrangeira tem esse nome
+                Email = f.IdUtilizadorNavigation.Email, //a chave estrangeira tem esse nome
+                Phone = f.Phone
             }).ToListAsync();
 
             return Ok(formandos);

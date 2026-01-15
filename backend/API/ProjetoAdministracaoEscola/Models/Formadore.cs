@@ -13,6 +13,8 @@ public partial class Formadore
 
     public string Nif { get; set; } = null!;
 
+    public string Phone { get; set; } = null!;
+
     public DateOnly DataNascimento { get; set; }
 
     public byte[]? Fotografia { get; set; }
