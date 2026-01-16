@@ -231,6 +231,7 @@ export default function EditFormando() {
               <div className="col-md-4 mb-3">
                 <label className="form-label">NIF</label>
                 <input
+                  required
                   type="text"
                   name="nif"
                   className="form-control"
@@ -243,6 +244,7 @@ export default function EditFormando() {
               <div className="col-md-3 mb-3">
                 <label className="form-label">Sexo</label>
                 <select
+                  required
                   name="sexo"
                   className="form-select"
                   value={formData.sexo}
@@ -256,6 +258,7 @@ export default function EditFormando() {
               <div className="col-md-5 mb-3">
                 <label className="form-label">Data de Nascimento</label>
                 <input
+                  required
                   type="date"
                   name="dataNascimento"
                   className="form-control"
@@ -295,6 +298,7 @@ export default function EditFormando() {
               <div className="col-md-12 mb-3">
                 <label className="form-label">Morada</label>
                 <input
+                  required
                   type="text"
                   name="morada"
                   className="form-control"
