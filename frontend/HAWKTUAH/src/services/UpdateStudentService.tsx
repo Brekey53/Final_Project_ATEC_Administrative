@@ -1,19 +1,8 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
 
-const authHeaders = {
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-};
-
-export const updateFormando = async (
-  idFormando: string | number,
-  data: FormData
-) => {
-  return axios.put(
-    `${API_BASE_URL}/formandos/${idFormando}`,
-    data,
-    {
-      headers: authHeaders,
-    }
-  );
-};
+export async function updateFormando(id: string, data: FormData) {
+  // O Axios configura o Content-Type: multipart/form-data automaticamente ao receber FormData
+  const res = await axios.put(`${API_BASE_URL}/formandos/${id}`, data);
+  return res.data;
+}

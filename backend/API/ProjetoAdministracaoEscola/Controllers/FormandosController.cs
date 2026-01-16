@@ -79,32 +79,92 @@ namespace ProjetoAdministracaoEscola.Controllers
         // PUT: api/Formandos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFormando(int id, Formando formando)
+        public async Task<IActionResult> PutFormando(int id, [FromForm] FormandoCompletoDTO dto)
         {
-            if (id != formando.IdFormando)
+            // verificar Nif na BD
+            bool nifEmUso = await _context.Formandos.AnyAsync(f => f.Nif == dto.Nif && f.IdFormando != id);
+            if (nifEmUso)
             {
-                return BadRequest();
+                return Conflict(new { message = "O NIF introduzido já pertence a outro formando." });
             }
 
-            _context.Entry(formando).State = EntityState.Modified;
+            var formandoExistente = await _context.Formandos
+                .Include(f => f.Inscricos)
+                .FirstOrDefaultAsync(f => f.IdFormando == id);
+
+            if (formandoExistente == null)
+            {
+                return NotFound(new { message = "Formando não encontrado." });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!FormandoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                // Atualizar dados de perfil (Formando)
+                formandoExistente.Nome = dto.Nome;
+                formandoExistente.Nif = dto.Nif;
+                formandoExistente.Phone = dto.Telefone;
+                formandoExistente.DataNascimento = dto.DataNascimento;
+                formandoExistente.Morada = dto.Morada;
+                formandoExistente.Sexo = dto.Sexo;
 
-            return NoContent();
+                // Atualizar Ficheiros (APENAS se novos ficheiros forem enviados)
+                if (dto.Fotografia != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Fotografia.CopyToAsync(ms);
+                    formandoExistente.Fotografia = ms.ToArray();
+                }
+
+                if (dto.Documento != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Documento.CopyToAsync(ms);
+                    formandoExistente.AnexoFicheiro = ms.ToArray();
+                }
+
+                // Gestão de Inscrição/Turma
+                // Procurar inscrição ativa
+                var inscricaoAtual = await _context.Inscricoes
+                    .FirstOrDefaultAsync(i => i.IdFormando == id && i.Estado == "Ativo");
+
+                if (dto.IdTurma.HasValue && dto.IdTurma > 0)
+                {
+                    if (inscricaoAtual == null)
+                    {
+                        // Se não tinha turma e agora tem, criar nova inscrição
+                        _context.Inscricoes.Add(new Inscrico
+                        {
+                            IdFormando = id,
+                            IdTurma = dto.IdTurma.Value,
+                            DataInscricao = DateOnly.FromDateTime(DateTime.Now),
+                            Estado = "Ativo"
+                        });
+                    }
+                    else if (inscricaoAtual.IdTurma != dto.IdTurma.Value)
+                    {
+                        // Se mudou de turma, atualiza a existente
+                        inscricaoAtual.IdTurma = dto.IdTurma.Value;
+                    }
+                }
+                else if (inscricaoAtual != null)
+                {
+                    // Se selecionou "Sem Turma", suspende a inscrição
+                    inscricaoAtual.Estado = "Suspenso";
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { message = "Formando atualizado com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest(new { message = "Erro ao atualizar: " + (ex.InnerException?.Message ?? ex.Message) });
+            }
         }
 
         // POST: api/Formandos
@@ -126,66 +186,123 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             try
             {
-                // 1. Criar o Utilizador
-                var novoUtilizador = new Utilizador
-                {
-                    Email = dto.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                    IdTipoUtilizador = 3,
-                    StatusAtivacao = true
-                };
-                _context.Utilizadores.Add(novoUtilizador);
-                await _context.SaveChangesAsync();
+                var user = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-                // 2. Criar o Perfil do Formando
-                var novoFormando = new Formando
-                {
-                    IdUtilizador = novoUtilizador.IdUtilizador,
-                    Nome = dto.Nome,
-                    Nif = dto.Nif,
-                    Phone = dto.Telefone, // Mapeado para 'Phone' da tua Entidade
-                    DataNascimento = dto.DataNascimento,
-                    Morada = dto.Morada,
-                    Sexo = dto.Sexo
-                };
 
-                // Conversão BLOB (MemoryStream)
-                if (dto.Fotografia != null)
+                if (user == null)
                 {
-                    using var ms = new MemoryStream();
-                    await dto.Fotografia.CopyToAsync(ms);
-                    novoFormando.Fotografia = ms.ToArray();
-                }
-
-                if (dto.Documento != null)
-                {
-                    using var ms = new MemoryStream();
-                    await dto.Documento.CopyToAsync(ms);
-                    novoFormando.AnexoFicheiro = ms.ToArray();
-                }
-
-                _context.Formandos.Add(novoFormando);
-                await _context.SaveChangesAsync();
-
-                // 3. Criar Inscrição (se houver turma)
-                if (dto.IdTurma.HasValue && dto.IdTurma > 0)
-                {
-                    // Usando 'Inscrico' conforme definido no teu scaffold/modelo
-                    var novaInscricao = new Inscrico
+                    // Criar o Utilizador
+                    var novoUtilizador = new Utilizador
                     {
-                        IdFormando = novoFormando.IdFormando,
-                        IdTurma = dto.IdTurma.Value,
-                        DataInscricao = DateOnly.FromDateTime(DateTime.Now),
-                        Estado = "Ativo"
+                        Email = dto.Email,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                        IdTipoUtilizador = 3,
+                        StatusAtivacao = true
                     };
-                    _context.Inscricoes.Add(novaInscricao);
+
+                    _context.Utilizadores.Add(novoUtilizador);
                     await _context.SaveChangesAsync();
+
+                    // Criar o Perfil do Formando
+                    var novoFormando = new Formando
+                    {
+                        IdUtilizador = novoUtilizador.IdUtilizador,
+                        Nome = dto.Nome,
+                        Nif = dto.Nif,
+                        Phone = dto.Telefone, // Mapeado para 'Phone' da tua Entidade
+                        DataNascimento = dto.DataNascimento,
+                        Morada = dto.Morada,
+                        Sexo = dto.Sexo
+                    };
+
+                    // Conversão BLOB (MemoryStream)
+                    if (dto.Fotografia != null)
+                    {
+                        using var ms = new MemoryStream();
+                        await dto.Fotografia.CopyToAsync(ms);
+                        novoFormando.Fotografia = ms.ToArray();
+                    }
+
+                    if (dto.Documento != null)
+                    {
+                        using var ms = new MemoryStream();
+                        await dto.Documento.CopyToAsync(ms);
+                        novoFormando.AnexoFicheiro = ms.ToArray();
+                    }
+
+                    _context.Formandos.Add(novoFormando);
+                    await _context.SaveChangesAsync();
+
+                    // Criar Inscrição (se houver turma)
+                    if (dto.IdTurma.HasValue && dto.IdTurma > 0)
+                    {
+                        var novaInscricao = new Inscrico
+                        {
+                            IdFormando = novoFormando.IdFormando,
+                            IdTurma = dto.IdTurma.Value,
+                            DataInscricao = DateOnly.FromDateTime(DateTime.Now),
+                            Estado = "Ativo"
+                        };
+                        _context.Inscricoes.Add(novaInscricao);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    await transaction.CommitAsync();
+
+                    return Ok(new { message = "Formando criado com sucesso!" });
+                } 
+                else
+                {
+                    // Criar o Perfil do Formando
+                    var novoFormando = new Formando
+                    {
+                        IdUtilizador = user.IdUtilizador,
+                        Nome = dto.Nome,
+                        Nif = dto.Nif,
+                        Phone = dto.Telefone, // Mapeado para 'Phone' da tua Entidade
+                        DataNascimento = dto.DataNascimento,
+                        Morada = dto.Morada,
+                        Sexo = dto.Sexo
+                    };
+
+                    // Conversão BLOB (MemoryStream)
+                    if (dto.Fotografia != null)
+                    {
+                        using var ms = new MemoryStream();
+                        await dto.Fotografia.CopyToAsync(ms);
+                        novoFormando.Fotografia = ms.ToArray();
+                    }
+
+                    if (dto.Documento != null)
+                    {
+                        using var ms = new MemoryStream();
+                        await dto.Documento.CopyToAsync(ms);
+                        novoFormando.AnexoFicheiro = ms.ToArray();
+                    }
+
+                    _context.Formandos.Add(novoFormando);
+                    await _context.SaveChangesAsync();
+
+                    // Criar Inscrição (se houver turma)
+                    if (dto.IdTurma.HasValue && dto.IdTurma > 0)
+                    {
+                        var novaInscricao = new Inscrico
+                        {
+                            IdFormando = novoFormando.IdFormando,
+                            IdTurma = dto.IdTurma.Value,
+                            DataInscricao = DateOnly.FromDateTime(DateTime.Now),
+                            Estado = "Ativo"
+                        };
+                        _context.Inscricoes.Add(novaInscricao);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    await transaction.CommitAsync();
+
+                    return Ok(new { message = "Formando criado com sucesso!" });
                 }
 
-                // IMPORTANTE: Confirmar as alterações na BD
-                await transaction.CommitAsync();
-
-                return Ok(new { message = "Formando criado com sucesso!" });
+                
             }
             catch (Exception ex)
             {

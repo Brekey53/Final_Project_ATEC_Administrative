@@ -57,8 +57,6 @@ export default function EditFormando() {
           setFotoPreview(f.fotografia);
         }
 
-        console.log(typeof f.AnexoFicheiro);
-
         if (f.anexoFicheiro) {
           setDocumemtPreview(f.anexoFicheiro);
         }
@@ -101,18 +99,26 @@ export default function EditFormando() {
     setLoading(true);
 
     const data = new FormData();
+    data.append("Nome", formData.nome);
+    data.append("Nif", formData.nif);
+    data.append("Telefone", formData.phone);
+    data.append("DataNascimento", formData.dataNascimento);
+    data.append("Sexo", formData.sexo);
+    data.append("Morada", formData.morada);
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && value !== "") {
-        data.append(key, value as any);
-      }
-    });
+    if (formData.idTurma) data.append("IdTurma", formData.idTurma.toString());
+
+    // Ficheiros: Só anexar se forem do tipo File (novos uploads)
+    if (formData.fotografia instanceof File)
+      data.append("Fotografia", formData.fotografia);
+    if (formData.anexoFicheiro instanceof File)
+      data.append("Documento", formData.anexoFicheiro);
 
     try {
       await updateFormando(id, data);
-      toast.success("Formando atualizado com sucesso!");
+      toast.success("Perfil atualizado!");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar formando.");
+      toast.error(err.response?.data?.message || "Erro no servidor.");
     } finally {
       setLoading(false);
     }
@@ -186,7 +192,7 @@ export default function EditFormando() {
                     download={`documento_${formData.nome || "formando"}.pdf`}
                     className="btn btn-success btn-sm"
                   >
-                    💾 Descarregar Ficheiro
+                    Descarregar Ficheiro
                   </a>
                 </div>
               </div>
@@ -225,6 +231,7 @@ export default function EditFormando() {
               <div className="col-md-4 mb-3">
                 <label className="form-label">NIF</label>
                 <input
+                  required
                   type="text"
                   name="nif"
                   className="form-control"
@@ -237,6 +244,7 @@ export default function EditFormando() {
               <div className="col-md-3 mb-3">
                 <label className="form-label">Sexo</label>
                 <select
+                  required
                   name="sexo"
                   className="form-select"
                   value={formData.sexo}
@@ -250,6 +258,7 @@ export default function EditFormando() {
               <div className="col-md-5 mb-3">
                 <label className="form-label">Data de Nascimento</label>
                 <input
+                  required
                   type="date"
                   name="dataNascimento"
                   className="form-control"
@@ -262,7 +271,7 @@ export default function EditFormando() {
                 <label className="form-label">Telefone</label>
                 <input
                   type="text"
-                  name="telefone"
+                  name="phone"
                   className="form-control"
                   value={formData.phone}
                   onChange={handleChange}
@@ -289,6 +298,7 @@ export default function EditFormando() {
               <div className="col-md-12 mb-3">
                 <label className="form-label">Morada</label>
                 <input
+                  required
                   type="text"
                   name="morada"
                   className="form-control"
