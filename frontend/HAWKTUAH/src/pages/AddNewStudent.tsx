@@ -63,10 +63,27 @@ export default function AddNewStudent() {
     });
 
     try {
-      await postNewFormandos(data);
+      const res = await postNewFormandos(data);
       toast.success("Formando criado e inscrito com sucesso!");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao criar formando.");
+      const errorData = err.response?.data;
+
+      if (errorData?.errors) {
+        // Extrai todas as mensagens (Password, NIF, etc) e mostra no toast
+        Object.values(errorData.errors)
+          .flat()
+          .forEach((msg: any) => {
+            toast.error(msg);
+          });
+      }
+      // Erro Manual do C#
+      else if (errorData?.message) {
+        toast.error(errorData.message);
+      }
+      // 3. Fallback para erros genéricos
+      else {
+        toast.error("Erro inesperado ao criar formando.");
+      }
     } finally {
       setLoading(false);
     }

@@ -12,10 +12,6 @@ export async function postNewFormandos(formData: FormData) {
     return res.data;
   } catch (error: any) {
     console.log(error.response);
-    if (error.response) {
-      const message = error.response.data.message || error.response.data;
-      throw new Error(message);
-    }
-    throw new Error("Erro ao ligar ao servidor");
+    throw error;
   }
 }

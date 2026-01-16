@@ -182,6 +182,12 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost("completo")]
         public async Task<IActionResult> CreateFormando([FromForm] FormandoCompletoDTO dto)
         {
+
+            if (await _context.Formandos.AnyAsync(f => f.Nif == dto.Nif))
+            {
+                return Conflict(new { message = "Este NIF já se encontra registado no sistema." });
+            }
+
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -253,6 +259,10 @@ namespace ProjetoAdministracaoEscola.Controllers
                 } 
                 else
                 {
+                    if (await _context.Formandos.AnyAsync(f => f.IdUtilizador == user.IdUtilizador))
+                    {
+                        return Conflict(new { message = "Esse email já está associado a um formando" });
+                    }
                     // Criar o Perfil do Formando
                     var novoFormando = new Formando
                     {
@@ -308,7 +318,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 await transaction.RollbackAsync();
                 // Log detalhado para ajudar a encontrar erros de SQL (ex: NIF duplicado)
-                return BadRequest(new { message = "Erro ao guardar: " + ex.InnerException?.Message ?? ex.Message });
+                return BadRequest(new { message = "Não foi possível concluir o registo. Verifique se os dados estão corretos." });
             }
         }
 
