@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using ProjetoAdministracaoEscola.Models.ModelsDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -42,6 +44,87 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             return utilizador;
+        }
+
+        ///api/utilizadores/perfil
+        [HttpGet("perfil")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine(userIdClaim);
+            var tipoClaim = User.FindFirst("tipoUtilizador")?.Value;
+            Console.WriteLine(tipoClaim);
+
+
+            if (userIdClaim == null || tipoClaim == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+            int tipo = int.Parse(tipoClaim);
+
+            if (tipo == 1 || tipo == 4)
+            {
+                var user = await _context.Utilizadores.FindAsync(userId);
+
+                if(user == null)
+                {
+                    return NotFound("Utilizador não encontrado");
+                }
+
+                return Ok(new
+                {
+                    tipo,
+                    email = user.Email
+                });
+            }
+
+            // FORMANDO
+            if (tipo == 3)
+            {
+                var formando = await _context.Formandos
+                    .Include(f => f.IdUtilizadorNavigation)
+                    .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
+
+                if (formando == null)
+                    return NotFound("Formando não encontrado");
+
+                return Ok(new
+                {
+                    tipo,
+                    email = formando.IdUtilizadorNavigation.Email,
+                    nome = formando.Nome,
+                    nif = formando.Nif,
+                    telefone = formando.Phone,
+                    dataNascimento = formando.DataNascimento,
+                    sexo = formando.Sexo,
+                    morada = formando.Morada
+                });
+            }
+
+            // FORMADOR
+            if (tipo == 2)
+            {
+                var formador = await _context.Formadores
+                    .Include(f => f.IdUtilizadorNavigation)
+                    .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
+
+                if (formador == null)
+                    return NotFound("Formador não encontrado");
+
+                return Ok(new
+                {
+                    tipo,
+                    email = formador.IdUtilizadorNavigation.Email,
+                    nome = formador.Nome,
+                    nif = formador.Nif,
+                    telefone = formador.Phone,
+                    dataNascimento = formador.DataNascimento,
+                    sexo = formador.Sexo,
+                    morada = formador.Morada
+                });
+            }
+
+            return BadRequest("Tipo de utilizador inválido");
         }
 
         // PUT: api/Utilizadores/5

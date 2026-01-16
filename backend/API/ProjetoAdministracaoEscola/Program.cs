@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
 
 DotEnv.Load();
 
@@ -30,24 +34,38 @@ builder.Services.AddSwaggerGen();
 // Add Authentication services
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-}).AddCookie(options =>
-{
-    options.LoginPath = "/api/auth/login";
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie("ExternalCookieScheme") // Esquema temporário para controller
-.AddGoogle(GoogleOptions =>
+.AddJwtBearer(options =>
 {
-    GoogleOptions.ClientId = builder.Configuration["GOOGLE_API_ID"];
-    GoogleOptions.ClientSecret = builder.Configuration["GOOGLE_API_KEY"];
-    GoogleOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.ASCII.GetBytes(
+                Environment.GetEnvironmentVariable("JWT_SECRET")
+            )
+        ),
+
+        NameClaimType = ClaimTypes.NameIdentifier
+    };
 })
-.AddFacebook(FacebookOptions =>
+.AddGoogle(options =>
 {
-    FacebookOptions.AppId = builder.Configuration["FACEBOOK_API_ID"];
-    FacebookOptions.AppSecret = builder.Configuration["FACEBOOK_API_KEY"];
-    FacebookOptions.SignInScheme = "ExternalCookieScheme"; // Deve de coincidir com controller
+    options.ClientId = builder.Configuration["GOOGLE_API_ID"];
+    options.ClientSecret = builder.Configuration["GOOGLE_API_KEY"];
+})
+.AddFacebook(options =>
+{
+    options.AppId = builder.Configuration["FACEBOOK_API_ID"];
+    options.AppSecret = builder.Configuration["FACEBOOK_API_KEY"];
 });
+
 
 // Email services
 builder.Services.AddScoped<EmailService>();

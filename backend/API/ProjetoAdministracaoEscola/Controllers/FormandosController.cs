@@ -316,13 +316,16 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFormando(int id)
         {
-            var formando = await _context.Formandos.FindAsync(id);
-            if (formando == null)
-            {
-                return NotFound();
-            }
+            var formando = await _context.Formandos
+            .Include(f => f.IdUtilizadorNavigation)
+            .FirstOrDefaultAsync(f => f.IdFormando == id);
 
-            _context.Formandos.Remove(formando);
+            if (formando == null)
+                return NotFound("Formando não encontrado");
+
+            
+            formando.IdUtilizadorNavigation.StatusAtivacao = false;
+
             await _context.SaveChangesAsync();
 
             return NoContent();

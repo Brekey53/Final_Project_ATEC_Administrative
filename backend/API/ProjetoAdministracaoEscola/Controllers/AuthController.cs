@@ -172,6 +172,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             // Gerar o token
             var token = _tokenService.GerarJwtToken(
+                utilizador.IdUtilizador,
                 utilizador.Email,
                 utilizador.IdTipoUtilizador
             );
@@ -287,7 +288,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             // Lógica para lidar com o callback do Google OAuth
-            var token = _tokenService.GerarJwtToken(utilizador.Email, utilizador.IdTipoUtilizador);
+            var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
             return Redirect($"http://localhost:5173/login?socialLoginG=success&token={token}");
         }
 
@@ -336,7 +337,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             // Lógica para lidar com o callback do Facebook OAuth
-            var token = _tokenService.GerarJwtToken(utilizador.Email, utilizador.IdTipoUtilizador);
+            var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
             return Redirect($"http://localhost:5173/login?socialLoginF=success&token={token}");
         }
 
