@@ -52,7 +52,7 @@ export default function NewStudent() {
             <div className="text-end">Ações</div>
           </div>
           {formandos.map((f) => (
-            <div key={f.id} className="px-4 py-3 border-bottom tabela-alunos">
+            <div key={f.idFormando} className="px-4 py-3 border-bottom tabela-alunos">
               <div className="d-flex align-items-center gap-3">
                 <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
                   {f.nome.charAt(0)}
