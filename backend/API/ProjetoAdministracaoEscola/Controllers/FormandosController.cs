@@ -1,3 +1,4 @@
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,18 +41,39 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(formandos);
         }
 
-        // GET: api/Formandos/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Formando>> GetFormando(int id)
+        public async Task<ActionResult> GetFormando(int id)
         {
-            var formando = await _context.Formandos.FindAsync(id);
+            // É importante usar o Include para garantir que o Email (IdUtilizadorNavigation) não venha nulo
+            var formando = await _context.Formandos
+                .Include(f => f.IdUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdFormando == id);
 
             if (formando == null)
             {
                 return NotFound();
             }
 
-            return formando;
+            var respostaFormando = new
+            {
+                IdFormando = formando.IdFormando,
+                IdUtilizador = formando.IdUtilizador,
+                Nome = formando.Nome,
+                Nif = formando.Nif,
+                Phone = formando.Phone,
+                DataNascimento = formando.DataNascimento,
+                Sexo = formando.Sexo,
+                Morada = formando.Morada,
+                Email = formando.IdUtilizadorNavigation?.Email,
+                Fotografia = formando.Fotografia != null
+                    ? $"data:image/jpeg;base64,{Convert.ToBase64String(formando.Fotografia)}"
+                    : null,
+                // Documento (PDF/DOC/DOCX) - prefixo genérico para ficheiros
+                AnexoFicheiro = formando.AnexoFicheiro != null
+                    ? $"data:application/octet-stream;base64,{Convert.ToBase64String(formando.AnexoFicheiro)}"
+                    : null
+            };
+            return Ok(respostaFormando);
         }
 
         // PUT: api/Formandos/5
