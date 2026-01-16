@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using ProjetoAdministracaoEscola.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -7,7 +8,7 @@ namespace ProjetoAdministracaoEscola.Services
 {
     public class JWTService
     {
-        public string GerarJwtToken(string email, int idTipoUtilizador)
+        public string GerarJwtToken(int idUtilizador, string email, int idTipoUtilizador)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -19,6 +20,7 @@ namespace ProjetoAdministracaoEscola.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
+                    new Claim(ClaimTypes.NameIdentifier, idUtilizador.ToString()),
                     new Claim(ClaimTypes.Email, email),
                     new Claim("tipoUtilizador", idTipoUtilizador.ToString()),
                     new Claim("projeto", "HawkTuah")
