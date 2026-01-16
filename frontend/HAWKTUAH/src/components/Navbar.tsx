@@ -1,7 +1,7 @@
 import "../css/navbar.css";
 import { Link } from "react-router-dom";
 import { authService } from "../auth/AuthService";
-import foto  from "../img/hawktu.png"
+import foto from "../img/hawktu.png";
 
 export default function Navbar() {
   return (
@@ -10,7 +10,7 @@ export default function Navbar() {
         <div className="container">
           <div className="d-flex align-items-center gap-3">
             <Link to="/dashboard">
-              <img src={foto} alt="" className="foto"/>
+              <img src={foto} alt="" className="foto" />
             </Link>
             <button
               className="navbar-toggler"
@@ -22,28 +22,33 @@ export default function Navbar() {
             </button>
           </div>
           <div className="d-flex align-items-center gap-4">
-            <p>notificações</p>
-            <li className="nav-item dropdown">
-              <a
-                className="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              >
-                Conta
-              </a>
-              <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a className="dropdown-item" href="#">
-                  Perfil
+            <ul>
+              <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  href="#"
+                  id="navbarDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  Conta
                 </a>
-                <a className="dropdown-item" href="#" onClick={authService.logout}>
-                  Logout
-                </a>
-              </div>
-            </li>
+                <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <Link to="/perfil" className="dropdown-item">
+                    Perfil
+                  </Link>
+                  <a
+                    className="dropdown-item"
+                    href="#"
+                    onClick={authService.logout}
+                  >
+                    Logout
+                  </a>
+                </div>
+              </li>
+            </ul>
           </div>
           <div className="collapse navbar-collapse" id="mainNavbar">
             <div className="d-flex justify-content-around">
