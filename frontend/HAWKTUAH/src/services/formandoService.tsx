@@ -2,7 +2,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
 
 export interface Formando {
-  id: number;
+  idFormando: number;
   nome: string;
   email: string;
   telefone?: string;
@@ -21,9 +21,9 @@ export async function getFormandos(): Promise<Formando[]> {
 }
 
 export async function getFormandoById(
-  id: number | string
+  idFormando: number | string
 ): Promise<Formando> {
-  const res = await axios.get(`${API_BASE_URL}/formandos/${id}`, {
+  const res = await axios.get(`${API_BASE_URL}/formandos/${idFormando}`, {
     headers: authHeaders,
   });
 
