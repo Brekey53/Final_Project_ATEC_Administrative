@@ -83,6 +83,8 @@ CREATE TABLE formadores (
     nif VARCHAR(9) UNIQUE NOT NULL,
     telefone VARCHAR(13), 
     data_nascimento DATE NOT NULL,
+    sexo ENUM('Masculino', 'Feminino') NOT NULL,
+    morada VARCHAR(100) NOT NULL,
     fotografia MEDIUMBLOB,
     anexo_ficheiro MEDIUMBLOB,
     FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador)
@@ -95,6 +97,7 @@ CREATE TABLE formandos (
     nif VARCHAR(9) UNIQUE NOT NULL,
     telefone VARCHAR(13), 
     data_nascimento DATE NOT NULL,
+    sexo ENUM('Masculino', 'Feminino') NOT NULL,
     morada VARCHAR(100) NOT NULL,
     fotografia MEDIUMBLOB,
     anexo_ficheiro MEDIUMBLOB,
@@ -119,7 +122,7 @@ CREATE TABLE inscricoes (
     id_formando INT NOT NULL,
     id_turma INT NOT NULL,
     data_inscricao DATE DEFAULT (CURRENT_DATE) NOT NULL,
-    estado ENUM('Ativo', 'Concluido', 'Desistente', 'Congelado') DEFAULT 'Ativo',
+    estado ENUM('Ativo', 'Concluido', 'Desistente', 'Congelado', 'Suspenso') DEFAULT 'Suspenso',
     nota_final DECIMAL(4,2) CHECK (nota_final BETWEEN 0.0 AND 20.0),
     FOREIGN KEY (id_formando) REFERENCES formandos(id_formando),
     FOREIGN KEY (id_turma) REFERENCES turmas(id_turma)
