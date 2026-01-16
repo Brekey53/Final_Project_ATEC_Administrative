@@ -5,7 +5,7 @@ export interface Formando {
   idFormando: number;
   nome: string;
   email: string;
-  telefone?: string;
+  phone?: string;
 }
 
 const authHeaders = {
