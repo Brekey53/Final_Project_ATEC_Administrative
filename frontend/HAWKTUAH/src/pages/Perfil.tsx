@@ -2,10 +2,19 @@ import { useEffect, useState } from "react";
 import { getMyPerfil, type Perfil } from "../services/PerfilService";
 import FotoPlaceholder from "../img/avatar.png";
 import toast from "react-hot-toast";
+import "../css/perfil.css"
+import axios from "axios"
+import { API_BASE_URL } from "../config.constants";
 
 export default function Perfil() {
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+const [newPassword, setNewPassword] = useState("");
+const [confirmPassword, setConfirmPassword] = useState("");
+const [passwordError, setPasswordError] = useState("");
+ const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     async function fetchPerfil() {
@@ -21,6 +30,30 @@ export default function Perfil() {
 
     fetchPerfil();
   }, []);
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      
+      await axios.post(`${API_BASE_URL}/auth/reset-password`, {
+        Token: token,
+        NewPassword: newPassword,
+      });
+      alert("Password alterada com sucesso!");
+    } catch (err: any) {
+      console.log(
+        err.response?.data?.message || "O link expirou ou é inválido."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   if (loading) {
     return <div className="container mt-5">A carregar perfil...</div>;
@@ -46,7 +79,7 @@ export default function Perfil() {
             />
 
             <button className="btn btn-outline-secondary btn-sm" disabled>
-              Alterar fotografia (brevemente)
+              Alterar fotografia
             </button>
           </div>
         </div>
@@ -145,12 +178,74 @@ export default function Perfil() {
             <div className="d-flex justify-content-end">
               <button
                 className="btn btn-warning"
-                onClick={() => toast("Funcionalidade em breve")}
+                onClick={() => setShowPasswordModal(true)}
               >
                 Alterar password
               </button>
             </div>
           </div>
+          {showPasswordModal && (
+            <>
+              <div
+                className="custom-modal-overlay"
+                onClick={() => setShowPasswordModal(false)}
+              />
+
+              <div className="custom-modal">
+                <div className="custom-modal-header">
+                  <h5>Alterar palavra-passe</h5>
+                  <button
+                    className="btn-close"
+                    onClick={() => setShowPasswordModal(false)}
+                  />
+                </div>
+
+                 <form onSubmit={handleSubmit} className="d-flex flex-column gap-3 mt-4">
+          <div className="form-group">
+            <label className="form-label">Nova Password:</label>
+            <input
+              type={showPassword ? "text" : "password"}
+              className="form-control"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Confirmar Password:</label>
+            <input
+              type={showPassword ? "text" : "password"}
+              className="form-control"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-3 form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="showPass"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            />
+            <label
+              className="form-check-label text-muted"
+              htmlFor="showPass"
+              style={{ fontSize: "0.9rem" }}
+            >
+              Mostrar palavra-passe
+            </label>
+          </div>
+
+          <button className="btn btn-primary" disabled={loading}>
+            {loading ? "A processar..." : "Redefinir Password"}
+          </button>
+        </form>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
