@@ -16,6 +16,8 @@ import NewStudent from "../pages/NewStudent"
 import NewTeacher from "../pages/NewTeacher"
 import NewSchedule from "../pages/NewSchedule"
 import NewRoom from "../pages/NewRoom";
+import AddNewStudent from "../pages/AddNewStudent";
+
 
 function AppRoutes() {
   return (
@@ -36,6 +38,7 @@ function AppRoutes() {
         <Route path="/gerir-salas" element={<NewRoom />} />
         <Route path="/gerir-cursos" element={<NewCourse />} />
         <Route path="/gerir-formandos" element={<NewStudent />} />
+        <Route path="/adicionar-formandos" element={<AddNewStudent />} />
         <Route path="/gerir-formadores" element={<NewTeacher />} />
         <Route path="/gerir-horarios" element={<NewSchedule />} />
       </Route>

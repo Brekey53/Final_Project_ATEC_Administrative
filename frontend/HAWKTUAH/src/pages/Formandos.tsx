@@ -1,7 +1,11 @@
-import React from 'react'
+import React from "react";
+import AnimatedLogo from "../components/AnimatedLogo";
 
 export default function Formandos() {
   return (
-    <div>Formandos</div>
-  )
+    <section className="hero">
+      <AnimatedLogo />
+      <div>Formandos</div>
+    </section>
+  );
 }

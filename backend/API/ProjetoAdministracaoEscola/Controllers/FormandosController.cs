@@ -6,6 +6,7 @@ using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,10 +17,12 @@ namespace ProjetoAdministracaoEscola.Controllers
     public class FormandosController : ControllerBase
     {
         private readonly SistemaGestaoContext _context;
+        private readonly IConfiguration _configuration;
 
-        public FormandosController(SistemaGestaoContext context)
+        public FormandosController(SistemaGestaoContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: api/Formandos
@@ -91,6 +94,83 @@ namespace ProjetoAdministracaoEscola.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetFormando", new { id = formando.IdFormando }, formando);
+        }
+
+
+        [HttpPost("completo")]
+        public async Task<IActionResult> CreateFormando([FromForm] FormandoCompletoDTO dto)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1. Criar o Utilizador
+                var novoUtilizador = new Utilizador
+                {
+                    Email = dto.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    IdTipoUtilizador = 3,
+                    StatusAtivacao = true
+                };
+                _context.Utilizadores.Add(novoUtilizador);
+                await _context.SaveChangesAsync();
+
+                // 2. Criar o Perfil do Formando
+                var novoFormando = new Formando
+                {
+                    IdUtilizador = novoUtilizador.IdUtilizador,
+                    Nome = dto.Nome,
+                    Nif = dto.Nif,
+                    Phone = dto.Telefone, // Mapeado para 'Phone' da tua Entidade
+                    DataNascimento = dto.DataNascimento,
+                    Morada = dto.Morada,
+                    Sexo = dto.Sexo
+                };
+
+                // Conversão BLOB (MemoryStream)
+                if (dto.Fotografia != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Fotografia.CopyToAsync(ms);
+                    novoFormando.Fotografia = ms.ToArray();
+                }
+
+                if (dto.Documento != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Documento.CopyToAsync(ms);
+                    novoFormando.AnexoFicheiro = ms.ToArray();
+                }
+
+                _context.Formandos.Add(novoFormando);
+                await _context.SaveChangesAsync();
+
+                // 3. Criar Inscrição (se houver turma)
+                if (dto.IdTurma.HasValue && dto.IdTurma > 0)
+                {
+                    // Usando 'Inscrico' conforme definido no teu scaffold/modelo
+                    var novaInscricao = new Inscrico
+                    {
+                        IdFormando = novoFormando.IdFormando,
+                        IdTurma = dto.IdTurma.Value,
+                        DataInscricao = DateOnly.FromDateTime(DateTime.Now),
+                        Estado = "Ativo"
+                    };
+                    _context.Inscricoes.Add(novaInscricao);
+                    await _context.SaveChangesAsync();
+                }
+
+                // IMPORTANTE: Confirmar as alterações na BD
+                await transaction.CommitAsync();
+
+                return Ok(new { message = "Formando criado com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                // Log detalhado para ajudar a encontrar erros de SQL (ex: NIF duplicado)
+                return BadRequest(new { message = "Erro ao guardar: " + ex.InnerException?.Message ?? ex.Message });
+            }
         }
 
         // DELETE: api/Formandos/5

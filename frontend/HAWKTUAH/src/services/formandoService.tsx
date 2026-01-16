@@ -5,6 +5,7 @@ export interface Formando {
   id: number;
   nome: string;
   email: string;
+  phone: string;
 }
 
 export async function getFormandos() {

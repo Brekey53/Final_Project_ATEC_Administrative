@@ -213,6 +213,12 @@ public partial class SistemaGestaoContext : DbContext
                 .HasColumnType("mediumblob")
                 .HasColumnName("fotografia");
             entity.Property(e => e.IdUtilizador).HasColumnName("id_utilizador");
+            entity.Property(e => e.Sexo)
+                .HasMaxLength(12)
+                .HasColumnName("sexo");
+            entity.Property(e => e.Morada)
+                .HasMaxLength(100)
+                .HasColumnName("morada");
             entity.Property(e => e.Nif)
                 .HasMaxLength(9)
                 .HasColumnName("nif");

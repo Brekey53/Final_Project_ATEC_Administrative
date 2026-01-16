@@ -13,9 +13,11 @@ public partial class Formando
 
     public string Nif { get; set; } = null!;
 
-    public string Phone { get; set; } = null!;
+    public string? Phone { get; set; } = null!;
 
     public DateOnly DataNascimento { get; set; }
+
+    public string Sexo { get; set; } = null!;
 
     public string Morada { get; set; } = null!;
 
