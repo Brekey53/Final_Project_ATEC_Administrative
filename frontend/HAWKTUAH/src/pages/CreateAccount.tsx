@@ -15,22 +15,42 @@ export default function CreateAccount() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Função para validar a força da password
+  const isPasswordStrong = (pass: string) => {
+    // Exige: Mínimo 6 caracteres, pelo menos uma letra e um número
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+    return regex.test(pass);
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
 
-    if (password !== confirmPassword) {
-      toast.error("As passwords não coincidem");
-      setLoading(false);
+    //Validação de Tamanho e Complexidade
+    if (password.length < 6) {
+      toast.error("A password deve ter pelo menos 6 caracteres.");
       return;
     }
+
+    if (!isPasswordStrong(password)) {
+      toast.error("A password deve conter pelo menos uma letra e um número.");
+      return;
+    }
+
+    // Validação de Confirmação
+    if (password !== confirmPassword) {
+      toast.error("As passwords não coincidem");
+      return;
+    }
+
+
+    setLoading(true);
 
     try {
       await Register(name, email, password);
       toast.success("Registado com sucesso, verifique o seu email!");
       navigate("/Login", { replace: true });
     } catch (err: any) {
-      toast.error(err.mensagem);
+      toast.error(err.response?.data?.message || "Erro ao criar conta.");
     } finally {
       setLoading(false);
     }
@@ -83,7 +103,9 @@ export default function CreateAccount() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
             />
+            <div className="form-text">Mínimo de 6 caracteres com letras e números.</div>
           </div>
           <div className="mb-2">
             <label className="form-label">
