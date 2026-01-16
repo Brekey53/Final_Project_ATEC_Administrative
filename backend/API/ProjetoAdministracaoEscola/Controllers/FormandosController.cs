@@ -104,7 +104,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             try
             {
-                // 1. Criar o Utilizador
+                // Criar o Utilizador
                 var novoUtilizador = new Utilizador
                 {
                     Email = dto.Email,
@@ -115,7 +115,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 _context.Utilizadores.Add(novoUtilizador);
                 await _context.SaveChangesAsync();
 
-                // 2. Criar o Perfil do Formando
+                // Criar o Perfil do Formando
                 var novoFormando = new Formando
                 {
                     IdUtilizador = novoUtilizador.IdUtilizador,
@@ -145,10 +145,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 _context.Formandos.Add(novoFormando);
                 await _context.SaveChangesAsync();
 
-                // 3. Criar Inscrição (se houver turma)
+                // Criar Inscrição (se houver turma)
                 if (dto.IdTurma.HasValue && dto.IdTurma > 0)
                 {
-                    // Usando 'Inscrico' conforme definido no teu scaffold/modelo
                     var novaInscricao = new Inscrico
                     {
                         IdFormando = novoFormando.IdFormando,
@@ -160,7 +159,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // IMPORTANTE: Confirmar as alterações na BD
+                // Confirmar as alterações na BD
                 await transaction.CommitAsync();
 
                 return Ok(new { message = "Formando criado com sucesso!" });
