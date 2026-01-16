@@ -1,0 +1,34 @@
+.logo-wrapper {
+  width: 320px;
+  max-width: 100%;
+}
+
+.logo-anim {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+#ring-blue,
+#ring-dark-blue,
+#ring-red,
+#ring-orange,
+#dots {
+  transform-origin: 50% 50%;
+  animation: rotate linear infinite;
+}
+
+#ring-blue { animation-duration: 30s; }
+#ring-dark-blue { animation-duration: 24s; }
+#ring-red { animation-duration: 18s; }
+#ring-orange { animation-duration: 12s; }
+
+#dots {
+  animation-duration: 20s;
+  animation-direction: reverse;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
