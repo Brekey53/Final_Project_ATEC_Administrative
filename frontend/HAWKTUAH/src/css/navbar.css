@@ -69,9 +69,12 @@
   padding: 0;
 }
 
-/* .navbar-toggler:focus,
+.navbar-toggler:focus{
+  box-shadow: 0 0px 10px rgba(204, 250, 0, 0.3);
+}
+
 .navbar-toggler:active,
 .navbar-toggler:focus-visible {
   outline: none;
   box-shadow: none;
-} */
+}
