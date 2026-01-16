@@ -13,18 +13,19 @@ export default function EditFormando() {
     email: "",
     nome: "",
     nif: "",
-    telefone: "",
+    phone: "",
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
     idTurma: "",
     fotografia: null as File | null,
-    documento: null as File | null,
+    anexoFicheiro: null as File | null,
   });
 
   const [turmas, setTurmas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fotoPreview, setFotoPreview] = useState<string>(FotoPlaceholder);
+  const [documentPreview, setDocumemtPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -37,22 +38,29 @@ export default function EditFormando() {
         ]);
 
         const f = formandoRes.data;
+        console.log("Dados recebidos:", f); // Verifica aqui os nomes exatos das chaves
 
         setFormData({
           email: f.email ?? "",
           nome: f.nome ?? "",
           nif: f.nif ?? "",
-          telefone: f.telefone ?? "",
+          phone: f.phone ?? "",
           dataNascimento: f.dataNascimento?.split("T")[0] ?? "",
           sexo: f.sexo ?? "Masculino",
           morada: f.morada ?? "",
           idTurma: f.idTurma ?? "",
           fotografia: null,
-          documento: null,
+          anexoFicheiro: null,
         });
 
-        if (f.fotografiaUrl) {
-          setFotoPreview(f.fotografiaUrl);
+        if (f.fotografia) {
+          setFotoPreview(f.fotografia);
+        }
+
+        console.log(typeof f.AnexoFicheiro);
+
+        if (f.anexoFicheiro) {
+          setDocumemtPreview(f.anexoFicheiro);
         }
 
         setTurmas(turmasRes.data);
@@ -74,10 +82,15 @@ export default function EditFormando() {
     const { name, files } = e.target;
     if (!files || !files[0]) return;
 
-    setFormData({ ...formData, [name]: files[0] });
+    const file = files[0];
+    setFormData({ ...formData, [name]: file });
+
+    const previewUrl = URL.createObjectURL(file);
 
     if (name === "fotografia") {
-      setFotoPreview(URL.createObjectURL(files[0]));
+      setFotoPreview(previewUrl);
+    } else if (name === "anexoFicheiro") {
+      setDocumemtPreview(previewUrl);
     }
   };
 
@@ -110,16 +123,15 @@ export default function EditFormando() {
       <h2 className="mb-4">Editar Formando</h2>
 
       <form onSubmit={handleSubmit} className="row">
-        {/* FOTO */}
+        {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}
         <div className="col-lg-4 text-center">
-          <div className="card p-3 shadow-sm">
+          <div className="card p-3 shadow-sm mb-4">
             <img
               src={fotoPreview}
               alt="Preview"
               className="img-fluid rounded mb-3"
               style={{ maxHeight: "350px", objectFit: "cover" }}
             />
-
             <label className="btn btn-outline-primary btn-sm">
               Alterar Fotografia
               <input
@@ -130,23 +142,59 @@ export default function EditFormando() {
                 onChange={handleFileChange}
               />
             </label>
+          </div>
 
-            <hr />
-
-            <label className="form-label text-start d-block">
+          <div className="card p-3 shadow-sm">
+            <label className="form-label text-start d-block fw-bold">
               Documento Anexo
             </label>
             <input
               type="file"
-              name="documento"
-              className="form-control"
+              name="anexoFicheiro"
+              className="form-control mb-3"
               accept=".pdf,.doc,.docx"
               onChange={handleFileChange}
             />
+
+            {documentPreview && (
+              <div className="mt-2 text-start">
+                {documentPreview.startsWith("data:application/pdf") ||
+                formData.anexoFicheiro?.type === "application/pdf" ? (
+                  <iframe
+                    src={documentPreview}
+                    style={{
+                      width: "100%",
+                      height: "250px",
+                      border: "1px solid #ddd",
+                    }}
+                    title="Preview PDF"
+                  ></iframe>
+                ) : (
+                  <div className="p-3 bg-light border rounded mb-2 text-center">
+                    <span className="text-primary fw-bold">
+                      Documento Carregado
+                    </span>
+                    <p className="small text-muted">
+                      A pré-visualização não está disponível para este formato.
+                    </p>
+                  </div>
+                )}
+
+                <div className="d-grid gap-2 mt-3">
+                  <a
+                    href={documentPreview}
+                    download={`documento_${formData.nome || "formando"}.pdf`}
+                    className="btn btn-success btn-sm"
+                  >
+                    💾 Descarregar Ficheiro
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* DADOS */}
+        {/* COLUNA DIREITA: DADOS */}
         <div className="col-lg-8">
           <div className="card p-4 shadow-sm">
             <div className="row">
@@ -156,7 +204,6 @@ export default function EditFormando() {
                 <label className="form-label">Email</label>
                 <input
                   type="email"
-                  name="email"
                   className="form-control"
                   value={formData.email}
                   disabled
@@ -181,9 +228,9 @@ export default function EditFormando() {
                   type="text"
                   name="nif"
                   className="form-control"
-                  maxLength={9}
                   value={formData.nif}
                   onChange={handleChange}
+                  maxLength={9}
                 />
               </div>
 
@@ -217,7 +264,7 @@ export default function EditFormando() {
                   type="text"
                   name="telefone"
                   className="form-control"
-                  value={formData.telefone}
+                  value={formData.phone}
                   onChange={handleChange}
                 />
               </div>
@@ -251,7 +298,7 @@ export default function EditFormando() {
               </div>
             </div>
 
-            <div className="d-flex justify-content-end gap-2">
+            <div className="d-flex justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light"
@@ -259,7 +306,6 @@ export default function EditFormando() {
               >
                 Cancelar
               </button>
-
               <button
                 type="submit"
                 className="btn btn-primary"
