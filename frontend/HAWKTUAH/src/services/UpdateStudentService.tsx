@@ -1,6 +1,10 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
 
+const authHeaders = {
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+};
+
 export const updateFormando = async (
   idFormando: string | number,
   data: FormData
@@ -9,9 +13,7 @@ export const updateFormando = async (
     `${API_BASE_URL}/formandos/${idFormando}`,
     data,
     {
-      headers: {
-            /*TODO: O BEARER TOKEN*/
-      },
+      headers: authHeaders,
     }
   );
 };

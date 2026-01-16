@@ -2,23 +2,30 @@ import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
 
 export interface Formando {
-  id: number;
+  idFormando: number;
   nome: string;
   email: string;
-  phone: string;
+  telefone?: string;
 }
 
-export async function getFormandos() {
+const authHeaders = {
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+};
+
+export async function getFormandos(): Promise<Formando[]> {
   const res = await axios.get(`${API_BASE_URL}/formandos`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
+    headers: authHeaders,
   });
 
-  return res.data as Formando[];
+  return res.data;
 }
 
-export const getFormandoById = async (id: string | number) => {
-  const res = await axios.get(`${API_BASE_URL}/formandos/${id}`);
+export async function getFormandoById(
+  idFormando: number | string
+): Promise<Formando> {
+  const res = await axios.get(`${API_BASE_URL}/formandos/${idFormando}`, {
+    headers: authHeaders,
+  });
+
   return res.data;
-};
+}
