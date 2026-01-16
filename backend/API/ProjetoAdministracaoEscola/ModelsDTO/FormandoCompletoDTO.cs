@@ -4,13 +4,11 @@ namespace ProjetoAdministracaoEscola.ModelsDTO
 {
     public class FormandoCompletoDTO
     {
-        [Required(ErrorMessage = "O email é obrigatório.")]
         [EmailAddress(ErrorMessage = "Email inválido.")]
-        public string Email { get; set; } = null!;
+        public string? Email { get; set; } = null!;
 
-        [Required(ErrorMessage = "A password é obrigatória.")]
         [MinLength(6, ErrorMessage = "A password deve ter pelo menos 6 caracteres.")]
-        public string Password { get; set; } = null!;
+        public string? Password { get; set; } = null!;
 
         [Required(ErrorMessage = "O nome é obrigatório.")]
         [StringLength(100)]
@@ -31,7 +29,7 @@ namespace ProjetoAdministracaoEscola.ModelsDTO
         public string Morada { get; set; } = null!;
 
         [Required(ErrorMessage = "O campo sexo é obrigatório.")]
-        public string Sexo { get; set; } = null!; // Adiciona isto
+        public string Sexo { get; set; } = null!;
 
         public int? IdTurma { get; set; }
         public IFormFile? Fotografia { get; set; }
