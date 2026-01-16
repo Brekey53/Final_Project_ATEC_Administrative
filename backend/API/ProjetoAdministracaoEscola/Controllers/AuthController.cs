@@ -85,10 +85,10 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             string token = Guid.NewGuid().ToString(); // gerar token único
 
-            if (await _context.Utilizadores.AnyAsync(u => u.Email == userdto.Email))
-            {
-                return BadRequest(new { message = "Email já está em uso." });
-            }
+            //if (await _context.Utilizadores.AnyAsync(u => u.Email == userdto.Email))
+            //{
+            //    return BadRequest(new { message = "Email já está em uso." });
+            //}
 
             var newUser = new Utilizador
             {

@@ -18,7 +18,7 @@ CREATE TABLE tipo_utilizadores (
 -- Suporta login via Email, Google e Facebook com ativação
 CREATE TABLE utilizadores (
     id_utilizador INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     id_google VARCHAR(255),
     id_facebook VARCHAR(255),
@@ -225,9 +225,9 @@ INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim) VALUES
 (1, 'TPSI-PAL-0125', '2025-01-15', '2025-07-15'),
 (2, 'WEB-LIS-0225', '2025-02-01', '2025-06-30');
 
-INSERT INTO formadores (id_utilizador, nome, nif, data_nascimento) VALUES
-(2, 'João Silva', '123456789', '1985-04-12'),
-(3, 'Ana Costa', '987654321', '1990-09-30');
+INSERT INTO formadores (id_utilizador, nome, nif, data_nascimento, morada) VALUES
+(2, 'João Silva', '123456789', '1985-04-12', 'Rua das Flores, Lisboa'),
+(3, 'Ana Costa', '987654321', '1990-09-30', 'Rua das Flores, Lisboa');
 
 INSERT INTO formandos (id_utilizador, nome, nif, data_nascimento, morada) VALUES
 (4, 'Maria Fernandes', '111222333', '2000-05-20', 'Rua das Flores, Lisboa'),
