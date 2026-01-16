@@ -89,7 +89,7 @@ export default function NewStudent() {
               <div className="d-flex align-items-center gap-2 text-muted">
                 <span>{f.email || "-"}</span>
               </div>
-              <div className="text-muted">{f.telefone || "-"}</div>{" "}
+              <div className="text-muted">{f.phone || "-"}</div>{" "}
               <div className="d-flex justify-content-end gap-3">
                 <Link to={`edit-formando/${f.idFormando}`}>Editar</Link>
                 <button
