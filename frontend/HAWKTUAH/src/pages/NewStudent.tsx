@@ -64,7 +64,7 @@ export default function NewStudent() {
               </div>
               <div className="text-muted">{f.phone || "-"}</div>{" "}
               <div className="d-flex justify-content-end gap-3">
-                <div className="text-dark">Editar</div>
+                <Link to={`/formandos/editar/${f.id}`}>Editar</Link>
                 <button className="btn btn-link text-danger p-0">Apagar</button>
               </div>
             </div>

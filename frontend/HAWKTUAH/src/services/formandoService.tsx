@@ -17,3 +17,8 @@ export async function getFormandos() {
 
   return res.data as Formando[];
 }
+
+export const getFormandoById = async (id: string | number) => {
+  const res = await axios.get(`${API_BASE_URL}/formandos/${id}`);
+  return res.data;
+};
