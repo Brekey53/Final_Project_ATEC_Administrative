@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { getMyPerfil, type Perfil } from "../services/PerfilService";
 import FotoPlaceholder from "../img/avatar.png";
 import toast from "react-hot-toast";
-import "../css/perfil.css"
-import axios from "axios"
+import "../css/perfil.css";
+import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
 
 export default function Perfil() {
@@ -11,10 +11,10 @@ export default function Perfil() {
   const [loading, setLoading] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-const [newPassword, setNewPassword] = useState("");
-const [confirmPassword, setConfirmPassword] = useState("");
-const [passwordError, setPasswordError] = useState("");
- const [showPassword, setShowPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
 
   useEffect(() => {
     async function fetchPerfil() {
@@ -33,27 +33,41 @@ const [passwordError, setPasswordError] = useState("");
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      return;
-    }
-
-    setLoading(true);
     try {
-      
-      await axios.post(`${API_BASE_URL}/auth/reset-password`, {
-        Token: token,
-        NewPassword: newPassword,
-      });
-      alert("Password alterada com sucesso!");
-    } catch (err: any) {
-      console.log(
-        err.response?.data?.message || "O link expirou ou é inválido."
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        toast.error("Preencha todos os campos");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        toast.error("As passwords não coincidem");
+        return;
+      }
+      setLoading(true);
+      await axios.post(
+        `${API_BASE_URL}/auth/change-password`,
+        {
+          currentPassword,
+          newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
       );
+
+      toast.success("Password alterada com sucesso");
+      setShowPasswordModal(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao alterar password");
     } finally {
       setLoading(false);
     }
   }
-
 
   if (loading) {
     return <div className="container mt-5">A carregar perfil...</div>;
@@ -200,49 +214,62 @@ const [passwordError, setPasswordError] = useState("");
                   />
                 </div>
 
-                 <form onSubmit={handleSubmit} className="d-flex flex-column gap-3 mt-4">
-          <div className="form-group">
-            <label className="form-label">Nova Password:</label>
-            <input
-              type={showPassword ? "text" : "password"}
-              className="form-control"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </div>
+                <form
+                  onSubmit={handleChangePassword}
+                  className="d-flex flex-column gap-3 mt-4"
+                >
+                  <div className="form-group">
+                    <label className="form-label">Password atual:</label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="form-control"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Nova Password:</label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="form-control"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
 
-          <div className="form-group">
-            <label className="form-label">Confirmar Password:</label>
-            <input
-              type={showPassword ? "text" : "password"}
-              className="form-control"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3 form-check">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              id="showPass"
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-            />
-            <label
-              className="form-check-label text-muted"
-              htmlFor="showPass"
-              style={{ fontSize: "0.9rem" }}
-            >
-              Mostrar palavra-passe
-            </label>
-          </div>
+                  <div className="form-group">
+                    <label className="form-label">Confirmar Password:</label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="form-control"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3 form-check">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="showPass"
+                      checked={showPassword}
+                      onChange={() => setShowPassword(!showPassword)}
+                    />
+                    <label
+                      className="form-check-label text-muted"
+                      htmlFor="showPass"
+                      style={{ fontSize: "0.9rem" }}
+                    >
+                      Mostrar palavra-passe
+                    </label>
+                  </div>
 
-          <button className="btn btn-primary" disabled={loading}>
-            {loading ? "A processar..." : "Redefinir Password"}
-          </button>
-        </form>
+                  <button className="btn btn-primary" disabled={loading}>
+                    {loading ? "A processar..." : "Alterar Password"}
+                  </button>
+                </form>
               </div>
             </>
           )}

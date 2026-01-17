@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -253,6 +254,31 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "Link inválido ou expirado." });
             }
         }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dto)
+        {
+            var email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized(new { message = "Utilizador não autenticado." });
+
+            var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
+            if (utilizador == null)
+                return Unauthorized(new { message = "Utilizador inválido." });
+
+            
+            var passwordOk = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, utilizador.PasswordHash);
+            if (!passwordOk)
+                return BadRequest(new { message = "Password atual incorreta." });
+
+            
+            utilizador.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password alterada com sucesso." });
+        }
+
 
         [HttpGet("callback-google")]
         public async Task<IActionResult> GoogleCallback()
