@@ -4,6 +4,7 @@ import { API_BASE_URL } from "../config.constants";
 import toast from "react-hot-toast";
 import FotoPlaceholder from "../img/avatar.png";
 import { postNewFormandos } from "../services/AddNewStudentService";
+import "../css/addNewStudent.css";
 
 export default function AddNewStudent() {
   const [formData, setFormData] = useState({
@@ -22,6 +23,12 @@ export default function AddNewStudent() {
 
   const [turmas, setTurmas] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [verificandoEmail, setVerificandoEmail] = useState(false);
+  // 'idle' (inicial), 'exists' (email já na BD), 'new' (email novo, precisa pass)
+  const [emailStatus, setEmailStatus] = useState<"idle" | "exists" | "new">(
+    "idle"
+  );
+  const [isExiting, setIsExiting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState(FotoPlaceholder);
 
   // Turmas disponíveis para o seletor
@@ -31,6 +38,42 @@ export default function AddNewStudent() {
       .then((res) => setTurmas(res.data))
       .catch(() => toast.error("Erro ao carregar turmas."));
   }, []);
+
+  const handleBackToEmail = () => {
+    setIsExiting(true);
+
+    // Aguarda 400ms (tempo da animação) antes de mudar o status real
+    setTimeout(() => {
+      setEmailStatus("idle");
+      setIsExiting(false); // Reseta para a próxima vez
+    }, 400);
+  };
+
+  const handleVerificarEmail = async () => {
+    if (!formData.email) {
+      toast.error("Por favor, insira o email institucional.");
+      return;
+    }
+
+    setVerificandoEmail(true);
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/utilizadores/check-email?email=${formData.email}`
+      );
+
+      if (res.data.existe) {
+        setEmailStatus("exists");
+        toast.success("Utilizador existente encontrado.");
+      } else {
+        setEmailStatus("new");
+        toast.success("Novo email detetado. Defina uma password.");
+      }
+    } catch (err) {
+      toast.error("Erro ao validar o email.");
+    } finally {
+      setVerificandoEmail(false);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -63,8 +106,9 @@ export default function AddNewStudent() {
     });
 
     try {
-      const res = await postNewFormandos(data);
+      await postNewFormandos(data);
       toast.success("Formando criado e inscrito com sucesso!");
+      window.history.back();
     } catch (err: any) {
       const errorData = err.response?.data;
 
@@ -80,7 +124,7 @@ export default function AddNewStudent() {
       else if (errorData?.message) {
         toast.error(errorData.message);
       }
-      // 3. Fallback para erros genéricos
+      // Fallback para erros genéricos
       else {
         toast.error("Erro inesperado ao criar formando.");
       }
@@ -93,7 +137,7 @@ export default function AddNewStudent() {
     <div className="container mt-5">
       <h2 className="mb-4">Registar Novo Formando</h2>
       <form onSubmit={handleSubmit} className="row">
-        {/* Coluna Esquerda: Foto e Documentos */}
+        {/* COLUNA ESQUERDA: FOTO E DOCUMENTOS (Fica sempre visível) */}
         <div className="col-lg-4 text-center">
           <div className="card p-3 shadow-sm">
             <img
@@ -126,133 +170,179 @@ export default function AddNewStudent() {
           </div>
         </div>
 
-        {/* Coluna Direita: Dados de Conta e Pessoais */}
+        {/* COLUNA DIREITA: DADOS */}
         <div className="col-lg-8">
           <div className="card p-4 shadow-sm">
-            <div className="row">
+            <div className="row align-items-end">
               <h5 className="text-primary mb-3">Dados de Acesso</h5>
-              <div className="col-md-6 mb-3">
+
+              {/* EMAIL INSTITUCIONAL */}
+              <div className="col-md-7 mb-3">
                 <label className="form-label">Email Institucional</label>
                 <input
                   type="email"
                   name="email"
                   className="form-control"
                   onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Password Inicial</label>
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control"
-                  onChange={handleChange}
+                  disabled={emailStatus !== "idle"} // Bloqueia para não mudar email após verificar
                   required
                 />
               </div>
 
-              <hr className="my-3" />
-              <h5 className="text-primary mb-3">Dados Pessoais</h5>
-              <div className="col-md-12 mb-3">
-                <label className="form-label">Nome Completo</label>
-                <input
-                  type="text"
-                  name="nome"
-                  className="form-control"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="col-md-4 mb-3">
-                <label className="form-label">NIF</label>
-                <input
-                  type="text"
-                  name="nif"
-                  className="form-control"
-                  maxLength={9}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <label className="form-label">Sexo:</label>
-                <select
-                  name="sexo"
-                  className="form-select"
-                  value={formData.sexo} // Garante que o select mostra o que está no estado
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Feminino">Feminino</option>
-                </select>
-              </div>
+              {/* ÁREA DINÂMICA: BOTÃO OU PASSWORD (Conforme o teu desenho BTN) */}
               <div className="col-md-5 mb-3">
-                <label className="form-label">Data de Nascimento</label>
-                <input
-                  type="date"
-                  name="dataNascimento"
-                  className="form-control"
-                  onChange={handleChange}
-                  required
-                />
+                {emailStatus === "idle" ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary w-100"
+                    onClick={handleVerificarEmail}
+                    disabled={verificandoEmail}
+                  >
+                    {verificandoEmail ? "A verificar..." : "Verificar Email"}
+                  </button>
+                ) : emailStatus === "new" ? (
+                  <>
+                    <label className="form-label">Password Inicial</label>
+                    <input
+                      type="password"
+                      name="password"
+                      className="form-control"
+                      onChange={handleChange}
+                      required
+                    />
+                  </>
+                ) : (
+                  <div className="alert alert-success py-2 mb-0 text-center small">
+                    ✅ Utilizador pronto
+                  </div>
+                )}
               </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Telefone</label>
-                <input
-                  type="text"
-                  name="telefone"
-                  className="form-control"
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label className="form-label">
-                  Inscrição em Turma (Opcional)
-                </label>
-                <select
-                  name="idTurma"
-                  className="form-select"
-                  onChange={handleChange}
-                  value={formData.idTurma}
-                >
-                  <option value="">Sem turma</option>
-                  {turmas.map((t) => (
-                    <option key={t.idTurma} value={t.idTurma}>
-                      {t.nomeTurma}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-12 mb-4">
-                <label className="form-label">Morada</label>
-                <input
-                  type="text"
-                  name="morada"
-                  className="form-control"
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
 
-            <div className="d-flex justify-content-end gap-2">
-              <button
-                type="button"
-                className="btn btn-light"
-                onClick={() => window.history.back()}
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                {loading ? "A processar..." : "Criar Formando"}
-              </button>
+              {/* DADOS PESSOAIS (Escondidos até o email ser verificado) */}
+              {emailStatus !== "idle" && (
+                <div
+                  className={`row mt-3 ${
+                    isExiting ? "fade-out-section" : "fade-in-section"
+                  }`}
+                >
+                  <hr className="my-3" />
+                  <h5 className="text-primary mb-3">Dados Pessoais</h5>
+
+                  <div className="col-md-12 mb-3">
+                    <label className="form-label">Nome Completo</label>
+                    <input
+                      type="text"
+                      name="nome"
+                      className="form-control"
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label">NIF</label>
+                    <input
+                      type="text"
+                      name="nif"
+                      className="form-control"
+                      maxLength={9}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-3 mb-3">
+                    <label className="form-label">Sexo:</label>
+                    <select
+                      name="sexo"
+                      className="form-select"
+                      value={formData.sexo}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="Masculino">Masculino</option>
+                      <option value="Feminino">Feminino</option>
+                    </select>
+                  </div>
+
+                  <div className="col-md-5 mb-3">
+                    <label className="form-label">Data de Nascimento</label>
+                    <input
+                      type="date"
+                      name="dataNascimento"
+                      className="form-control"
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">Telefone</label>
+                    <input
+                      type="text"
+                      name="telefone"
+                      className="form-control"
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">Inscrição em Turma</label>
+                    <select
+                      name="idTurma"
+                      className="form-select"
+                      onChange={handleChange}
+                      value={formData.idTurma}
+                    >
+                      <option value="">Sem turma</option>
+                      {turmas.map((t) => (
+                        <option key={t.idTurma} value={t.idTurma}>
+                          {t.nomeTurma}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="col-md-12 mb-4">
+                    <label className="form-label">Morada</label>
+                    <input
+                      type="text"
+                      name="morada"
+                      className="form-control"
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="d-flex justify-content-end gap-2 mt-4">
+                    <button
+                      type="button"
+                      className="btn btn-light"
+                      onClick={() => {
+                        window.history.back();
+                      }}
+                    >
+                      Back
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-light"
+                      onClick={handleBackToEmail}
+                    >
+                      Alterar Email
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={loading}
+                    >
+                      {loading ? "A processar..." : "Criar Formando"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
