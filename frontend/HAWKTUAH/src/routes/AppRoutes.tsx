@@ -18,6 +18,7 @@ import NewSchedule from "../pages/NewSchedule"
 import NewRoom from "../pages/NewRoom";
 import AddNewStudent from "../pages/AddNewStudent";
 import EditStudent from "../pages/EditStudent";
+import ManageUsers from "../pages/ManageUsers";
 
 
 function AppRoutes() {
@@ -41,6 +42,7 @@ function AppRoutes() {
         <Route path="/gerir-formandos" element={<NewStudent />} />
         <Route path="/adicionar-formandos" element={<AddNewStudent />} />
         <Route path="/gerir-formadores" element={<NewTeacher />} />
+        <Route path="/gerir-utilizadores" element={<ManageUsers />} />
         <Route path="/gerir-horarios" element={<NewSchedule />} />
         <Route path="/gerir-formandos/edit-formando/:id" element={<EditStudent />} />
       </Route>

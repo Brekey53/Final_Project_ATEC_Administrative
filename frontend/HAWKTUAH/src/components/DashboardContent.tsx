@@ -47,7 +47,7 @@ export default function LandingPage() {
             </div>
             <div className="quick-access-menu mt-3 p-3 shadow-sm">
               <h3>Ações Rápidas</h3>
-              <div className="row row-cols-2 row-cols-md-6 g-3">
+              <div className="row row-cols-2 row-cols-md-4 g-3">
                 <Link to="/gerir-modulos">
                   <div className="col">
                     <QuickActionsCards
@@ -84,6 +84,14 @@ export default function LandingPage() {
                   <div className="col">
                     <QuickActionsCards
                       title="Gerir Formadores"
+                      icon={<GraduationCap size={20} color="#28a745" />}
+                    />
+                  </div>
+                </Link>
+                <Link to="/gerir-utilizadores">
+                  <div className="col">
+                    <QuickActionsCards
+                      title="Gerir Utilizadores"
                       icon={<GraduationCap size={20} color="#28a745" />}
                     />
                   </div>
