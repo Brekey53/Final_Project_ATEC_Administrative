@@ -195,6 +195,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             return NoContent();
         }
 
+        [HttpGet("check-email")]
+        public async Task<IActionResult> CheckEmail(string email)
+        {
+            var existe = await _context.Utilizadores.AnyAsync(u => u.Email == email);
+            return Ok(new { existe });
+        }
+
         private bool UtilizadorExists(int id)
         {
             return _context.Utilizadores.Any(e => e.IdUtilizador == id);
