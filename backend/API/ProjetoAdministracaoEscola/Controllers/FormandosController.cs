@@ -1,4 +1,5 @@
 using Humanizer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -178,7 +179,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             return CreatedAtAction("GetFormando", new { id = formando.IdFormando }, formando);
         }
 
-
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost("completo")]
         public async Task<IActionResult> CreateFormando([FromForm] FormandoCompletoDTO dto)
         {

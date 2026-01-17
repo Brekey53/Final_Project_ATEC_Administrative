@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyPerfil, type Perfil } from "../services/PerfilService";
+import { getFotoPerfil } from "../services/PerfilService";
 import FotoPlaceholder from "../img/avatar.png";
 import toast from "react-hot-toast";
 import "../css/perfil.css";
@@ -15,6 +16,7 @@ export default function Perfil() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPerfil() {
@@ -29,6 +31,19 @@ export default function Perfil() {
     }
 
     fetchPerfil();
+  }, []);
+
+  useEffect(() => {
+    async function loadFoto() {
+      try {
+        const url = await getFotoPerfil();
+        setFotoUrl(url);
+      } catch {
+        setFotoUrl(null);
+      }
+    }
+
+    loadFoto();
   }, []);
 
   async function handleChangePassword(e: React.FormEvent) {
@@ -86,7 +101,7 @@ export default function Perfil() {
         <div className="col-lg-4 text-center mb-4">
           <div className="card p-3 shadow-sm">
             <img
-              src={FotoPlaceholder}
+              src={fotoUrl ?? FotoPlaceholder}
               alt="Foto de perfil"
               className="img-fluid rounded mb-3"
               style={{ maxHeight: "300px", objectFit: "cover" }}

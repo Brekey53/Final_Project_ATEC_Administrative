@@ -38,6 +38,7 @@ export const authService = {
   },
 
   logout() {
+    localStorage.removeItem("token");
     window.location.href = "/login";
   },
 
@@ -60,14 +61,5 @@ export const authService = {
 
     const tipo = Number(decoded.tipoUtilizador);
     return tipo === 1 || tipo === 4;
-  },
-
-  /* TODO: oq eufa */
-  isAuthenticated(): boolean {
-    const decoded = this.decodeToken();
-    if (!decoded) 
-      return false;
-
-    return decoded.exp * 1000 > Date.now();
   },
 };

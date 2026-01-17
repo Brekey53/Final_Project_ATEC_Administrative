@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UtilizadoresController : ControllerBase
@@ -26,6 +27,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         // GET: api/Utilizadores
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Utilizador>>> GetUtilizadores()
         {
@@ -33,6 +35,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         // GET: api/Utilizadores/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Utilizador>> GetUtilizador(int id)
         {
@@ -51,10 +54,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            Console.WriteLine(userIdClaim);
             var tipoClaim = User.FindFirst("tipoUtilizador")?.Value;
-            Console.WriteLine(tipoClaim);
-
 
             if (userIdClaim == null || tipoClaim == null)
                 return Unauthorized();
@@ -127,6 +127,51 @@ namespace ProjetoAdministracaoEscola.Controllers
             return BadRequest("Tipo de utilizador inválido");
         }
 
+        [HttpGet("perfil/foto")]
+        public async Task<IActionResult> GetFotoPerfil()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var tipoClaim = User.FindFirst("tipoUtilizador")?.Value;
+
+            if (userIdClaim == null || tipoClaim == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+            int tipo = int.Parse(tipoClaim);
+
+            // FORMANDO
+            if (tipo == 3)
+            {
+                var formando = await _context.Formandos
+                    .Where(f => f.IdUtilizador == userId)
+                    .Select(f => f.Fotografia)
+                    .FirstOrDefaultAsync();
+
+                if (formando == null)
+                    return NotFound();
+
+                return File(formando, "image/jpeg");
+            }
+
+            // FORMADOR
+            if (tipo == 2)
+            {
+                var formador = await _context.Formadores
+                    .Where(f => f.IdUtilizador == userId)
+                    .Select(f => f.Fotografia)
+                    .FirstOrDefaultAsync();
+
+                if (formador == null)
+                    return NotFound();
+
+                return File(formador, "image/jpeg");
+            }
+
+            // Outros tipos não têm foto
+            return NotFound();
+        }
+
+
         // PUT: api/Utilizadores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -180,6 +225,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         // DELETE: api/Utilizadores/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUtilizador(int id)
         {
