@@ -13,7 +13,7 @@ export default function LoginBanner() {
       <div className="col-12 col-lg-4 banner-login">
         <div className="ball ball-1"></div>
         <div className="container-login">
-          <p className="eyebrow-login">Manager HAWKTUAH</p>
+          <p className="eyebrow-login">Manager Hawk Portal</p>
           <h1 className="title-login">
             Sistema de <br />
             Gestão de Notas
