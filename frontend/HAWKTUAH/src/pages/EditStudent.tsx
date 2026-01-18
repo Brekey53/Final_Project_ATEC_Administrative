@@ -320,6 +320,7 @@ export default function EditFormando() {
                 type="submit"
                 className="btn btn-primary"
                 disabled={loading}
+                onClick={() => window.history.back()}
               >
                 {loading ? "A atualizar..." : "Guardar Alterações"}
               </button>
