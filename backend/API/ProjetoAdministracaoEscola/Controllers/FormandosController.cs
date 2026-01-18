@@ -324,6 +324,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         // DELETE: api/Formandos/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFormando(int id)
         {
