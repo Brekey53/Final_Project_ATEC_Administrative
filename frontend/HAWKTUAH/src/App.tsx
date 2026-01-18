@@ -1,6 +1,8 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./App.css";
+import "./config.constants"
+
 
 import AppRoutes from "./routes/AppRoutes";
 import { Toaster } from "react-hot-toast";
