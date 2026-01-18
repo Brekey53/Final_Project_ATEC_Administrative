@@ -26,7 +26,7 @@ export default function AddNewStudent() {
   const [verificandoEmail, setVerificandoEmail] = useState(false);
   // 'idle' (inicial), 'exists' (email já na BD), 'new' (email novo, precisa pass)
   const [emailStatus, setEmailStatus] = useState<"idle" | "exists" | "new">(
-    "idle"
+    "idle",
   );
   const [isExiting, setIsExiting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState(FotoPlaceholder);
@@ -56,6 +56,8 @@ export default function AddNewStudent() {
     }
 
     setVerificandoEmail(true);
+
+
     try {
       const res = await axios.get(
         `${API_BASE_URL}/utilizadores/check-email?email=${formData.email}`
@@ -76,7 +78,7 @@ export default function AddNewStudent() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -127,6 +129,7 @@ export default function AddNewStudent() {
       // Fallback para erros genéricos
       else {
         toast.error("Erro inesperado ao criar formando.");
+        window.location.href = "/login";
       }
     } finally {
       setLoading(false);
