@@ -11,7 +11,7 @@ export default function NewModule() {
             Inserir, alterar, eliminar e consultar modulos
           </p>
         </div>
-        <Link to="adicionar-utilizadores">
+        <Link to="adicionar-modulos">
           <div className="btn btn-success px-4 py-2 rounded-pill">
             + Novo Modulo
           </div>
@@ -23,14 +23,14 @@ export default function NewModule() {
           <input
             type="text"
             className="form-control form-control-lg"
-            placeholder="Pesquisar Utilizadores..."
+            placeholder="Pesquisar Modulos..."
           />
         </div>
       </div>
 
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos"> {/* TODO: Criar css e alterar tabela-alunos ?? */}
             <div>Modulo</div>
             <div>Nome</div>
             <div>Horas</div>

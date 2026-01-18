@@ -56,6 +56,11 @@ function AppRoutes() {
 
         {/* Utilizadores */}
         <Route path="/gerir-utilizadores" element={<ManageUsers />} />
+        <Route path="/adicionar-utilizadores" element={<AddNewTeacher />} />
+        <Route
+          path="/gerir-utilizadores/edit-utilizadores/:id"
+          element={<EditTeacher />}
+        />
         <Route path="/perfil" element={<Perfil />} />
 
         {/* Formandos */}
@@ -71,7 +76,7 @@ function AppRoutes() {
         <Route path="/gerir-formadores" element={<NewTeacher />} />
         <Route path="/adicionar-formadores" element={<AddNewTeacher />} />
         <Route
-          path="/gerir-formadores/edit-formadores/:id"
+          path="/gerir-formadores/edit-formador/:id"
           element={<EditTeacher />}
         />
 
@@ -79,7 +84,7 @@ function AppRoutes() {
         <Route path="/gerir-modulos" element={<NewModule />} />
         <Route path="/adicionar-modulos" element={<AddNewModule />} />
         <Route
-          path="/gerir-modulos/edit-modulos/:id"
+          path="/gerir-modulos/edit-modulo/:id"
           element={<EditModule />}
         />
 
@@ -88,7 +93,7 @@ function AppRoutes() {
         <Route path="/gerir-cursos" element={<NewCourse />} />
         <Route path="/adicionar-cursos" element={<AddNewCourse />} />
         <Route
-          path="/gerir-cursos/edit-cursos/:id"
+          path="/gerir-cursos/edit-curso/:id"
           element={<EditCourse />}
         />
 
@@ -96,7 +101,7 @@ function AppRoutes() {
         <Route path="/gerir-salas" element={<NewRoom />} />
         <Route path="/adicionar-salas" element={<AddNewRoom />} />
         <Route
-          path="/gerir-salas/edit-salas/:id"
+          path="/gerir-salas/edit-sala/:id"
           element={<EditRoom />}
         />
 
@@ -104,7 +109,7 @@ function AppRoutes() {
         <Route path="/gerir-horarios" element={<NewSchedule />} />
         <Route path="/adicionar-horarios" element={<AddNewSchedule />} />
         <Route
-          path="/gerir-horarios/edit-horarios/:id"
+          path="/gerir-horarios/edit-horario/:id"
           element={<EditSchedule />}
         />
 
