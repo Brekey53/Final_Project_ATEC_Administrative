@@ -9,7 +9,7 @@ export default function NewCourse() {
             <div>
               <h2 className="fw-bold mb-1">Gestão de Cursos</h2>
               <p className="text-muted mb-0">
-                Inserir, alterar, eliminar e consultar Cursos
+                Inserir, alterar, eliminar e consultar cursos
               </p>
             </div>
             <Link to="adicionar-cursos">
