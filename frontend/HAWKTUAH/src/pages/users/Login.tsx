@@ -1,11 +1,11 @@
-import "../css/login.css";
+import "../../css/login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Google from "../img/google.png";
-import Facebook from "../img/facebook.jpg";
+import Google from "../../img/google.png";
+import Facebook from "../../img/facebook.jpg";
 import { Link } from "react-router-dom";
-import { authService } from "../auth/AuthService";
-import { API_BASE_URL } from "../config.constants";
+import { authService } from "../../auth/AuthService";
+import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
 
 export default function Login() {

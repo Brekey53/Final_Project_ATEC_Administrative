@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL } from "../config.constants";
+import { API_BASE_URL } from "../../config.constants";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -20,7 +20,7 @@ export default function ForgotPassword() {
       return res.data;
     } catch (err: any) {
       toast.error(
-        err.mensagem || "Ocorreu um erro. Tente novamente mais tarde."
+        err.mensagem || "Ocorreu um erro. Tente novamente mais tarde.",
       );
     } finally {
       setLoading(false);
@@ -35,7 +35,6 @@ export default function ForgotPassword() {
         </Link>
 
         <h2 className="text-center">Recuperar password</h2>
-
 
         <form
           className="d-flex flex-column justify-content-center mt-4"

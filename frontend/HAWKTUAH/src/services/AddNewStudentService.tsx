@@ -8,7 +8,10 @@ import { API_BASE_URL } from "../config.constants";
 
 export async function postNewFormandos(formData: FormData) {
   try {
-    const res = await axios.post(`${API_BASE_URL}/formandos/completo`, formData);
+    const res = await axios.post(
+      `${API_BASE_URL}/formandos/completo`,
+      formData,
+    );
     return res.data;
   } catch (error: any) {
     console.log(error.response);

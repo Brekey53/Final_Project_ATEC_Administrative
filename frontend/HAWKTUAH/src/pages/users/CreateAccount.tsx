@@ -2,9 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Register } from "../auth/ResgisterService";
+import { Register } from "../../auth/ResgisterService";
 import toast from "react-hot-toast";
-
 
 export default function CreateAccount() {
   const navigate = useNavigate();
@@ -41,7 +40,6 @@ export default function CreateAccount() {
       toast.error("As passwords não coincidem");
       return;
     }
-
 
     setLoading(true);
 
@@ -105,7 +103,9 @@ export default function CreateAccount() {
               required
               minLength={6}
             />
-            <div className="form-text">Mínimo de 6 caracteres com letras e números.</div>
+            <div className="form-text">
+              Mínimo de 6 caracteres com letras e números.
+            </div>
           </div>
           <div className="mb-2">
             <label className="form-label">
@@ -135,7 +135,6 @@ export default function CreateAccount() {
               Mostrar palavra-passe
             </label>
           </div>
-
 
           <button className="btn btn-primary" disabled={loading}>
             {loading ? "A registar..." : "Enviar"}
