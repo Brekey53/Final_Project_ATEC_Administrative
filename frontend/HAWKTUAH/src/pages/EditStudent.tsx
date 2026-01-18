@@ -117,6 +117,7 @@ export default function EditFormando() {
     try {
       await updateFormando(id, data);
       toast.success("Perfil atualizado!");
+      window.history.back()
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro no servidor.");
     } finally {
@@ -320,7 +321,6 @@ export default function EditFormando() {
                 type="submit"
                 className="btn btn-primary"
                 disabled={loading}
-                onClick={() => window.history.back()}
               >
                 {loading ? "A atualizar..." : "Guardar Alterações"}
               </button>
