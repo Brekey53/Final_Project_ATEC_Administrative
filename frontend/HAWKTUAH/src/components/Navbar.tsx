@@ -9,6 +9,7 @@ export default function Navbar() {
       <nav className="navbar navbar-light bg-light">
         <div className="container">
           <div className="d-flex align-items-center gap-3">
+            <span className="text-white h4 fw-bold">Hawk Portal</span>
             <Link to="/dashboard">
               <img src={foto} alt="" className="foto" />
             </Link>
