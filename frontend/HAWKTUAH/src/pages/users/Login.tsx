@@ -1,7 +1,6 @@
 import "../../css/login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Google from "../../img/google.png";
 import Facebook from "../../img/facebook.jpg";
 import { Link } from "react-router-dom";
 import { authService } from "../../auth/AuthService";
@@ -9,6 +8,7 @@ import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
 
 import { GoogleLogin } from "@react-oauth/google";
+import FacebookButton from "../../components/FacebookButton";
 import axios from "axios";
 
 export default function Login() {
@@ -119,10 +119,6 @@ export default function Login() {
     }
   }
 
-  function LoginFacebook() {
-    window.location.href = `${API_BASE_URL}/auth/login-facebook`;
-  }
-
   return (
     <>
       <div className="col-12 col-lg-8 credentials-login">
@@ -186,23 +182,19 @@ export default function Login() {
               <div className="divisor">
                 <p className="text-center">ou</p>
               </div>
-              <div className="socials-login d-flex flex-column gap-3">
-                
-                <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
-                  <img src={Google} alt="Símbolo Google" />
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={() => toast.error("Falha no login Google")}
-                  />
-                </div>
-
-                <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
-                  <img src={Facebook} alt="Símbolo Facebook" />
-                  <span onClick={LoginFacebook}>Continuar com o Facebook</span>
-                </div>
+              <div className="">
+                <GoogleLogin
+                  size="large"
+                  theme="outline"
+                  shape="rectangular"
+                  width="100%"
+                  text="continue_with"
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error("Falha no login Google")}
+                />
               </div>
-              
-              <div className="social-btn shadow-sm p-3 rounded gap-3 mt-5 text-center">
+
+              <div className="create-account-btn mt-5">
                 <Link to="/create-account" className="criar-conta-link">
                   Não tem uma conta?{" "}
                   <span className="criar-conta-span">Inscreva-se</span>
