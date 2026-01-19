@@ -25,7 +25,6 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Se receberes 401, podes redirecionar o utilizador para o Login ou limpar o token
       console.warn("Sessão expirada. A redirecionar...");
       localStorage.removeItem("token");
       window.location.href = "/login";
