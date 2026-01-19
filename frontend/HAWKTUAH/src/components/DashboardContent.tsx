@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import CardsDashboard from "../components/CardsDashboard";
 import QuickActionsCards from "../components/QuickActionsCards";
 import { authService } from "../auth/AuthService";
+import { getDashboardStats, type DashboardStats } from "../services/DashboardService";
 
 import {
   GraduationCap,
@@ -16,9 +17,30 @@ import {
 
 export default function LandingPage() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [stats, setStats] = useState<DashboardStats>({
+    cursosDecorrer: 0,
+    totalCursos: 0,
+    formandosAtivos: 0,
+    formadores: 0,
+    salas: 0,
+    modulos: 0
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setIsAdmin(authService.isAdmin());
+
+    async function loadData() {
+      try {
+        const data = await getDashboardStats();
+        setStats(data);
+      } catch (error) {
+        console.error("Erro ao carregar dashboard", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
   return (
@@ -26,6 +48,8 @@ export default function LandingPage() {
       {isAdmin ? (
         <div className="main-layout mt-5">
           <div className="container">
+            
+            { /*  Titulo e Açoes rápidas*/ }
             <div className="title-dashboard d-flex justify-content-between w-100">
               <div className="title-dashboard-left ">
                 <h2>
@@ -106,11 +130,13 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
+
+            {/* CardBoards info geral */}
             <div className="row row-cols-1 row-cols-md-3 g-3 mt-3">
               <div className="col">
                 <CardsDashboard
                   title="Cursos a Decorrer"
-                  value={0}
+                  value={loading ? "..." : stats.cursosDecorrer}
                   icon={<GraduationCap size={20} color="#28a745" />}
                   iconBgColor="#e8f5e9"
                 />
@@ -118,7 +144,7 @@ export default function LandingPage() {
               <div className="col">
                 <CardsDashboard
                   title="Total de Cursos"
-                  value={1}
+                  value={loading ? "..." : stats.totalCursos}
                   icon={<BookOpen size={20} color="#007bff" />}
                   iconBgColor="#e3f2fd"
                 />
@@ -126,7 +152,7 @@ export default function LandingPage() {
               <div className="col">
                 <CardsDashboard
                   title="Formandos Ativos"
-                  value={0}
+                  value={loading ? "..." : stats.formandosAtivos}
                   icon={<Users size={20} color="#6f42c1" />}
                   iconBgColor="#f3e5f5"
                 />
@@ -134,7 +160,7 @@ export default function LandingPage() {
               <div className="col">
                 <CardsDashboard
                   title="Formadores"
-                  value={0}
+                  value={loading ? "..." : stats.formandosAtivos}
                   icon={<UserRound size={20} color="#fd7e14" />}
                   iconBgColor="#fff3e0"
                 />
@@ -142,7 +168,7 @@ export default function LandingPage() {
               <div className="col">
                 <CardsDashboard
                   title="Salas"
-                  value={0}
+                  value={loading ? "..." : stats.salas}
                   icon={<LayoutGrid size={20} color="#20c997" />}
                   iconBgColor="#e0f2f1"
                 />
@@ -150,7 +176,7 @@ export default function LandingPage() {
               <div className="col">
                 <CardsDashboard
                   title="Módulos"
-                  value={0}
+                  value={loading ? "..." : stats.modulos}
                   icon={<Calendar size={20} color="#e83e8c" />}
                   iconBgColor="#fce4ec"
                 />

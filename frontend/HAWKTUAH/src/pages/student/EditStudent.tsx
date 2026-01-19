@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { API_BASE_URL } from "../config.constants";
-import FotoPlaceholder from "../img/avatar.png";
-import { updateFormando } from "../services/UpdateStudentService";
+import { API_BASE_URL } from "../../config.constants";
+import FotoPlaceholder from "../../img/avatar.png";
+import { updateFormando } from "../../services/UpdateStudentService";
 
 export default function EditFormando() {
   const { id } = useParams();
@@ -71,7 +71,7 @@ export default function EditFormando() {
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -117,6 +117,7 @@ export default function EditFormando() {
     try {
       await updateFormando(id, data);
       toast.success("Perfil atualizado!");
+      window.history.back();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro no servidor.");
     } finally {

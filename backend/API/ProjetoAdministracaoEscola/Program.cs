@@ -31,11 +31,20 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add Authoritazation services
+builder.Services.AddAuthorization(options =>
+{
+    // Define "AdminOrAdministrativo" that we use in controller
+    options.AddPolicy("AdminOrAdministrativo", policy =>
+        policy.RequireClaim("tipoUtilizador", "1", "4")); // 1 = Admin, 4 = Administrativo
+});
+
 // Add Authentication services
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
 })
 .AddJwtBearer(options =>
 {

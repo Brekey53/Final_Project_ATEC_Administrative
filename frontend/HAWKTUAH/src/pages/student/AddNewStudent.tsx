@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../config.constants";
+import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
-import FotoPlaceholder from "../img/avatar.png";
-import { postNewFormandos } from "../services/AddNewStudentService";
-import "../css/addNewStudent.css";
+import FotoPlaceholder from "../../img/avatar.png";
+import { postNewFormandos } from "../../services/AddNewStudentService";
+import "../../css/addNewStudent.css";
 
 export default function AddNewStudent() {
   const [formData, setFormData] = useState({
@@ -26,7 +26,7 @@ export default function AddNewStudent() {
   const [verificandoEmail, setVerificandoEmail] = useState(false);
   // 'idle' (inicial), 'exists' (email já na BD), 'new' (email novo, precisa pass)
   const [emailStatus, setEmailStatus] = useState<"idle" | "exists" | "new">(
-    "idle"
+    "idle",
   );
   const [isExiting, setIsExiting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState(FotoPlaceholder);
@@ -56,9 +56,10 @@ export default function AddNewStudent() {
     }
 
     setVerificandoEmail(true);
+
     try {
       const res = await axios.get(
-        `${API_BASE_URL}/utilizadores/check-email?email=${formData.email}`
+        `${API_BASE_URL}/utilizadores/check-email?email=${formData.email}`,
       );
 
       if (res.data.existe) {
@@ -76,7 +77,7 @@ export default function AddNewStudent() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -127,6 +128,7 @@ export default function AddNewStudent() {
       // Fallback para erros genéricos
       else {
         toast.error("Erro inesperado ao criar formando.");
+        window.location.href = "/login";
       }
     } finally {
       setLoading(false);

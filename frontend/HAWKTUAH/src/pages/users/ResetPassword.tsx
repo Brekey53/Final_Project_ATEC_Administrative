@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL } from "../config.constants";
+import { API_BASE_URL } from "../../config.constants";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -31,7 +31,7 @@ export default function ResetPassword() {
       navigate("/login");
     } catch (err: any) {
       setMessage(
-        err.response?.data?.message || "O link expirou ou é inválido."
+        err.response?.data?.message || "O link expirou ou é inválido.",
       );
     } finally {
       setLoading(false);
