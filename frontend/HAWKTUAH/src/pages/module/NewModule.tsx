@@ -12,13 +12,11 @@ export default function NewModule() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [moduloSelecionado, setModuloSelecionado] =
     useState<Modulos | null>(null);
-  const [err, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     async function fetchModulos() {
       const data = await getModulos();
-      console.log(data);
       setModulos(data);
       setLoading(false);
     }
@@ -128,7 +126,7 @@ export default function NewModule() {
               </div>
             ))
           ) : (
-            // 5. Mensagem caso não existam resultados
+            // Mensagem caso não existam resultados
             <div className="p-5 text-center text-muted">
               Nenhum módulo encontrado para "{searchTerm}"
             </div>
