@@ -4,6 +4,13 @@
   align-items: center;
 }
 
+.tabela-modulos {
+  display: grid;
+  grid-template-columns: 3fr 1.5fr 1fr 1fr 120px;
+  align-items: center;
+  gap: 1rem;
+}
+
 .custom-modal-overlay {
   position: fixed;
   inset: 0;
@@ -17,4 +24,20 @@
 
 .custom-modal-overlay .modal-dialog {
   z-index: 1060;
+}
+
+.avatar-circle {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0; /* Impede que o círculo esmague em ecrãs pequenos */
+}
+
+
+@media (max-width: 768px) {
+  .tabela-modulos {
+    grid-template-columns: 2fr 1fr 100px; /* Esconde horas e créditos em mobile */
+  }
+  .hide-mobile {
+    display: none;
+  }
 }
