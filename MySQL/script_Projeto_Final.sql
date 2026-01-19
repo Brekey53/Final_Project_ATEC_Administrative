@@ -18,7 +18,7 @@ CREATE TABLE tipo_utilizadores (
 -- Suporta login via Email, Google e Facebook com ativação
 CREATE TABLE utilizadores (
     id_utilizador INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     id_google VARCHAR(255),
     id_facebook VARCHAR(255),
