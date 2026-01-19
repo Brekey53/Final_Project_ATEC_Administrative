@@ -9,6 +9,7 @@ import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
 
 import { GoogleLogin } from "@react-oauth/google";
+import FacebookButton from "../../components/FacebookButton";
 import axios from "axios";
 
 export default function Login() {
@@ -119,10 +120,6 @@ export default function Login() {
     }
   }
 
-  function LoginFacebook() {
-    window.location.href = `${API_BASE_URL}/auth/login-facebook`;
-  }
-
   return (
     <>
       <div className="col-12 col-lg-8 credentials-login">
@@ -187,7 +184,6 @@ export default function Login() {
                 <p className="text-center">ou</p>
               </div>
               <div className="socials-login d-flex flex-column gap-3">
-                
                 <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
                   <img src={Google} alt="Símbolo Google" />
                   <GoogleLogin
@@ -198,10 +194,16 @@ export default function Login() {
 
                 <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
                   <img src={Facebook} alt="Símbolo Facebook" />
-                  <span onClick={LoginFacebook}>Continuar com o Facebook</span>
+                  <FacebookButton
+                    onSuccess={(token) => {
+                      localStorage.setItem("token", token);
+                      toast.success("Facebook login efetuado com sucesso!");
+                      navigate("/dashboard", { replace: true });
+                    }}
+                  />
                 </div>
               </div>
-              
+
               <div className="social-btn shadow-sm p-3 rounded gap-3 mt-5 text-center">
                 <Link to="/create-account" className="criar-conta-link">
                   Não tem uma conta?{" "}

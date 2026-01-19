@@ -13,6 +13,7 @@ using System.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -319,106 +320,50 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new { token });
         }
 
+        [HttpPost("facebook")]
+        public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.IdToken))
+                return BadRequest("Token inválido");
 
+            using var httpClient = new HttpClient();
 
-        //[HttpGet("callback-google")]
-        //public async Task<IActionResult> GoogleCallback()
-        //{
-        //    var result = await HttpContext.AuthenticateAsync("ExternalCookieScheme");
-        //    if (!result.Succeeded)
-        //    {
-        //        return BadRequest(new { message = "Falha na autenticação externa." });
-        //    }
+            var response = await httpClient.GetAsync(
+                $"https://graph.facebook.com/me?fields=id,email&access_token={dto.IdToken}"
+            );
 
-        //    // Extrair informações do usuário do resultado da autenticação
-        //    var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            if (!response.IsSuccessStatusCode)
+                return Unauthorized("Token Facebook inválido");
 
-        //    var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
+            var json = await response.Content.ReadAsStringAsync();
+            var fbUser = JsonSerializer.Deserialize<FacebookUserDTO>(json);
 
-        //    // Verificar se o utilizador existe na base de dados
-        //    if (utilizador == null)
-        //    {
-        //        return Unauthorized(new { message = "Este email não tem autorização para aceder ao sistema, por favor contacte a administração." });
-        //    }
+            if (fbUser?.Email == null)
+                return Unauthorized("Email não disponível no Facebook");
 
-        //    // Verificar se a conta está ativada
-        //    if (utilizador.StatusAtivacao != true)
-        //    {
-        //        return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
-        //    }
+            var utilizador = await _context.Utilizadores
+                .FirstOrDefaultAsync(u => u.Email == fbUser.Email);
 
-        //    // Vincular ID do Google ao utilizador, se necessário
-        //    if (string.IsNullOrEmpty(utilizador.IdGoogle))
-        //    {
-        //        utilizador.IdGoogle = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        //        await _context.SaveChangesAsync();
-        //    }
+            if (utilizador == null)
+                return Unauthorized("Utilizador não autorizado");
 
-        //    // Lógica para lidar com o callback do Google OAuth
-        //    var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
-        //    return Redirect($"http://localhost:5173/login?socialLoginG=success&token={token}");
-        //}
+            if (utilizador.StatusAtivacao != true)
+                return Unauthorized("Conta não ativa");
 
-        //[HttpGet("login-google")]
-        //public IActionResult LoginGoogle()
-        //{
-        //    var propriedades = new AuthenticationProperties
-        //    {
-        //        RedirectUri = Url.Action("GoogleCallback")
-        //    };
+            if (string.IsNullOrEmpty(utilizador.IdFacebook))
+            {
+                utilizador.IdFacebook = fbUser.Id;
+                await _context.SaveChangesAsync();
+            }
 
-        //    return Challenge(propriedades, GoogleDefaults.AuthenticationScheme);
-        //}
+            var token = _tokenService.GerarJwtToken(
+                utilizador.IdUtilizador,
+                utilizador.Email,
+                utilizador.IdTipoUtilizador
+            );
 
-        //[HttpGet("callback-facebook")]
-        //public async Task<IActionResult> FacebookCallback()
-        //{
-        //    var result = await HttpContext.AuthenticateAsync("ExternalCookieScheme");
-        //    if (!result.Succeeded)
-        //    {
-        //        return BadRequest(new { message = "Falha na autenticação externa." });
-        //    }
-
-        //    // Extrair informações do usuário do resultado da autenticação
-        //    var email = result.Principal.FindFirstValue(ClaimTypes.Email);
-
-        //    var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
-
-        //    // Verificar se o utilizador existe na base de dados
-        //    if (utilizador == null)
-        //    {
-        //        return Unauthorized(new { message = "Este email não tem autorização para aceder ao sistema, por favor contacte a administração." });
-        //    }
-
-        //    // Verificar se a conta está ativada
-        //    if (utilizador.StatusAtivacao != true)
-        //    {
-        //        return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
-        //    }
-
-        //    // Vincular ID do Facebook ao utilizador, se necessário
-        //    if (string.IsNullOrEmpty(utilizador.IdFacebook))
-        //    {
-        //        utilizador.IdFacebook = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        //        await _context.SaveChangesAsync();
-        //    }
-
-        //    // Lógica para lidar com o callback do Facebook OAuth
-        //    var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
-        //    return Redirect($"http://localhost:5173/login?socialLoginF=success&token={token}");
-        //}
-
-        //[HttpGet("login-facebook")]
-        //public IActionResult LoginFacebook()
-        //{
-        //    var propriedades = new AuthenticationProperties
-        //    {
-        //        RedirectUri = Url.Action("FacebookCallback")
-        //    };
-
-        //    return Challenge(propriedades, FacebookDefaults.AuthenticationScheme);
-        //}
-
+            return Ok(new { token });
+        }
 
     }
 }
