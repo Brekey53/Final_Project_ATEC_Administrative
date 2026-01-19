@@ -152,12 +152,12 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (!_cache.TryGetValue($"2FA_{tfaDTO.Email}", out string savedCode))
             {
-                return Unauthorized(new { message = "Código 2FA expirado." });
+                return BadRequest(new { message = "Código 2FA expirado." });
             }
 
             if (savedCode != tfaDTO.Code)
             {
-                return Unauthorized(new { message = "Código 2FA inválido." });
+                return BadRequest(new { message = "Código 2FA inválido." });
             }
 
             _cache.Remove($"2FA_{tfaDTO.Email}");
