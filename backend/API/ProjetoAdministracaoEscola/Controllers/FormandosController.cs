@@ -335,8 +335,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (formando == null)
                 return NotFound("Formando não encontrado");
 
-            
-            formando.IdUtilizadorNavigation.StatusAtivacao = false;
+
+            _context.Formandos.Remove(formando);
 
             await _context.SaveChangesAsync();
 
