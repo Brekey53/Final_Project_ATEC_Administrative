@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getUtilizadores, type Utilizador } from "../services/ListUsers";
-import "../css/manageUsers.css"
+import { getUtilizadores, type Utilizador } from "../../services/ListUsers";
+import "../../css/manageUsers.css"
 
 export default function ManageUsers() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
