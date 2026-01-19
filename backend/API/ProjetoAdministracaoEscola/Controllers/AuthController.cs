@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -279,104 +276,148 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new { message = "Password alterada com sucesso." });
         }
 
-
-        [HttpGet("callback-google")]
-        public async Task<IActionResult> GoogleCallback()
+        [HttpPost("google")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO dto)
         {
-            var result = await HttpContext.AuthenticateAsync("ExternalCookieScheme");
-            if (!result.Succeeded)
-            {
-                return BadRequest(new {message = "Falha na autenticação externa." });
-            }
+            var payload = await Google.Apis.Auth.GoogleJsonWebSignature
+                .ValidateAsync(dto.IdToken);
 
-            // Extrair informações do usuário do resultado da autenticação
-            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var email = payload.Email;
 
-            var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
+            var utilizador = await _context.Utilizadores
+                .FirstOrDefaultAsync(u => u.Email == email);
 
-            // Verificar se o utilizador existe na base de dados
             if (utilizador == null)
             {
-                return Unauthorized(new { message = "Este email não tem autorização para aceder ao sistema, por favor contacte a administração." });
+                return Unauthorized(new
+                {
+                    message = "Este email não tem acesso ao sistema."
+                });
             }
 
-            // Verificar se a conta está ativada
             if (utilizador.StatusAtivacao != true)
             {
-                return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
+                return BadRequest(new
+                {
+                    message = "Conta não ativada."
+                });
             }
 
-            // Vincular ID do Google ao utilizador, se necessário
+            // guardar Google ID se ainda não existir
             if (string.IsNullOrEmpty(utilizador.IdGoogle))
             {
-                utilizador.IdGoogle = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+                utilizador.IdGoogle = payload.Subject;
                 await _context.SaveChangesAsync();
             }
 
-            // Lógica para lidar com o callback do Google OAuth
-            var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
-            return Redirect($"http://localhost:5173/login?socialLoginG=success&token={token}");
+            var token = _tokenService.GerarJwtToken(
+                utilizador.IdUtilizador,
+                utilizador.Email,
+                utilizador.IdTipoUtilizador
+            );
+
+            return Ok(new { token });
         }
 
-        [HttpGet("login-google")]
-        public IActionResult LoginGoogle()
-        {
-            var propriedades = new AuthenticationProperties
-            {
-                RedirectUri = Url.Action("GoogleCallback")
-            };
 
-            return Challenge(propriedades, GoogleDefaults.AuthenticationScheme);
-        }
 
-        [HttpGet("callback-facebook")]
-        public async Task<IActionResult> FacebookCallback()
-        {
-            var result = await HttpContext.AuthenticateAsync("ExternalCookieScheme");
-            if (!result.Succeeded)
-            {
-                return BadRequest(new { message = "Falha na autenticação externa." });
-            }
+        //[HttpGet("callback-google")]
+        //public async Task<IActionResult> GoogleCallback()
+        //{
+        //    var result = await HttpContext.AuthenticateAsync("ExternalCookieScheme");
+        //    if (!result.Succeeded)
+        //    {
+        //        return BadRequest(new { message = "Falha na autenticação externa." });
+        //    }
 
-            // Extrair informações do usuário do resultado da autenticação
-            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+        //    // Extrair informações do usuário do resultado da autenticação
+        //    var email = result.Principal.FindFirstValue(ClaimTypes.Email);
 
-            var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
+        //    var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
 
-            // Verificar se o utilizador existe na base de dados
-            if (utilizador == null)
-            {
-                return Unauthorized(new { message = "Este email não tem autorização para aceder ao sistema, por favor contacte a administração." });
-            }
+        //    // Verificar se o utilizador existe na base de dados
+        //    if (utilizador == null)
+        //    {
+        //        return Unauthorized(new { message = "Este email não tem autorização para aceder ao sistema, por favor contacte a administração." });
+        //    }
 
-            // Verificar se a conta está ativada
-            if (utilizador.StatusAtivacao != true)
-            {
-                return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
-            }
+        //    // Verificar se a conta está ativada
+        //    if (utilizador.StatusAtivacao != true)
+        //    {
+        //        return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
+        //    }
 
-            // Vincular ID do Facebook ao utilizador, se necessário
-            if (string.IsNullOrEmpty(utilizador.IdFacebook))
-            {
-                utilizador.IdFacebook = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-                await _context.SaveChangesAsync();
-            }
+        //    // Vincular ID do Google ao utilizador, se necessário
+        //    if (string.IsNullOrEmpty(utilizador.IdGoogle))
+        //    {
+        //        utilizador.IdGoogle = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        //        await _context.SaveChangesAsync();
+        //    }
 
-            // Lógica para lidar com o callback do Facebook OAuth
-            var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
-            return Redirect($"http://localhost:5173/login?socialLoginF=success&token={token}");
-        }
+        //    // Lógica para lidar com o callback do Google OAuth
+        //    var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
+        //    return Redirect($"http://localhost:5173/login?socialLoginG=success&token={token}");
+        //}
 
-        [HttpGet("login-facebook")]
-        public IActionResult LoginFacebook()
-        {
-            var propriedades = new AuthenticationProperties
-            {
-                RedirectUri = Url.Action("FacebookCallback")
-            };
+        //[HttpGet("login-google")]
+        //public IActionResult LoginGoogle()
+        //{
+        //    var propriedades = new AuthenticationProperties
+        //    {
+        //        RedirectUri = Url.Action("GoogleCallback")
+        //    };
 
-            return Challenge(propriedades, FacebookDefaults.AuthenticationScheme);
-        }
+        //    return Challenge(propriedades, GoogleDefaults.AuthenticationScheme);
+        //}
+
+        //[HttpGet("callback-facebook")]
+        //public async Task<IActionResult> FacebookCallback()
+        //{
+        //    var result = await HttpContext.AuthenticateAsync("ExternalCookieScheme");
+        //    if (!result.Succeeded)
+        //    {
+        //        return BadRequest(new { message = "Falha na autenticação externa." });
+        //    }
+
+        //    // Extrair informações do usuário do resultado da autenticação
+        //    var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+
+        //    var utilizador = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == email);
+
+        //    // Verificar se o utilizador existe na base de dados
+        //    if (utilizador == null)
+        //    {
+        //        return Unauthorized(new { message = "Este email não tem autorização para aceder ao sistema, por favor contacte a administração." });
+        //    }
+
+        //    // Verificar se a conta está ativada
+        //    if (utilizador.StatusAtivacao != true)
+        //    {
+        //        return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
+        //    }
+
+        //    // Vincular ID do Facebook ao utilizador, se necessário
+        //    if (string.IsNullOrEmpty(utilizador.IdFacebook))
+        //    {
+        //        utilizador.IdFacebook = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        //        await _context.SaveChangesAsync();
+        //    }
+
+        //    // Lógica para lidar com o callback do Facebook OAuth
+        //    var token = _tokenService.GerarJwtToken(utilizador.IdUtilizador, utilizador.Email, utilizador.IdTipoUtilizador);
+        //    return Redirect($"http://localhost:5173/login?socialLoginF=success&token={token}");
+        //}
+
+        //[HttpGet("login-facebook")]
+        //public IActionResult LoginFacebook()
+        //{
+        //    var propriedades = new AuthenticationProperties
+        //    {
+        //        RedirectUri = Url.Action("FacebookCallback")
+        //    };
+
+        //    return Challenge(propriedades, FacebookDefaults.AuthenticationScheme);
+        //}
 
 
     }

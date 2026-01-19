@@ -63,17 +63,17 @@ builder.Services.AddAuthentication(options =>
 
         NameClaimType = ClaimTypes.NameIdentifier
     };
-})
-.AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["GOOGLE_API_ID"];
-    options.ClientSecret = builder.Configuration["GOOGLE_API_KEY"];
-})
-.AddFacebook(options =>
-{
-    options.AppId = builder.Configuration["FACEBOOK_API_ID"];
-    options.AppSecret = builder.Configuration["FACEBOOK_API_KEY"];
 });
+//.AddGoogle(options =>
+//{
+//    options.ClientId = builder.Configuration["GOOGLE_API_ID"];
+//    options.ClientSecret = builder.Configuration["GOOGLE_API_KEY"];
+//})
+//.AddFacebook(options =>
+//{
+//    options.AppId = builder.Configuration["FACEBOOK_API_ID"];
+//    options.AppSecret = builder.Configuration["FACEBOOK_API_KEY"];
+//})
 
 
 // Email services

@@ -8,6 +8,9 @@ import { authService } from "../../auth/AuthService";
 import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
 
+import { GoogleLogin } from "@react-oauth/google";
+import axios from "axios";
+
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams(); // Hook para ler a URL
@@ -100,8 +103,20 @@ export default function Login() {
       setLoading(false);
     }
   }
-  function LoginGoogle() {
-    window.location.href = `${API_BASE_URL}/auth/login-google`;
+
+  async function handleGoogleSuccess(credentialResponse: any) {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/auth/google`, {
+        idToken: credentialResponse.credential,
+      });
+
+      localStorage.setItem("token", response.data.token);
+      toast.success("Google login efetuado com sucesso!");
+
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      toast.error("Erro no login com Google");
+    }
   }
 
   function LoginFacebook() {
@@ -172,9 +187,13 @@ export default function Login() {
                 <p className="text-center">ou</p>
               </div>
               <div className="socials-login d-flex flex-column gap-3">
+                
                 <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
                   <img src={Google} alt="Símbolo Google" />
-                  <span onClick={LoginGoogle}>Continuar com o Google</span>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => toast.error("Falha no login Google")}
+                  />
                 </div>
 
                 <div className="social-btn shadow-sm p-3 rounded d-flex align-items-center gap-3">
@@ -182,6 +201,7 @@ export default function Login() {
                   <span onClick={LoginFacebook}>Continuar com o Facebook</span>
                 </div>
               </div>
+              
               <div className="social-btn shadow-sm p-3 rounded gap-3 mt-5 text-center">
                 <Link to="/create-account" className="criar-conta-link">
                   Não tem uma conta?{" "}
