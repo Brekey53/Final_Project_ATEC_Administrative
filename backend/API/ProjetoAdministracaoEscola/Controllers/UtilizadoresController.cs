@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.Models.ModelsDTO;
+using ProjetoAdministracaoEscola.ModelsDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,15 +28,44 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         // GET: api/Utilizadores
-        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Utilizador>>> GetUtilizadores()
+        public async Task<ActionResult<IEnumerable<UtilizadorDTO>>> GetUtilizadores()
         {
-            return await _context.Utilizadores.ToListAsync();
+            var utilizadores = await _context.Utilizadores
+                .Where(u => u.IdTipoUtilizador == 2 || u.IdTipoUtilizador == 3)
+                .Include(u => u.Formadores)
+                .Include(u => u.Formandos)
+                .Select(u => new UtilizadorDTO
+                {
+                    UserId = u.IdUtilizador,
+                    Email = u.Email,
+
+                    Nome = u.Formadores.Any()
+                        ? u.Formadores.First().Nome
+                        : u.Formandos.Any()
+                            ? u.Formandos.First().Nome
+                            : null,
+
+                    Telefone = u.Formadores.Any()
+                        ? u.Formadores.First().Phone
+                        : u.Formandos.Any()
+                            ? u.Formandos.First().Phone
+                            : null,
+
+                    Tipo = u.Formadores.Any()
+                        ? "Formador"
+                        : u.Formandos.Any()
+                            ? "Formando"
+                            : "Outro"
+                })
+                .ToListAsync();
+
+            return utilizadores;
         }
 
+
+
         // GET: api/Utilizadores/5
-        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Utilizador>> GetUtilizador(int id)
         {
