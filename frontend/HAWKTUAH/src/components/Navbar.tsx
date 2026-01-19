@@ -2,8 +2,28 @@ import "../css/navbar.css";
 import { Link } from "react-router-dom";
 import { authService } from "../auth/AuthService";
 import foto from "../img/hawktu.png";
+import fotoDefault from "../img/avatarNavbar.png";
+import { useEffect, useState } from "react";
+
+import NavbarService from "../services/Navbar/NavbarService";
 
 export default function Navbar() {
+  const [fotoPerfil, setFotoPerfil] = useState<string>(fotoDefault);
+
+  useEffect(() => {
+    async function carregarFoto() {
+      try {
+        const fotoUrl = await NavbarService.getFotoPerfil();
+        if (fotoUrl) 
+          setFotoPerfil(fotoUrl);
+      } catch {
+        setFotoPerfil(fotoDefault);
+      }
+    }
+
+    carregarFoto();
+  }, []);
+
   return (
     <>
       <nav className="navbar navbar-light bg-light">
@@ -34,7 +54,11 @@ export default function Navbar() {
                   aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  Conta
+                  <img
+                    src={fotoPerfil}
+                    alt="Foto de perfil"
+                    className="profile-avatar"
+                  />
                 </a>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdown">
                   <Link to="/perfil" className="dropdown-item">

@@ -78,3 +78,16 @@
   outline: none;
   box-shadow: none;
 }
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #e5e7eb;
+}
+
+.profile-avatar:hover {
+  opacity: 0.85;
+}
