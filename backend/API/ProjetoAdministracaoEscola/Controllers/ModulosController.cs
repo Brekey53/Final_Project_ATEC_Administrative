@@ -49,14 +49,37 @@ namespace ProjetoAdministracaoEscola.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutModulo(int id, Modulo modulo)
+        public async Task<IActionResult> PutModulo(int id, ModuloUpdateDTO moduloDto)
         {
-            if (id != modulo.IdModulo)
+            // Verificar se o ID do URL coincide com o do corpo do pedido
+            if (id != moduloDto.IdModulo)
             {
-                return BadRequest();
+                return BadRequest(new { message = "O ID do módulo não coincide." });
             }
 
-            _context.Entry(modulo).State = EntityState.Modified;
+            // Procurar o módulo original na Base de Dados
+            var moduloOriginal = await _context.Modulos.FindAsync(id);
+
+            if (moduloOriginal == null)
+            {
+                return NotFound(new { message = "Módulo não encontrado." });
+            }
+
+            // Verificar se o novo Código de Identificação já está a ser usado por OUTRO módulo
+            // (Ignoramos o próprio módulo que estamos a editar)
+            var codigoEmUso = await _context.Modulos
+                .AnyAsync(m => m.CodigoIdentificacao == moduloDto.CodigoIdentificacao && m.IdModulo != id);
+
+            if (codigoEmUso)
+            {
+                return Conflict(new { message = $"O código '{moduloDto.CodigoIdentificacao}' já está atribuído a outro módulo." });
+            }
+
+            // Mapear as alterações
+            moduloOriginal.Nome = moduloDto.Nome;
+            moduloOriginal.CodigoIdentificacao = moduloDto.CodigoIdentificacao;
+            moduloOriginal.HorasTotais = moduloDto.HorasTotais;
+            moduloOriginal.Creditos = moduloDto.Creditos;
 
             try
             {
@@ -66,15 +89,19 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 if (!ModuloExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new { message = "O módulo foi eliminado por outro utilizador durante a edição." });
                 }
                 else
                 {
                     throw;
                 }
             }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Erro interno ao atualizar o módulo." });
+            }
 
-            return NoContent();
+            return NoContent(); // Sucesso (204)
         }
 
         // POST: api/Modulos
