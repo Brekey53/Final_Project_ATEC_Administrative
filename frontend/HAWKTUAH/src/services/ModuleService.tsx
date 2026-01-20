@@ -15,10 +15,21 @@ export async function getModulos(): Promise<Modulos[]> {
   return res.data;
 }
 
-export async function deleteModulo(idModulo: number) {
+export async function getModulo(idModulo: string) {
+  const res = await axios.get(`${API_BASE_URL}/modulos/${idModulo}`);
+
+  return res.data;
+}
+
+export async function deleteModulo(idModulo: string) {
   return axios.delete(`${API_BASE_URL}/modulos/${idModulo}`);
 }
 
 export async function postNewModulo(data: any) {
   return axios.post(`${API_BASE_URL}/modulos`, data);
+}
+
+export async function updateModulo(idModulo: string, data: any){
+  const res = await axios.put(`${API_BASE_URL}/modulos/${idModulo}`, data);
+  return res.data;
 }
