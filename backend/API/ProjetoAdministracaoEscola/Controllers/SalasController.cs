@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
+using ProjetoAdministracaoEscola.ModelsDTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -45,14 +46,32 @@ namespace ProjetoAdministracaoEscola.Controllers
         // PUT: api/Salas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSala(int id, Sala sala)
+        public async Task<IActionResult> PutSala(int id, SalaDTO salaDto)
         {
-            if (id != sala.IdSala)
+            if (id != salaDto.IdSala)
             {
-                return BadRequest();
+                return BadRequest(new { message = "O ID da URL não coincide com o ID da sala enviada." });
             }
 
-            _context.Entry(sala).State = EntityState.Modified;
+            // Procurar a sala original
+            var salaOriginal = await _context.Salas.FindAsync(id);
+            if (salaOriginal == null)
+            {
+                return NotFound(new { message = "Sala não encontrada." });
+            }
+
+            // Validar se a nova descrição já existe noutra sala (excluindo a atual)
+            var nomeEmUso = await _context.Salas
+                .AnyAsync(s => s.Descricao == salaDto.Descricao && s.IdSala != id);
+
+            if (nomeEmUso)
+            {
+                return Conflict(new { message = "Já existe outra sala com esta descrição." });
+            }
+
+            // 3. Atualizar campos explicitamente
+            salaOriginal.Descricao = salaDto.Descricao;
+            salaOriginal.NumMaxAlunos = salaDto.NumMaxAlunos;
 
             try
             {
@@ -60,14 +79,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SalaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                if (!SalaExists(id)) return NotFound();
+                else throw;
             }
 
             return NoContent();
@@ -76,12 +89,26 @@ namespace ProjetoAdministracaoEscola.Controllers
         // POST: api/Salas
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Sala>> PostSala(Sala sala)
+        public async Task<ActionResult<Sala>> PostSala(SalaDTO salaDto)
         {
-            _context.Salas.Add(sala);
+            // Validar se já existe uma sala
+            var existe = await _context.Salas.AnyAsync(s => s.Descricao == salaDto.Descricao);
+            if (existe)
+            {
+                return Conflict(new { message = $"Já existe uma sala registada como '{salaDto.Descricao}'." });
+            }
+
+            // Mapear DTO para Entidade
+            var novaSala = new Sala
+            {
+                Descricao = salaDto.Descricao,
+                NumMaxAlunos = salaDto.NumMaxAlunos
+            };
+
+            _context.Salas.Add(novaSala);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetSala", new { id = sala.IdSala }, sala);
+            return CreatedAtAction("GetSala", new { id = novaSala.IdSala }, novaSala);
         }
 
         // DELETE: api/Salas/5
