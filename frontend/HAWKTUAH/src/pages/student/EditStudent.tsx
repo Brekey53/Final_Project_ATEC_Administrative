@@ -125,6 +125,35 @@ export default function EditFormando() {
     }
   };
 
+  const handleOpenDocument = () => {
+    if (!documentPreview) return;
+
+    try {
+      // Extrair apenas os dados base64 (removendo o prefixo data:application/pdf;base64,)
+      const base64Parts = documentPreview.split(",");
+      const base64Data =
+        base64Parts.length > 1 ? base64Parts[1] : base64Parts[0];
+
+      // Converter base64 para binário
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+
+      // Criar o Blob e o URL temporário
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const fileURL = URL.createObjectURL(blob);
+
+      // Abrir em nova aba
+      window.open(fileURL, "_blank");
+    } catch (error) {
+      toast.error("Não foi possível abrir o documento.");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Editar Formando</h2>
@@ -188,6 +217,13 @@ export default function EditFormando() {
                 )}
 
                 <div className="d-grid gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={handleOpenDocument}
+                    className="btn btn-outline-primary btn-sm"
+                  >
+                    Abrir em Nova Aba ↗
+                  </button>
                   <a
                     href={documentPreview}
                     download={`documento_${formData.nome || "formando"}.pdf`}
