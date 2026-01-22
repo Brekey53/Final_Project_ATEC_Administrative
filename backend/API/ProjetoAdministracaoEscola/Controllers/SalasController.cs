@@ -69,7 +69,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Conflict(new { message = "Já existe outra sala com esta descrição." });
             }
 
-            // 3. Atualizar campos explicitamente
+            // Atualizar campos explicitamente
             salaOriginal.Descricao = salaDto.Descricao;
             salaOriginal.NumMaxAlunos = salaDto.NumMaxAlunos;
 
