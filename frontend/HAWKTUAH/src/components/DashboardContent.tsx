@@ -1,5 +1,5 @@
 import "../css/landingPage.css";
-import "../css/dashboardSimple.css"
+import "../css/dashboardSimple.css";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CardsDashboard from "../components/CardsDashboard";
@@ -19,6 +19,9 @@ import {
   Calendar,
 } from "lucide-react";
 
+import Cursos from "../pages/course/Cursos"
+import Horarios from "../pages/schedule/Schedules"
+
 export default function LandingPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
@@ -30,6 +33,9 @@ export default function LandingPage() {
     modulos: 0,
   });
   const [loading, setLoading] = useState(true);
+
+  type Tab = "cursos" | "horarios";
+  const [activeTab, setActiveTab] = useState<Tab>("cursos");
 
   useEffect(() => {
     setIsAdmin(authService.isAdmin());
@@ -253,24 +259,37 @@ export default function LandingPage() {
       ) : (
         <div className="container my-5">
           <h2>Dashboard</h2>
-          <div className="dashboard-pesquisa shadow p-4 d-flex justify-content-between">
-            <form className="form">
-              <input></input>
-              <button>Pesquisar</button>
+          <div className="dashboard-pesquisa shadow p-4">
+            <form className="d-flex gap-2">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Pesquisar curso"
+              />
+              <button type="submit" className="btn btn-primary">
+                Pesquisar
+              </button>
             </form>
           </div>
           <div>
-            <div>
-              <div>Cursos</div>
-              <div>Horários</div>
+            <div className="d-flex justify-content-around mt-5 tab-div">
+              <button
+                className={activeTab === "cursos" ? "tab-active" : ""}
+                onClick={() => setActiveTab("cursos")}
+              >
+                Cursos
+              </button>
+
+              <button
+                className={activeTab === "horarios" ? "tab-active" : ""}
+                onClick={() => setActiveTab("horarios")}
+              >
+                Horários
+              </button>
             </div>
-            <div>
-              <div>
-                Cursos Disponiveis
-              </div>
-              <div>
-                Lista de Cursos
-              </div>
+            <div className="mt-4">
+              {activeTab === "cursos" && <Cursos />}
+              {activeTab === "horarios" && <Horarios />}
             </div>
           </div>
         </div>
