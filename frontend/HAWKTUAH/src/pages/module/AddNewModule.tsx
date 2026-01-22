@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
 import { postNewModulo } from "../../services/ModuleService";
 import { useNavigate } from "react-router-dom";

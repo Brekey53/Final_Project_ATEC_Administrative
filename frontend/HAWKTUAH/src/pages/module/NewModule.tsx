@@ -42,7 +42,6 @@ export default function NewModule() {
         prev.filter((f) => f.idModulo !== moduloSelecionado.idModulo),
       );
 
-      setModulos((prev) => prev.filter((f) => f.idModulo !== moduloSelecionado.idModulo));
       setShowDeleteModal(false);
       setModuloSelecionado(null);
       toast.success("Modulo eliminado com sucesso");
