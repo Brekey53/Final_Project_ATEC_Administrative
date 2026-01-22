@@ -36,7 +36,7 @@ export default function NewModule() {
     if (!moduloSelecionado) return;
 
     try {
-      await deleteModulo(moduloSelecionado.idModulo);
+      await deleteModulo(moduloSelecionado.idModulo.toString());
 
       setModulos((prev) =>
         prev.filter((f) => f.idModulo !== moduloSelecionado.idModulo),
