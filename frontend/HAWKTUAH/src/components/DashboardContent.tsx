@@ -1,10 +1,14 @@
 import "../css/landingPage.css";
+import "../css/dashboardSimple.css"
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CardsDashboard from "../components/CardsDashboard";
 import QuickActionsCards from "../components/QuickActionsCards";
 import { authService } from "../auth/AuthService";
-import { getDashboardStats, type DashboardStats } from "../services/DashboardService";
+import {
+  getDashboardStats,
+  type DashboardStats,
+} from "../services/DashboardService";
 
 import {
   GraduationCap,
@@ -23,7 +27,7 @@ export default function LandingPage() {
     formandosAtivos: 0,
     formadores: 0,
     salas: 0,
-    modulos: 0
+    modulos: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -48,8 +52,7 @@ export default function LandingPage() {
       {isAdmin ? (
         <div className="main-layout mt-5">
           <div className="container">
-            
-            { /*  Titulo e Açoes rápidas*/ }
+            {/*  Titulo e Açoes rápidas*/}
             <div className="title-dashboard d-flex justify-content-between w-100">
               <div className="title-dashboard-left ">
                 <h2>
@@ -248,8 +251,28 @@ export default function LandingPage() {
           </div>
         </div>
       ) : (
-        <div>
-          sim
+        <div className="container my-5">
+          <h2>Dashboard</h2>
+          <div className="dashboard-pesquisa shadow p-4 d-flex justify-content-between">
+            <form className="form">
+              <input></input>
+              <button>Pesquisar</button>
+            </form>
+          </div>
+          <div>
+            <div>
+              <div>Cursos</div>
+              <div>Horários</div>
+            </div>
+            <div>
+              <div>
+                Cursos Disponiveis
+              </div>
+              <div>
+                Lista de Cursos
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </>
