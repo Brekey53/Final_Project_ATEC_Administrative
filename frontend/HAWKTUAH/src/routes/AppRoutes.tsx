@@ -29,6 +29,7 @@ import AddNewRoom from "../pages/room/AddNewRoom";
 import EditRoom from "../pages/room/EditRoom";
 import AddNewSchedule from "../pages/schedule/AddNewSchedule";
 import EditSchedule from "../pages/schedule/EditSchedule";
+import CursoDetalhe from "../pages/course/CursoDetalhe"
 
 
 function AppRoutes() {
@@ -96,6 +97,8 @@ function AppRoutes() {
           path="/gerir-cursos/edit-curso/:id"
           element={<EditCourse />}
         />
+        <Route path="cursos/:idCurso" element={<CursoDetalhe />} />
+
 
         {/* Salas */}
         <Route path="/gerir-salas" element={<NewRoom />} />
