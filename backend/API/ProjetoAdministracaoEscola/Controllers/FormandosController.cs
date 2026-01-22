@@ -71,7 +71,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     : null,
                 // Documento (PDF/DOC/DOCX) - prefixo genérico para ficheiros
                 AnexoFicheiro = formando.AnexoFicheiro != null
-                    ? $"data:application/octet-stream;base64,{Convert.ToBase64String(formando.AnexoFicheiro)}"
+                    ? $"data:application/pdf;base64,{Convert.ToBase64String(formando.AnexoFicheiro)}"
                     : null
             };
             return Ok(respostaFormando);
