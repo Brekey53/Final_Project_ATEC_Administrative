@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
+using ProjetoAdministracaoEscola.ModelsDTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -30,16 +31,33 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Cursos/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Curso>> GetCurso(int id)
+        public async Task<ActionResult<CursoDTO>> GetCurso(int id)
         {
-            var curso = await _context.Cursos.FindAsync(id);
+            var curso = await _context.Cursos
+                .Where(c => c.IdCurso == id)
+                .Select(c => new CursoDTO
+                {
+                    IdCurso = c.IdCurso,
+                    IdArea = c.IdArea,
+                    Nome = c.Nome,
+                    Modulos = c.CursosModulos
+                        .OrderBy(cm => cm.Prioridade)
+                        .Select(cm => new ModuloDTO
+                        {
+                            IdModulo = cm.IdModuloNavigation.IdModulo,
+                            Nome = cm.IdModuloNavigation.Nome,
+                            HorasTotais = cm.IdModuloNavigation.HorasTotais,
+                            Creditos = cm.IdModuloNavigation.Creditos,
+                            Prioridade = cm.Prioridade
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
 
             if (curso == null)
-            {
                 return NotFound();
-            }
 
-            return curso;
+            return Ok(curso);
         }
 
         // PUT: api/Cursos/5
