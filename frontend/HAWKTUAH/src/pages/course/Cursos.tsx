@@ -1,63 +1,58 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import {Link} from "react-router-dom"
 
-interface Curso {
-  id_curso: number;
-  id_area: number;
-  nome: string;
-}
-
-const cursosIniciais = [
-  { id_curso: 1, id_area: 1, nome: "TPSI" },
-  { id_curso: 2, id_area: 1, nome: "CISEG" },
-  { id_curso: 3, id_area: 1, nome: "REDES" },
-];
+import { getCursos, type Curso } from "../../services/cursos/CursosService";
 
 export default function Cursos() {
-  const [cursos, setCursos] = React.useState<Curso[]>(cursosIniciais);
-  const [filtro, setFiltro] = React.useState("");
+  const [cursos, setCursos] = useState<Curso[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const cursosFiltrados = cursos.filter((cursos) =>
-    cursos.nome.toLocaleLowerCase().includes(filtro.toLocaleLowerCase())
-  );
+  useEffect(() => {
+    async function fetchCursos() {
+      try {
+        const data = await getCursos();
+        setCursos(data);
+      } catch (error) {
+        console.error("Erro ao carregar cursos", error);
+        setCursos([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCursos();
+  }, []);
 
   return (
     <div className="container mt-4 mb-5">
       <div className="text-center mb-5">
-        <h2 className="mb-3 text-muted fw-bold">Cursos</h2>
-
-        <div className="row justify-content-center">
-          <div className="col-md-6">
-            <input
-              type="text"
-              className="form-control form-control-lg shadow-sm"
-              placeholder="Pesquisar curso"
-              id="textFilter"
-              onChange={(e) => setFiltro(e.target.value)}
-            />
-          </div>
-        </div>
+        <h2 className="mb-3  fw-bold">Cursos</h2>
       </div>
 
       <div className="row">
         <div className="col">
           <div className="card h-100 shadow border-0 rounded-4 mb-5">
             <div className="card-body d-flex flex-column text-start">
-              <h5 className="card-title fw-bold"> Cursos disponiveis</h5>
-              <p className="card-text text-muted small"> bues!</p>
+              <h5 className="card-title fw-bold text-center">
+                {" "}
+                Cursos disponiveis
+              </h5>
 
-              {cursosFiltrados.length === 0 ? (
+              {cursos.length === 0 ? (
                 <div className="text-center mt-5 text-muted">
                   <h3>Nenhum curso encontrado</h3>
                 </div>
               ) : (
-                <div className="row g-4">
-                  {cursosFiltrados.map((curso) => (
-                    <div
-                      className="col-md-3 h-100 rounded-4 shadow-sm p-2"
-                      key={curso.id_curso}
-                    >
-                      {curso.nome}
-                    </div>
+                <div className="row g-4 container">
+                  {cursos.map((c) => (
+                    <Link to= {`/cursos/${c.idCurso}`}>
+                      <div
+                        className="col-md-3 w-100 rounded-4 shadow-sm p-2"
+                        key={c.idCurso}
+                      >
+                        <strong>{c.nome}</strong>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               )}
