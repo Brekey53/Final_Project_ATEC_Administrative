@@ -5,7 +5,7 @@ import foto from "../img/hawktu.png";
 import fotoDefault from "../img/avatarNavbar.png";
 import { useEffect, useState } from "react";
 
-import NavbarService from "../services/Navbar/NavbarService";
+import NavbarService from "../services/navbar/NavbarService";
 
 export default function Navbar() {
   const [fotoPerfil, setFotoPerfil] = useState<string>(fotoDefault);

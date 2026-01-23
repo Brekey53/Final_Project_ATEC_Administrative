@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getFormandos, type Formando } from "../../services/formandoService";
+import { getFormandos, type Formando } from "../../services/students/formandoService";
 import "../../css/newStudent.css";
 import { deleteFormando } from "../../services/DeleteStudentService";
 import { toast } from "react-hot-toast";

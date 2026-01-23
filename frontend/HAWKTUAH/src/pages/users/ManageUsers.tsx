@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getUtilizadores, type Utilizador } from "../../services/ListUsers";
+import { getUtilizadores, type Utilizador } from "../../services/users/ListUsers";
 import "../../css/manageUsers.css"
 
 export default function ManageUsers() {

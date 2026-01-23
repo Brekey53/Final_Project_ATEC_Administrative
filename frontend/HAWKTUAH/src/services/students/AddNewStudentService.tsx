@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_BASE_URL } from "../config.constants";
+import { API_BASE_URL } from "../../config.constants";
 
 /**
  * Envia os dados do novo formando (incluindo ficheiros) para o servidor.
@@ -13,8 +13,11 @@ export async function postNewFormandos(formData: FormData) {
       formData,
     );
     return res.data;
-  } catch (error: any) {
-    console.log(error.response);
-    throw error;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error(error.response);
+    } else {
+      console.error(error);
+    }
   }
 }
