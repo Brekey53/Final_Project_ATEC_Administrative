@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getMyPerfil, type Perfil } from "../services/PerfilService";
-import { getFotoPerfil } from "../services/PerfilService";
+import { getMyPerfil, type Perfil } from "../services/users/PerfilService";
+import { getFotoPerfil } from "../services/users/PerfilService";
 import FotoPlaceholder from "../img/avatar.png";
 import toast from "react-hot-toast";
 import "../css/perfil.css";
