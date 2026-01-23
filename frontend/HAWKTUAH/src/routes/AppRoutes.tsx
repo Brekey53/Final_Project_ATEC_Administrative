@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import PrivateRoute from "./PrivateRoutes";
+
 import MainLayout from "../layouts/MainLayout";
 
 import Dashboard from "../pages/LandingPage";
@@ -29,8 +31,7 @@ import AddNewRoom from "../pages/room/AddNewRoom";
 import EditRoom from "../pages/room/EditRoom";
 import AddNewSchedule from "../pages/schedule/AddNewSchedule";
 import EditSchedule from "../pages/schedule/EditSchedule";
-import CursoDetalhe from "../pages/course/CursoDetalhe"
-
+import CursoDetalhe from "../pages/course/CursoDetalhe";
 
 function AppRoutes() {
   return (
@@ -51,72 +52,64 @@ function AppRoutes() {
           element={<ResetPassword></ResetPassword>}
         />
       </Route>
+      <Route element={<PrivateRoute />}>
+        <Route element={<MainLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
 
-      <Route element={<MainLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
+          {/* Utilizadores */}
+          <Route path="/gerir-utilizadores" element={<ManageUsers />} />
+          <Route path="/adicionar-utilizadores" element={<AddNewTeacher />} />
+          <Route
+            path="/gerir-utilizadores/edit-utilizadores/:id"
+            element={<EditTeacher />}
+          />
+          <Route path="/perfil" element={<Perfil />} />
 
-        {/* Utilizadores */}
-        <Route path="/gerir-utilizadores" element={<ManageUsers />} />
-        <Route path="/adicionar-utilizadores" element={<AddNewTeacher />} />
-        <Route
-          path="/gerir-utilizadores/edit-utilizadores/:id"
-          element={<EditTeacher />}
-        />
-        <Route path="/perfil" element={<Perfil />} />
+          {/* Formandos */}
+          <Route path="/formandos" element={<Formandos />} />
+          <Route path="/adicionar-formandos" element={<AddNewStudent />} />
+          <Route path="/gerir-formandos" element={<NewStudent />} />
+          <Route
+            path="/gerir-formandos/edit-formando/:id"
+            element={<EditStudent />}
+          />
 
-        {/* Formandos */}
-        <Route path="/formandos" element={<Formandos />} />
-        <Route path="/adicionar-formandos" element={<AddNewStudent />} />
-        <Route path="/gerir-formandos" element={<NewStudent />} />
-        <Route
-          path="/gerir-formandos/edit-formando/:id"
-          element={<EditStudent />}
-        />
+          {/* Formadores */}
+          <Route path="/gerir-formadores" element={<NewTeacher />} />
+          <Route path="/adicionar-formadores" element={<AddNewTeacher />} />
+          <Route
+            path="/gerir-formadores/edit-formador/:id"
+            element={<EditTeacher />}
+          />
 
-        {/* Formadores */}
-        <Route path="/gerir-formadores" element={<NewTeacher />} />
-        <Route path="/adicionar-formadores" element={<AddNewTeacher />} />
-        <Route
-          path="/gerir-formadores/edit-formador/:id"
-          element={<EditTeacher />}
-        />
+          {/* Modulos */}
+          <Route path="/gerir-modulos" element={<NewModule />} />
+          <Route path="/adicionar-modulos" element={<AddNewModule />} />
+          <Route
+            path="/gerir-modulos/edit-modulo/:id"
+            element={<EditModule />}
+          />
 
-        {/* Modulos */}
-        <Route path="/gerir-modulos" element={<NewModule />} />
-        <Route path="/adicionar-modulos" element={<AddNewModule />} />
-        <Route
-          path="/gerir-modulos/edit-modulo/:id"
-          element={<EditModule />}
-        />
+          {/* Cursos */}
+          <Route path="/cursos" element={<Cursos />} />
+          <Route path="/gerir-cursos" element={<NewCourse />} />
+          <Route path="/adicionar-cursos" element={<AddNewCourse />} />
+          <Route path="/gerir-cursos/edit-curso/:id" element={<EditCourse />} />
+          <Route path="cursos/:idCurso" element={<CursoDetalhe />} />
 
-        {/* Cursos */}
-        <Route path="/cursos" element={<Cursos />} />
-        <Route path="/gerir-cursos" element={<NewCourse />} />
-        <Route path="/adicionar-cursos" element={<AddNewCourse />} />
-        <Route
-          path="/gerir-cursos/edit-curso/:id"
-          element={<EditCourse />}
-        />
-        <Route path="cursos/:idCurso" element={<CursoDetalhe />} />
+          {/* Salas */}
+          <Route path="/gerir-salas" element={<NewRoom />} />
+          <Route path="/adicionar-salas" element={<AddNewRoom />} />
+          <Route path="/gerir-salas/edit-sala/:id" element={<EditRoom />} />
 
-
-        {/* Salas */}
-        <Route path="/gerir-salas" element={<NewRoom />} />
-        <Route path="/adicionar-salas" element={<AddNewRoom />} />
-        <Route
-          path="/gerir-salas/edit-sala/:id"
-          element={<EditRoom />}
-        />
-
-        {/* Horarios */}
-        <Route path="/gerir-horarios" element={<NewSchedule />} />
-        <Route path="/adicionar-horarios" element={<AddNewSchedule />} />
-        <Route
-          path="/gerir-horarios/edit-horario/:id"
-          element={<EditSchedule />}
-        />
-
-
+          {/* Horarios */}
+          <Route path="/gerir-horarios" element={<NewSchedule />} />
+          <Route path="/adicionar-horarios" element={<AddNewSchedule />} />
+          <Route
+            path="/gerir-horarios/edit-horario/:id"
+            element={<EditSchedule />}
+          />
+        </Route>
       </Route>
     </Routes>
   );
