@@ -52,21 +52,27 @@ function AppRoutes() {
           element={<ResetPassword></ResetPassword>}
         />
       </Route>
+
+      {/* Rotas Privadas só a utilizadores logados */}
       <Route element={<PrivateRoute />}>
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
 
-          {/* Utilizadores */}
+          {/* Utilizadores - Admin*/}
           <Route path="/gerir-utilizadores" element={<ManageUsers />} />
           <Route path="/adicionar-utilizadores" element={<AddNewTeacher />} />
           <Route
             path="/gerir-utilizadores/edit-utilizadores/:id"
             element={<EditTeacher />}
           />
+
+          {/* PERFIL - Público*/}
           <Route path="/perfil" element={<Perfil />} />
 
-          {/* Formandos */}
+          {/* Formandos - Privado(?) */}
           <Route path="/formandos" element={<Formandos />} />
+
+          {/* Formandos - Admin*/}
           <Route path="/adicionar-formandos" element={<AddNewStudent />} />
           <Route path="/gerir-formandos" element={<NewStudent />} />
           <Route
@@ -90,19 +96,26 @@ function AppRoutes() {
             element={<EditModule />}
           />
 
-          {/* Cursos */}
+          {/* Cursos - Público */}
           <Route path="/cursos" element={<Cursos />} />
+          <Route path="cursos/:idCurso" element={<CursoDetalhe />} />
+
+          {/* Cursos - Admin */}
           <Route path="/gerir-cursos" element={<NewCourse />} />
           <Route path="/adicionar-cursos" element={<AddNewCourse />} />
           <Route path="/gerir-cursos/edit-curso/:id" element={<EditCourse />} />
-          <Route path="cursos/:idCurso" element={<CursoDetalhe />} />
+          
 
-          {/* Salas */}
+          {/* Salas - Admin*/}
           <Route path="/gerir-salas" element={<NewRoom />} />
           <Route path="/adicionar-salas" element={<AddNewRoom />} />
           <Route path="/gerir-salas/edit-sala/:id" element={<EditRoom />} />
 
-          {/* Horarios */}
+          
+          {/*Privado (?) */}
+          {/*<Route path="/horarios" element={<Horario />} /> */}
+          
+          {/* Horarios - Admin */}
           <Route path="/gerir-horarios" element={<NewSchedule />} />
           <Route path="/adicionar-horarios" element={<AddNewSchedule />} />
           <Route
