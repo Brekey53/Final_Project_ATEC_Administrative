@@ -283,6 +283,16 @@ export default function AddNewTeacher() {
                   <div className="d-flex justify-content-end gap-2 mt-2">
                     <button
                       type="button"
+                      className="btn btn-light"
+                      onClick={() => {
+                        window.history.back();
+                      }}
+                    >
+                      Voltar
+                    </button>
+                    
+                    <button
+                      type="button"
                       className="btn btn-outline-secondary"
                       onClick={handleBackToEmail}
                     >

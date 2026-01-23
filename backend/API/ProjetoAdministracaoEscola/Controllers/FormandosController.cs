@@ -170,14 +170,14 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // POST: api/Formandos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Formando>> PostFormando(Formando formando)
-        {
-            _context.Formandos.Add(formando);
-            await _context.SaveChangesAsync();
+        //[HttpPost]
+        //public async Task<ActionResult<Formando>> PostFormando(Formando formando)
+        //{
+        //    _context.Formandos.Add(formando);
+        //    await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetFormando", new { id = formando.IdFormando }, formando);
-        }
+        //    return CreatedAtAction("GetFormando", new { id = formando.IdFormando }, formando);
+        //}
 
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost("completo")]
