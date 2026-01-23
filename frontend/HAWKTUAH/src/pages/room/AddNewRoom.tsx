@@ -1,6 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { postNewSala } from "../../services/SalasService";
+import { postNewSala } from "../../services/rooms/SalasService";
 import { useNavigate } from "react-router-dom";
 
 export default function AddNewRoom() {

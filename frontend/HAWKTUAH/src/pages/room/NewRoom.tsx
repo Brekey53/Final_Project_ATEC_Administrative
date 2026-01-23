@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { getSalas, deleteSala, type Salas } from "../../services/SalasService";
+import { getSalas, deleteSala, type Salas } from "../../services/rooms/SalasService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 

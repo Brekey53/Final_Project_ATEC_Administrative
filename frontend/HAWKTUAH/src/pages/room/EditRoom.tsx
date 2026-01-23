@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getSala, updateSala, type Salas } from "../../services/SalasService";
+import { getSala, updateSala, type Salas } from "../../services/rooms/SalasService";
 
 export default function EditRoom() {
   const { id } = useParams();

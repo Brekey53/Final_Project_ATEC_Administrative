@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
-import { getModulos, deleteModulo, type Modulos } from "../../services/ModuleService";
+import { getModulos, deleteModulo, type Modulos } from "../../services/modules/ModuleService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 

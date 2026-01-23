@@ -1,6 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { postNewModulo } from "../../services/ModuleService";
+import { postNewModulo } from "../../services/modules/ModuleService";
 import { useNavigate } from "react-router-dom";
 
 export default function AddNewModule() {

@@ -206,7 +206,7 @@ export default function Perfil() {
 
             <div className="d-flex justify-content-end">
               <button
-                className="btn btn-warning"
+                className="btn btn-success"
                 onClick={() => setShowPasswordModal(true)}
               >
                 Alterar password

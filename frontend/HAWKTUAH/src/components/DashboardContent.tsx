@@ -8,7 +8,7 @@ import { authService } from "../auth/AuthService";
 import {
   getDashboardStats,
   type DashboardStats,
-} from "../services/DashboardService";
+} from "../services/dashboard/DashboardService";
 
 import {
   GraduationCap,

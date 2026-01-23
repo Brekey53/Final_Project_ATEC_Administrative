@@ -5,7 +5,7 @@ import {
   getModulo,
   updateModulo,
   type Modulos,
-} from "../../services/ModuleService";
+} from "../../services/modules/ModuleService";
 
 export default function EditModule() {
   const { id } = useParams();
