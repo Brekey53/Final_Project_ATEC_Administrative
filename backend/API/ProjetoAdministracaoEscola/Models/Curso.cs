@@ -11,6 +11,8 @@ public partial class Curso
 
     public string Nome { get; set; } = null!;
 
+    public string? Descricao { get; set; }
+
     public virtual ICollection<CursosModulo> CursosModulos { get; set; } = new List<CursosModulo>();
 
     public virtual Area IdAreaNavigation { get; set; } = null!;

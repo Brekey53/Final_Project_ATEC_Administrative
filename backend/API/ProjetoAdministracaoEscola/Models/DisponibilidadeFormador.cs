@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ProjetoAdministracaoEscola.Models;
 
-public partial class DisponibilidadeFormadore
+public partial class DisponibilidadeFormador
 {
     public int IdDispFormador { get; set; }
 
@@ -15,5 +15,5 @@ public partial class DisponibilidadeFormadore
 
     public TimeOnly HoraFim { get; set; }
 
-    public virtual Formadore IdFormadorNavigation { get; set; } = null!;
+    public virtual Formador IdFormadorNavigation { get; set; } = null!;
 }
