@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CardsDashboard from "../../components/CardsDashboard";
 import QuickActionsCards from "../../components/QuickActionsCards";
-import { authService } from "../../auth/AuthService";
 import {
   getDashboardStats,
   type DashboardStats,

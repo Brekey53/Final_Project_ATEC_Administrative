@@ -1,46 +1,58 @@
-import React from "react";
-import {useState} from "react"
-
-import Cursos from "../../pages/course/Cursos"
-import Horarios from "../../pages/schedule/Schedules"
+import { authService } from "../../auth/AuthService";
+import { Link } from "react-router-dom"
 
 export default function FormadorDashboard() {
-  type Tab = "cursos" | "horarios";
-  const [activeTab, setActiveTab] = useState<Tab>("cursos");
+  const user = authService.decodeToken();
+  if (!user) return null;
+
   return (
     <div className="container my-5">
-      <h2>Dashboard</h2>
-      <div className="dashboard-pesquisa shadow p-4">
-        <form className="d-flex gap-2">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Pesquisar curso"
-          />
-          <button type="submit" className="btn btn-primary">
-            Pesquisar
-          </button>
-        </form>
-      </div>
-      <div>
-        <div className="d-flex justify-content-around mt-5 tab-div">
-          <button
-            className={activeTab === "cursos" ? "tab-active" : ""}
-            onClick={() => setActiveTab("cursos")}
-          >
-            Cursos
-          </button>
-
-          <button
-            className={activeTab === "horarios" ? "tab-active" : ""}
-            onClick={() => setActiveTab("horarios")}
-          >
-            Horários
-          </button>
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+          <h3 className="mb-1">
+            Bem-vindo, <strong>{user.email}</strong>
+          </h3>
+          <small className="text-muted">
+            Aqui está o resumo da tua atividade
+          </small>
         </div>
-        <div className="mt-4">
-          {activeTab === "cursos" && <Cursos />}
-          {activeTab === "horarios" && <Horarios />}
+
+        <button className="btn btn-success">+ Adicionar disponibilidade</button>
+      </div>
+
+      {/* Estatísticas */}
+      <div className="row mb-4">
+        <div className="col-md-6 mb-3">
+          <div className="card shadow-sm">
+            <div className="card-body">
+              <h6 className="text-muted mb-1">Horas dadas este mês</h6>
+              {/*TODO: IMPLEMENTAR BACKEND AQUI */}
+              <h3 className="mb-0">32h</h3>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <div className="card shadow-sm">
+            <div className="card-body">
+              <h6 className="text-muted mb-1">Horas dadas mês passado</h6>
+              {/*TODO: IMPLEMENTAR BACKEND AQUI */}
+              <h3 className="mb-0">28h</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Horário semanal */}
+      <div className="card shadow-sm">
+        <div className="card-body">
+          <h5 className="mb-3">Horário desta semana</h5>
+
+          <div className="text-muted">
+            {/*TODO: IMPLEMENTAR BACKEND AQUI , GET SEMANAL ?*/}
+            Segunda a Sexta · 09:00 – 17:00
+          </div>
         </div>
       </div>
     </div>
