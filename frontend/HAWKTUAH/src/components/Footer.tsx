@@ -1,63 +1,65 @@
 import "../css/footer.css";
-import { Mail, Phone, Instagram, Linkedin, Github } from "lucide-react";
+
+import { Mail, Phone } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faInstagram,
+  faGithub,
+  faLinkedin,
+} from "@fortawesome/free-brands-svg-icons";
 
 export default function Footer() {
   return (
-    <footer className="footer mt-5 py-5 bg-light">
+    <footer className="footer mt-5 py-5 bg-dark text-light">
       <div className="container">
-        <div className="row align-items-center">
-
-          <div className="col-md-4 text-center text-md-start mb-3 mb-md-0">
+        <div className="d-flex flex-wrap justify-content-around align-items-center text-center gap-4">
+          {/* Branding */}
+          <div style={{ maxWidth: "260px" }}>
             <h5 className="fw-bold mb-2">HawkPortal</h5>
             <small>
-              Sistema de Gerir Notas
+              Gerir cursos, formandos, formadores e horários de forma eficiente
+              e intuitiva.
             </small>
           </div>
 
           {/* Contactos */}
-          <div className="col-md-4 text-center mb-3 mb-md-0">
-            <p className="mb-1">
-              <Mail size={16} className="me-2" />
-              hawkportal@gmail.com
+          <div className="d-flex flex-column align-items-center small">
+            <p className="mb-1 d-flex align-items-center">
+              <Mail size={12} className="me-2" />
+              hawkportalmanager@gmail.com
             </p>
-            <p className="mb-0">
-              <Phone size={16} className="me-2" />
+            <p className="mb-0 d-flex align-items-center">
+              <Phone size={12} className="me-2" />
               +351 912 345 678
             </p>
           </div>
 
-          <div className="col-md-4 text-center text-md-end">
+          {/* Redes sociais */}
+          <div className="d-flex align-items-center gap-3">
             <a
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-dark me-3"
             >
-              <Instagram />
+              <FontAwesomeIcon icon={faInstagram} size="2x" color="#E4405F" />
             </a>
-
             <a
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-dark me-3"
             >
-              <Linkedin />
+              <FontAwesomeIcon icon={faLinkedin} size="2x" color="#0A66C2" />
             </a>
-
             <a
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-dark"
             >
-              <Github />
+              <FontAwesomeIcon icon={faGithub} size="2x" color="#ffffff"/>
             </a>
           </div>
-
         </div>
       </div>
     </footer>
-
   );
 }
