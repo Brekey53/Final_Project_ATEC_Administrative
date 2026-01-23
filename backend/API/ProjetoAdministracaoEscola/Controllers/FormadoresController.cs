@@ -1,15 +1,9 @@
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -27,152 +21,101 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Formadores
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Formadore>>> GetFormadores()
+        public async Task<ActionResult> GetFormadores()
         {
-            return await _context.Formadores.ToListAsync();
+            // Selecionamos apenas o necessário para a lista, evitando carregar BLOBs pesados
+            var formadores = await _context.Formadores
+                .Include(f => f.IdUtilizadorNavigation)
+                .Select(f => new
+                {
+                    f.IdFormador,
+                    Nome = f.IdUtilizadorNavigation.Nome,
+                    Email = f.IdUtilizadorNavigation.Email,
+                    Nif = f.IdUtilizadorNavigation.Nif,
+                    Telefone = f.IdUtilizadorNavigation.Telefone,
+                    Qualificacoes = f.Qualificacoes
+                })
+                .ToListAsync();
+
+            return Ok(formadores);
         }
 
         // GET: api/Formadores/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Formadore>> GetFormadore(int id)
+        public async Task<ActionResult> GetFormadore(int id)
         {
-
             var formador = await _context.Formadores
                 .Include(f => f.IdUtilizadorNavigation)
                 .FirstOrDefaultAsync(f => f.IdFormador == id);
 
-            if (formador == null)
-            {
-                return NotFound();
-            }
+            if (formador == null) return NotFound(new { message = "Formador não encontrado." });
 
-            var respostaFormador = new
+            var resposta = new
             {
                 IdFormador = formador.IdFormador,
                 IdUtilizador = formador.IdUtilizador,
-                Nome = formador.Nome,
-                Nif = formador.Nif,
-                Phone = formador.Phone,
-                DataNascimento = formador.DataNascimento,
-                Sexo = formador.Sexo,
-                Morada = formador.Morada,
-                Email = formador.IdUtilizadorNavigation?.Email,
+                Iban = formador.Iban,
+                Qualificacoes = formador.Qualificacoes,
+                Nome = formador.IdUtilizadorNavigation.Nome,
+                Nif = formador.IdUtilizadorNavigation.Nif,
+                DataNascimento = formador.IdUtilizadorNavigation.DataNascimento,
+                Morada = formador.IdUtilizadorNavigation.Morada,
+                Telefone = formador.IdUtilizadorNavigation.Telefone,
+                Sexo = formador.IdUtilizadorNavigation.Sexo,
+                Email = formador.IdUtilizadorNavigation.Email,
                 Fotografia = formador.Fotografia != null
                     ? $"data:image/jpeg;base64,{Convert.ToBase64String(formador.Fotografia)}"
                     : null,
-                // Documento (PDF/DOC/DOCX) - prefixo genérico para ficheiros
                 AnexoFicheiro = formador.AnexoFicheiro != null
                     ? $"data:application/pdf;base64,{Convert.ToBase64String(formador.AnexoFicheiro)}"
                     : null
             };
-            return Ok(respostaFormador);
-        }
 
-        // PUT: api/Formadores/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutFormadore(int id, [FromForm] FormadorCreateDTO dto)
-        {
-            // Verificar se o NIF já pertence a OUTRO formador
-            bool nifEmUso = await _context.Formadores.AnyAsync(f => f.Nif == dto.Nif && f.IdFormador != id);
-            if (nifEmUso)
-            {
-                return Conflict(new { message = "O NIF introduzido já pertence a outro formador." });
-            }
-
-            var formadorExistente = await _context.Formadores.FindAsync(id);
-
-            if (formadorExistente == null)
-            {
-                return NotFound(new { message = "Formador não encontrado." });
-            }
-
-            try
-            {
-                // Atualizar dados básicos
-                formadorExistente.Nome = dto.Nome;
-                formadorExistente.Nif = dto.Nif;
-                formadorExistente.Phone = dto.Telefone;
-                formadorExistente.DataNascimento = dto.DataNascimento;
-                formadorExistente.Morada = dto.Morada;
-                formadorExistente.Sexo = dto.Sexo;
-
-                // Atualizar Ficheiros (Substitui apenas se vierem novos ficheiros no FormData)
-                if (dto.Fotografia != null)
-                {
-                    using var ms = new MemoryStream();
-                    await dto.Fotografia.CopyToAsync(ms);
-                    formadorExistente.Fotografia = ms.ToArray();
-                }
-
-                if (dto.Documento != null)
-                {
-                    using var ms = new MemoryStream();
-                    await dto.Documento.CopyToAsync(ms);
-                    formadorExistente.AnexoFicheiro = ms.ToArray();
-                }
-
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Perfil de formador atualizado com sucesso!" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = "Erro ao atualizar: " + (ex.InnerException?.Message ?? ex.Message) });
-            }
+            return Ok(resposta);
         }
 
         // POST: api/Formadores
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<IActionResult> CreateFormador([FromForm] FormadorCreateDTO dto)
         {
-            // Verificar se o NIF já existe na tabela de Formadores
-            if (await _context.Formadores.AnyAsync(f => f.Nif == dto.Nif))
-            {
-                return Conflict(new { message = "Este NIF já se encontra registado para um formador." });
-            }
+            // Validação de unicidade na tabela Utilizadores
+            if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
+                return Conflict(new { message = "Este email já está registado." });
+
+            if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
+                return Conflict(new { message = "Este NIF já está registado." });
 
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                var user = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == dto.Email);
-
-                // Se o utilizador não existe, criamos um novo com Tipo 2 (Formador)
-                if (user == null)
+                // Criar Utilizador base
+                var novoUtilizador = new Utilizador
                 {
-                    user = new Utilizador
-                    {
-                        Email = dto.Email,
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                        IdTipoUtilizador = 2, // 2 = Formador
-                        StatusAtivacao = true
-                    };
-                    _context.Utilizadores.Add(user);
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    // Se o utilizador já existe, verificamos se já tem perfil de formador
-                    if (await _context.Formadores.AnyAsync(f => f.IdUtilizador == user.IdUtilizador))
-                    {
-                        return Conflict(new { message = "Este email já está associado a um formador existente." });
-                    }
-                }
-
-                // Criar o Perfil do Formador
-                var novoFormador = new Formadore
-                {
-                    IdUtilizador = user.IdUtilizador,
                     Nome = dto.Nome,
                     Nif = dto.Nif,
-                    Phone = dto.Telefone,
+                    Email = dto.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     DataNascimento = dto.DataNascimento,
                     Morada = dto.Morada,
-                    Sexo = dto.Sexo
+                    Telefone = dto.Telefone,
+                    Sexo = dto.Sexo,
+                    IdTipoUtilizador = 2, // 2 = Formador
+                    StatusAtivacao = true // ativado por predefinição
                 };
 
-                // Tratamento de Ficheiros (BLOB)
+                _context.Utilizadores.Add(novoUtilizador);
+                await _context.SaveChangesAsync();
+
+                // Criar Perfil de Formador
+                var novoFormador = new Formador
+                {
+                    IdUtilizador = novoUtilizador.IdUtilizador,
+                    Iban = dto.Iban,
+                    Qualificacoes = dto.Qualificacoes
+                };
+
+                // Tratamento de Ficheiros BLOB
                 if (dto.Fotografia != null)
                 {
                     using var ms = new MemoryStream();
@@ -200,25 +143,85 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        // PUT: api/Formadores/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutFormadore(int id, [FromForm] FormadorCreateDTO dto)
+        {
+            var formador = await _context.Formadores
+                .Include(f => f.IdUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdFormador == id);
+
+            if (formador == null) return NotFound(new { message = "Formador não encontrado." });
+
+            // Validar se o NIF/Email já existe em outro utilizador
+            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif && u.IdUtilizador != formador.IdUtilizador);
+            if (nifEmUso) return Conflict(new { message = "O NIF introduzido já pertence a outro utilizador." });
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Atualizar Utilizador
+                var u = formador.IdUtilizadorNavigation;
+                u.Nome = dto.Nome;
+                u.Nif = dto.Nif;
+                u.Telefone = dto.Telefone;
+                u.Morada = dto.Morada;
+                u.DataNascimento = dto.DataNascimento;
+                u.Sexo = dto.Sexo;
+
+                // Atualizar Formador
+                formador.Iban = dto.Iban;
+                formador.Qualificacoes = dto.Qualificacoes;
+
+                // Atualizar Ficheiros apenas se enviados
+                if (dto.Fotografia != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Fotografia.CopyToAsync(ms);
+                    formador.Fotografia = ms.ToArray();
+                }
+
+                if (dto.Documento != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Documento.CopyToAsync(ms);
+                    formador.AnexoFicheiro = ms.ToArray();
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Ok(new { message = "Perfil atualizado com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest(new { message = "Erro ao atualizar: " + ex.Message });
+            }
+        }
+
         // DELETE: api/Formadores/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFormadore(int id)
         {
-            var formadore = await _context.Formadores.FindAsync(id);
-            if (formadore == null)
+            var formador = await _context.Formadores.FindAsync(id);
+            if (formador == null) return NotFound();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                return NotFound();
+                // Nota: Verifique se existem alocações ou horários pendentes antes de apagar
+                _context.Formadores.Remove(formador);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return NoContent();
             }
-
-            _context.Formadores.Remove(formadore);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool FormadoreExists(int id)
-        {
-            return _context.Formadores.Any(e => e.IdFormador == id);
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest(new { message = "Não é possível remover o formador pois existem dados vinculados." });
+            }
         }
     }
 }

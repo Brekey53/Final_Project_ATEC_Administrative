@@ -15,11 +15,9 @@ public partial class Modulo
 
     public decimal Creditos { get; set; }
 
-    public virtual ICollection<Avaliaco> Avaliacos { get; set; } = new List<Avaliaco>();
+    public virtual ICollection<Avaliacao> Avaliacos { get; set; } = new List<Avaliacao>();
 
     public virtual ICollection<CursosModulo> CursosModulos { get; set; } = new List<CursosModulo>();
-
-    public virtual ICollection<Horario> Horarios { get; set; } = new List<Horario>();
 
     public virtual ICollection<TurmaAlocaco> TurmaAlocacos { get; set; } = new List<TurmaAlocaco>();
 }

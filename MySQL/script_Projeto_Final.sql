@@ -2,89 +2,92 @@
 CREATE DATABASE sistema_gestao_atec;
 USE sistema_gestao_atec;
 
--- 1. ÁREAS DE FORMAÇÃO
--- Necessário para estatísticas de cursos por área
+-- ESTRUTURA DE APOIO
 CREATE TABLE areas (
     id_area INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE tipo_utilizadores (
-	id_tipo_utilizador INT AUTO_INCREMENT PRIMARY KEY,
-    tipo_utilizador varchar(50) NOT NULL
+    id_tipo_utilizador INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_utilizador VARCHAR(50) NOT NULL
 );
 
--- 2. UTILIZADORES
--- Suporta login via Email, Google e Facebook com ativação
+-- escolaridades
+CREATE TABLE escolaridades (
+    id_escolaridade INT AUTO_INCREMENT PRIMARY KEY,
+    nivel VARCHAR(100) NOT NULL
+);
+
+-- UTILIZADORES (Centralização de Auth e Perfil Básico)
 CREATE TABLE utilizadores (
     id_utilizador INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    nif VARCHAR(9) UNIQUE NOT NULL,
+    data_nascimento DATE NOT NULL,
+    morada VARCHAR(255),
+    telefone VARCHAR(20),
+    sexo ENUM('Masculino', 'Feminino'),
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     id_google VARCHAR(255),
     id_facebook VARCHAR(255),
     id_tipo_utilizador INT NOT NULL DEFAULT 5,
-    -- tipo_utilizador ENUM('admin', 'formador', 'formando', 'administrativo') NOT NULL, -- criar tabela
     status_ativacao BOOLEAN DEFAULT FALSE,
     token_ativacao VARCHAR(255),
     FOREIGN KEY (id_tipo_utilizador) REFERENCES tipo_utilizadores(id_tipo_utilizador)
 );
 
--- 3. MÓDULOS
--- Inclui identificação UFCD/UC e horas totais para controlo de carga horária
+-- MÓDULOS (UFCD/UC)
 CREATE TABLE modulos (
     id_modulo INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_identificacao VARCHAR(20) UNIQUE, -- Ex: UFCD001 ou UC00600
+    codigo_identificacao VARCHAR(20) UNIQUE,
     nome VARCHAR(100) NOT NULL,
-    horas_totais INT NOT NULL, -- Ex: 50 / 25
+    horas_totais INT NOT NULL,
     creditos DECIMAL(4,2) NOT NULL
 );
 
--- 4. SALAS
+-- SALAS
 CREATE TABLE salas (
     id_sala INT AUTO_INCREMENT PRIMARY KEY,
     descricao VARCHAR(50) NOT NULL,
     num_max_alunos INT NOT NULL CHECK(num_max_alunos >= 5)
 );
 
--- 5. CURSOS (Plano de estudos)
+-- CURSOS E MATRIZ
 CREATE TABLE cursos (
     id_curso INT AUTO_INCREMENT PRIMARY KEY,
     id_area INT NOT NULL,
     nome VARCHAR(100) NOT NULL,
+    descricao VARCHAR(255),
     FOREIGN KEY (id_area) REFERENCES areas(id_area)
 );
 
--- MATRIZ DO CURSO (Plano de Estudos)
 CREATE TABLE cursos_modulos (
-	id_curso_modulo INT AUTO_INCREMENT PRIMARY KEY,
+    id_curso_modulo INT AUTO_INCREMENT PRIMARY KEY,
     id_curso INT NOT NULL,
     id_modulo INT NOT NULL,
-	prioridade INT NOT NULL, 
-	FOREIGN KEY (id_curso) REFERENCES cursos(id_curso),
+    prioridade INT NOT NULL, 
+    FOREIGN KEY (id_curso) REFERENCES cursos(id_curso),
     FOREIGN KEY (id_modulo) REFERENCES modulos(id_modulo)
 );
 
--- 6. TURMAS (Execução do curso com datas específicas)
+-- TURMAS
 CREATE TABLE turmas (
     id_turma INT AUTO_INCREMENT PRIMARY KEY,
     id_curso INT NOT NULL,
-    nome_turma VARCHAR(50) NOT NULL, -- Ex: TPSI-PAL-0525
+    nome_turma VARCHAR(50) NOT NULL,
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
     FOREIGN KEY (id_curso) REFERENCES cursos(id_curso)
 );
 
--- 7. FORMADORES E FORMANDOS
--- Inclui fotografia e anexos para exportação PDF
+-- PERFIS ESPECÍFICOS
 CREATE TABLE formadores (
     id_formador INT AUTO_INCREMENT PRIMARY KEY,
     id_utilizador INT NOT NULL,
-    nome VARCHAR(100) NOT NULL,
-    nif VARCHAR(9) UNIQUE NOT NULL,
-    telefone VARCHAR(13), 
-    data_nascimento DATE NOT NULL,
-    sexo ENUM('Masculino', 'Feminino') NOT NULL,
-    morada VARCHAR(100) NOT NULL,
+    iban VARCHAR(20),
+    qualificacoes VARCHAR(255),
     fotografia MEDIUMBLOB,
     anexo_ficheiro MEDIUMBLOB,
     FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador)
@@ -93,18 +96,14 @@ CREATE TABLE formadores (
 CREATE TABLE formandos (
     id_formando INT AUTO_INCREMENT PRIMARY KEY,
     id_utilizador INT NOT NULL,
-    nome VARCHAR(100) NOT NULL,
-    nif VARCHAR(9) UNIQUE NOT NULL,
-    telefone VARCHAR(13), 
-    data_nascimento DATE NOT NULL,
-    sexo ENUM('Masculino', 'Feminino') NOT NULL,
-    morada VARCHAR(100) NOT NULL,
+    id_escolaridade INT,
     fotografia MEDIUMBLOB,
     anexo_ficheiro MEDIUMBLOB,
-    FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador)
+    FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador),
+    FOREIGN KEY (id_escolaridade) REFERENCES escolaridades(id_escolaridade)
 );
 
--- TABELA DE PLANEAMENTO (Quem dá o quê em cada turma)
+-- PLANEAMENTO E INSCRIÇÕES
 CREATE TABLE turma_alocacoes (
     id_alocacao INT AUTO_INCREMENT PRIMARY KEY,
     id_turma INT NOT NULL,
@@ -115,8 +114,6 @@ CREATE TABLE turma_alocacoes (
     FOREIGN KEY (id_formador) REFERENCES formadores(id_formador)
 );
 
--- 8. INSCRIÇÕES (Ligação Formando <-> Turma)
--- Essencial para o histórico de cursos realizados e avaliação
 CREATE TABLE inscricoes (
     id_inscricao INT AUTO_INCREMENT PRIMARY KEY,
     id_formando INT NOT NULL,
@@ -128,8 +125,7 @@ CREATE TABLE inscricoes (
     FOREIGN KEY (id_turma) REFERENCES turmas(id_turma)
 );
 
--- 9. AVALIAÇÕES (Notas por Módulo)
--- Exportação de avaliação por curso realizado
+-- AVALIAÇÕES
 CREATE TABLE avaliacoes (
     id_avaliacao INT AUTO_INCREMENT PRIMARY KEY,
     id_inscricao INT NOT NULL,
@@ -140,7 +136,7 @@ CREATE TABLE avaliacoes (
     FOREIGN KEY (id_modulo) REFERENCES modulos(id_modulo)
 );
 
--- 10. DISPONIBILIDADE FLEXÍVEL (Calendário por Data)
+-- DISPONIBILIDADES 
 CREATE TABLE disponibilidade_formadores (
     id_disp_formador INT AUTO_INCREMENT PRIMARY KEY,
     id_formador INT NOT NULL,
@@ -153,105 +149,100 @@ CREATE TABLE disponibilidade_formadores (
 CREATE TABLE disponibilidade_salas (
     id_disp_sala INT AUTO_INCREMENT PRIMARY KEY,
     id_sala INT NOT NULL,
-    data_disponivel DATE NOT NULL, -- DATE e não DATETIME ?
+    data_disponivel DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
     FOREIGN KEY (id_sala) REFERENCES salas(id_sala)
 );
 
--- 11. HORÁRIOS (Garante não sobreposição)
+-- HORÁRIOS
 CREATE TABLE horarios (
     id_horario INT AUTO_INCREMENT PRIMARY KEY,
     id_turma INT NOT NULL,
-    id_modulo INT NOT NULL,
+    id_curso_modulo INT NOT NULL,
     id_formador INT NOT NULL,
     id_sala INT NOT NULL,
     data DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
-    -- Restrições para evitar conflitos técnicos
+    -- Garante que a sala ou formador não têm duas marcações à mesma hora/dia
     UNIQUE (id_sala, data, hora_inicio), 
     UNIQUE (id_formador, data, hora_inicio),
-    -- ...
     FOREIGN KEY (id_turma) REFERENCES turmas(id_turma),
-    FOREIGN KEY (id_modulo) REFERENCES modulos(id_modulo),
+    FOREIGN KEY (id_curso_modulo) REFERENCES cursos_modulos(id_curso_modulo),
     FOREIGN KEY (id_formador) REFERENCES formadores(id_formador),
     FOREIGN KEY (id_sala) REFERENCES salas(id_sala)
 );
 
-INSERT INTO areas (nome) VALUES
-('Informática'),
-('Gestão'),
-('Saúde'),
-('Indústria');
+-- ÁREAS
+INSERT INTO areas (nome) VALUES ('Informática'), ('Mecânica'), ('Eletrónica'), ('Gestão'), ('Automação');
 
-INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES
-('admin'),
-('formador'),
-('formando'),
-('administrativo'),
-('geral');
+-- TIPOS DE UTILIZADOR
+INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES ('admin'), ('formador'), ('formando'), ('administrativo'), ('geral');
 
-INSERT INTO utilizadores (email, password_hash, id_tipo_utilizador, status_ativacao) VALUES
-('admin@atec.pt', 'hash_admin', 1, TRUE),
-('joao.formador@atec.pt', 'hash_formador', 2, TRUE),
-('ana.formadora@atec.pt', 'hash_formador', 2, TRUE),
-('maria.formando@atec.pt', 'hash_formando', 3, TRUE),
-('pedro.formando@atec.pt', 'hash_formando', 3, TRUE);
+-- ESCOLARIDADES
+INSERT INTO escolaridades (nivel) VALUES ('9º Ano'), ('12º Ano'), ('CTeSP'), ('Licenciatura'), ('Mestrado');
 
-INSERT INTO modulos (codigo_identificacao, nome, horas_totais, creditos) VALUES
-('UFCD001', 'Programação em Python', 50, 4.0),
-('UFCD002', 'Bases de Dados', 50, 4.0),
-('UFCD003', 'Desenvolvimento Web', 75, 6.0),
-('UFCD004', 'Redes de Computadores', 25, 2.0);
+-- UTILIZADORES (5 para Formadores, 5 para Formandos)
+INSERT INTO utilizadores (nome, nif, data_nascimento, morada, email, password_hash, id_tipo_utilizador, status_ativacao) VALUES 
+('Carlos Professor', '111222333', '1975-03-10', 'Palmela', 'carlos@atec.pt', 'hash123', 2, 1),
+('Ana Docente', '222333444', '1982-07-22', 'Setúbal', 'ana@atec.pt', 'hash123', 2, 1),
+('Leonor Joaquim', '333444555', '1978-11-05', 'Lisboa', 'bruno@atec.pt', 'hash123', 2, 1),
+('Daniela Instrutora', '444555666', '1985-01-30', 'Azeitão', 'daniela@atec.pt', 'hash123', 2, 1),
+('Eduardo Formador', '555666777', '1980-12-12', 'Pinhal Novo', 'eduardo@atec.pt', 'hash123', 2, 1),
+('Maria Aluna', '999888777', '2001-05-20', 'Palmela', 'maria@student.pt', 'hash123', 3, 1),
+('José Silva', '888777666', '2000-09-15', 'Moita', 'jose@student.pt', 'hash123', 3, 1),
+('Sara Santos', '777666555', '1999-02-28', 'Montijo', 'sara@student.pt', 'hash123', 3, 1),
+('Pedro Rocha', '666555444', '2002-11-11', 'Palmela', 'pedro@student.pt', 'hash123', 3, 1),
+('Inês Costa', '555444333', '2001-08-05', 'Setúbal', 'ines@student.pt', 'hash123', 3, 1);
 
-INSERT INTO salas (descricao, num_max_alunos) VALUES
-('Sala A1', 20),
-('Sala B2', 25),
-('Laboratório Informática', 18);
+-- FORMADORES (Ligar aos primeiros 5 utilizadores)
+INSERT INTO formadores (id_utilizador, iban, qualificacoes) VALUES 
+(1, 'PT500001', 'Mestre em Engenharia'), (2, 'PT500002', 'Licenciada em Matemática'),
+(3, 'PT500003', 'Especialista Redes'), (4, 'PT500004', 'Doutorada em IA'), (5, 'PT500005', 'Certificação Cisco');
 
-INSERT INTO cursos (id_area, nome) VALUES
-(1, 'Técnico de Programação de Sistemas de Informação'),
-(1, 'Desenvolvedor Web');
+-- FORMANDOS (Ligar aos restantes 5 utilizadores)
+INSERT INTO formandos (id_utilizador, id_escolaridade) VALUES 
+(6, 2), (7, 2), (8, 3), (9, 2), (10, 4);
 
-INSERT INTO cursos_modulos (id_curso, id_modulo, prioridade) VALUES
-(1, 1, 1),
-(1, 2, 2),
-(1, 4, 3),
-(2, 3, 1),
-(2, 2, 2);
+-- MÓDULOS (UFCDs comuns)
+INSERT INTO modulos (codigo_identificacao, nome, horas_totais, creditos) VALUES 
+('UFCD0778', 'Algoritmos', 50, 4.5), ('UFCD0782', 'SQL', 50, 4.5), 
+('UFCD5412', 'Sistemas Operativos', 25, 2.5), ('UFCD0804', 'Algoritmos Avançados', 50, 4.5),
+('UFCD0123', 'Ética Profissional', 25, 2.0);
 
-INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim) VALUES
-(1, 'TPSI-PAL-0125', '2025-01-15', '2025-07-15'),
-(2, 'WEB-LIS-0225', '2025-02-01', '2025-06-30');
+-- CURSOS
+INSERT INTO cursos (id_area, nome, descricao) VALUES 
+(1, 'TPSI - Programação', 'Especialista em Tecnologias e Programação'), (1, 'Cibersegurança', 'Gestão de Redes'),
+(2, 'Mecânica Industrial', 'Manutenção Automóvel'), (3, 'Eletrónica Aplicada', 'Circuitos'), (4, 'Gestão Escolar', 'Secretariado');
 
-INSERT INTO formadores (id_utilizador, nome, nif, data_nascimento, morada) VALUES
-(2, 'João Silva', '123456789', '1985-04-12', 'Rua das Flores, Lisboa'),
-(3, 'Ana Costa', '987654321', '1990-09-30', 'Rua das Flores, Lisboa');
+-- MATRIZ DE CURSOS
+INSERT INTO cursos_modulos (id_curso, id_modulo, prioridade) VALUES 
+(1, 1, 1), (1, 2, 2), (1, 3, 3), (2, 2, 1), (2, 3, 2);
 
-INSERT INTO formandos (id_utilizador, nome, nif, data_nascimento, morada) VALUES
-(4, 'Maria Fernandes', '111222333', '2000-05-20', 'Rua das Flores, Lisboa'),
-(5, 'Pedro Rocha', '444555666', '1998-11-10', 'Av. Central, Porto');
+-- TURMAS
+INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim) VALUES 
+(1, 'TPSI-PAL-0525', '2025-11-03', '2026-07-15'), (1, 'TPSI-PAL-0626', '2026-01-10', '2026-09-20'),
+(2, 'CIBER-2025', '2025-09-01', '2026-06-30'), (3, 'MEC-01', '2026-02-01', '2026-12-15'),
+(4, 'ELET-01', '2025-10-01', '2026-05-30');
 
-INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES
-(1, 1, 1),
-(1, 2, 2),
-(2, 3, 2);
+-- SALAS
+INSERT INTO salas (descricao, num_max_alunos) VALUES 
+('Lab 01', 20), ('Lab 02', 15), ('Sala Teórica 10', 25), ('Lab Eletrónica', 12), ('Auditório', 50);
 
-INSERT INTO inscricoes (id_formando, id_turma, estado) VALUES
-(1, 1, 'Ativo'),
-(2, 1, 'Ativo'),
-(1, 2, 'Ativo');
+-- ALOCAÇÕES (Quem dá o quê em cada turma)
+INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES 
+(1, 1, 1), (1, 2, 2), (2, 1, 3), (3, 2, 4), (5, 4, 5);
 
-INSERT INTO avaliacoes (id_inscricao, id_modulo, nota, data_avaliacao) VALUES
-(1, 1, 15.5, '2025-03-10'),
-(1, 2, 16.0, '2025-04-20'),
-(2, 1, 14.0, '2025-03-10');
+-- INSCRIÇÕES
+INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES 
+(1, 1, '2025-10-01', 'Ativo'), (2, 1, '2025-10-05', 'Ativo'),
+(3, 1, '2025-10-06', 'Ativo'), (4, 2, '2025-12-01', 'Ativo'), (5, 3, '2025-08-15', 'Ativo');
 
-INSERT INTO disponibilidade_formadores (id_formador, data_disponivel, hora_inicio, hora_fim) VALUES
-(1, '2025-03-15', '09:00', '13:00'),
-(2, '2025-03-15', '14:00', '18:00');
-
-INSERT INTO horarios (id_turma, id_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES
-(1, 1, 1, 3, '2025-03-15', '09:00', '12:00'),
-(1, 2, 2, 1, '2025-03-15', '14:00', '17:00');
+-- HORÁRIOS (Aulas marcadas para Janeiro 2026)
+INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
+(1, 1, 1, 1, '2026-01-26', '09:00:00', '13:00:00'),
+(1, 2, 2, 2, '2026-01-27', '14:00:00', '18:00:00'),
+(3, 4, 4, 1, '2026-01-26', '14:00:00', '18:00:00'),
+(5, 5, 5, 3, '2026-01-28', '09:00:00', '13:00:00'),
+(1, 3, 1, 1, '2026-01-29', '09:00:00', '11:00:00');

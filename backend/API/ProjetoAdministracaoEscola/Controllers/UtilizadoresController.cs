@@ -29,38 +29,21 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Utilizadores
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UtilizadorDTO>>> GetUtilizadores()
+        public async Task<ActionResult<IEnumerable<object>>> GetUtilizadores()
         {
-            var utilizadores = await _context.Utilizadores
-                .Where(u => u.IdTipoUtilizador == 2 || u.IdTipoUtilizador == 3)
-                .Include(u => u.Formadores)
-                .Include(u => u.Formandos)
-                .Select(u => new UtilizadorDTO
+            return await _context.Utilizadores
+                .Include(u => u.IdTipoUtilizadorNavigation)
+                .Where(u => u.IdTipoUtilizador == 2 || u.IdTipoUtilizador == 3) // Formadores e Formandos
+                .Select(u => new
                 {
                     UserId = u.IdUtilizador,
-                    Email = u.Email,
-
-                    Nome = u.Formadores.Any()
-                        ? u.Formadores.First().Nome
-                        : u.Formandos.Any()
-                            ? u.Formandos.First().Nome
-                            : null,
-
-                    Telefone = u.Formadores.Any()
-                        ? u.Formadores.First().Phone
-                        : u.Formandos.Any()
-                            ? u.Formandos.First().Phone
-                            : null,
-
-                    Tipo = u.Formadores.Any()
-                        ? "Formador"
-                        : u.Formandos.Any()
-                            ? "Formando"
-                            : "Outro"
+                    u.Nome,
+                    u.Email,
+                    u.Telefone,
+                    u.Nif,
+                    Tipo = u.IdTipoUtilizadorNavigation.TipoUtilizador // Admin, Formador, Formando, Administrativo, Geral
                 })
                 .ToListAsync();
-
-            return utilizadores;
         }
 
 
@@ -84,135 +67,85 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var tipoClaim = User.FindFirst("tipoUtilizador")?.Value;
-
-            if (userIdClaim == null || tipoClaim == null)
-                return Unauthorized();
+            if (userIdClaim == null) return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
-            int tipo = int.Parse(tipoClaim);
 
-            if (tipo == 1 || tipo == 4)
+            // Procuramos o utilizador e incluímos os perfis específicos se existirem
+            var user = await _context.Utilizadores
+                .Include(u => u.Formadores)
+                .Include(u => u.Formandos)
+                .FirstOrDefaultAsync(u => u.IdUtilizador == userId);
+
+            if (user == null) return NotFound("Utilizador não encontrado");
+
+            // Dados comuns a todos os perfis
+            var perfilBase = new
             {
-                var user = await _context.Utilizadores.FindAsync(userId);
+                user.IdTipoUtilizador,
+                user.Email,
+                user.Nome,
+                user.Nif,
+                user.Telefone,
+                user.DataNascimento,
+                user.Sexo,
+                user.Morada,
+                user.StatusAtivacao
+            };
 
-                if(user == null)
-                {
-                    return NotFound("Utilizador não encontrado");
-                }
-
-                return Ok(new
-                {
-                    tipo,
-                    email = user.Email
-                });
+            // Adicionar dados específicos se for Formando (Tipo 3) ou Formador (Tipo 2)
+            if (user.IdTipoUtilizador == 3 && user.Formandos.Any())
+            {
+                var f = user.Formandos.First();
+                return Ok(new { baseInfo = perfilBase, extra = new { f.IdFormando, f.IdEscolaridade } });
             }
 
-            // FORMANDO
-            if (tipo == 3)
+            if (user.IdTipoUtilizador == 2 && user.Formadores.Any())
             {
-                var formando = await _context.Formandos
-                    .Include(f => f.IdUtilizadorNavigation)
-                    .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
-
-                if (formando == null)
-                    return NotFound("Formando não encontrado");
-
-                return Ok(new
-                {
-                    tipo,
-                    email = formando.IdUtilizadorNavigation.Email,
-                    nome = formando.Nome,
-                    nif = formando.Nif,
-                    telefone = formando.Phone,
-                    dataNascimento = formando.DataNascimento,
-                    sexo = formando.Sexo,
-                    morada = formando.Morada
-                });
+                var f = user.Formadores.First();
+                return Ok(new { baseInfo = perfilBase, extra = new { f.IdFormador, f.Iban, f.Qualificacoes } });
             }
 
-            // FORMADOR
-            if (tipo == 2)
-            {
-                var formador = await _context.Formadores
-                    .Include(f => f.IdUtilizadorNavigation)
-                    .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
-
-                if (formador == null)
-                    return NotFound("Formador não encontrado");
-
-                return Ok(new
-                {
-                    tipo,
-                    email = formador.IdUtilizadorNavigation.Email,
-                    nome = formador.Nome,
-                    nif = formador.Nif,
-                    telefone = formador.Phone,
-                    dataNascimento = formador.DataNascimento,
-                    sexo = formador.Sexo,
-                    morada = formador.Morada
-                });
-            }
-
-            return BadRequest("Tipo de utilizador inválido");
+            return Ok(perfilBase);
         }
 
         [HttpGet("perfil/foto")]
         public async Task<IActionResult> GetFotoPerfil()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var tipoClaim = User.FindFirst("tipoUtilizador")?.Value;
-
-            if (userIdClaim == null || tipoClaim == null)
-                return Unauthorized();
+            if (userIdClaim == null) return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
-            int tipo = int.Parse(tipoClaim);
 
-            // FORMANDO
-            if (tipo == 3)
-            {
-                var formando = await _context.Formandos
-                    .Where(f => f.IdUtilizador == userId)
-                    .Select(f => f.Fotografia)
-                    .FirstOrDefaultAsync();
+            var foto = await _context.Formandos
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.Fotografia)
+                .FirstOrDefaultAsync()
+                ?? await _context.Formadores
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.Fotografia)
+                .FirstOrDefaultAsync();
 
-                if (formando == null)
-                    return NotFound();
+            if (foto == null) return NotFound();
 
-                return File(formando, "image/jpeg");
-            }
-
-            // FORMADOR
-            if (tipo == 2)
-            {
-                var formador = await _context.Formadores
-                    .Where(f => f.IdUtilizador == userId)
-                    .Select(f => f.Fotografia)
-                    .FirstOrDefaultAsync();
-
-                if (formador == null)
-                    return NotFound();
-
-                return File(formador, "image/jpeg");
-            }
-
-            // Outros tipos não têm foto
-            return NotFound();
+            return File(foto, "image/jpeg");
         }
 
 
         // PUT: api/Utilizadores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUtilizador(int id, Utilizador utilizador)
+        public async Task<IActionResult> PutUtilizador(int id, UtilizadorUpdateDTO dto)
         {
-            if (id != utilizador.IdUtilizador)
-            {
-                return BadRequest();
-            }
+            var user = await _context.Utilizadores.FindAsync(id);
+            if (user == null) return NotFound();
 
-            _context.Entry(utilizador).State = EntityState.Modified;
+            // Atualização de campos permitidos
+            user.Nome = dto.Nome;
+            user.Telefone = dto.Telefone;
+            user.Morada = dto.Morada;
+            user.Sexo = dto.Sexo;
+            user.DataNascimento = dto.DataNascimento;
 
             try
             {
@@ -220,14 +153,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UtilizadorExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                if (!UtilizadorExists(id)) return NotFound();
+                throw;
             }
 
             return NoContent();
@@ -236,22 +163,26 @@ namespace ProjetoAdministracaoEscola.Controllers
         // POST: api/Utilizadores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Utilizador>> PostUtilizador(UtilizadorRegisterDTO utilizador)
+        public async Task<ActionResult> PostUtilizador(UtilizadorRegisterDTO dto)
         {
-
-            utilizador.Password = BCrypt.Net.BCrypt.HashPassword(utilizador.Password);
+            if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
+                return Conflict("Email já registado");
 
             var newUser = new Utilizador
             {
-                Email = utilizador.Email,
-                PasswordHash = utilizador.Password,
-                IdTipoUtilizador = 5
+                Nome = dto.Nome,
+                Nif = dto.Nif,
+                DataNascimento = dto.DataNascimento,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                IdTipoUtilizador = 5, // criar como geral
+                Email = dto.Email,
+                StatusAtivacao = false
             };
 
             _context.Utilizadores.Add(newUser);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUtilizadores", new { id = newUser.IdUtilizador }, newUser);
+            return Ok(new { message = "Utilizador registado com sucesso", userId = newUser.IdUtilizador });
         }
 
         // DELETE: api/Utilizadores/5
@@ -272,6 +203,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         [HttpGet("check-email")]
+        [AllowAnonymous]
         public async Task<IActionResult> CheckEmail(string email)
         {
             var existe = await _context.Utilizadores.AnyAsync(u => u.Email == email);

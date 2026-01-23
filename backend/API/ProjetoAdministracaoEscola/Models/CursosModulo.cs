@@ -13,6 +13,8 @@ public partial class CursosModulo
 
     public int Prioridade { get; set; }
 
+    public virtual ICollection<Horario> Horarios { get; set; } = new List<Horario>();
+
     public virtual Curso IdCursoNavigation { get; set; } = null!;
 
     public virtual Modulo IdModuloNavigation { get; set; } = null!;

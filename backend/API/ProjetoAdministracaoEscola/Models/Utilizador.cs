@@ -7,25 +7,35 @@ public partial class Utilizador
 {
     public int IdUtilizador { get; set; }
 
+    public string Nome { get; set; } = null!;
+
+    public string Nif { get; set; } = null!;
+
+    public DateOnly DataNascimento { get; set; }
+
+    public string? Morada { get; set; } = null!;
+
+    public string? Telefone { get; set; }
+
+    public string? Sexo { get; set; } = null!;
+
     public string Email { get; set; } = null!;
 
     public string PasswordHash { get; set; } = null!;
 
-    public string? IdGoogle { get; set; } = string.Empty!;
+    public string? IdGoogle { get; set; }
 
-    public string? IdFacebook { get; set; } = string.Empty!;
+    public string? IdFacebook { get; set; }
 
-    public int IdTipoUtilizador { get; set; } = 5; // Default 5 = Geral
+    public int IdTipoUtilizador { get; set; }
 
     public bool? StatusAtivacao { get; set; }
 
-    public string? TokenAtivacao { get; set; } // Usado para ativação de conta via email
+    public string? TokenAtivacao { get; set; }
 
-    public virtual ICollection<Formadore> Formadores { get; set; } = new List<Formadore>();
+    public virtual ICollection<Formador> Formadores { get; set; } = new List<Formador>();
 
     public virtual ICollection<Formando> Formandos { get; set; } = new List<Formando>();
 
     public virtual TipoUtilizadore IdTipoUtilizadorNavigation { get; set; } = null!;
-
-    
 }

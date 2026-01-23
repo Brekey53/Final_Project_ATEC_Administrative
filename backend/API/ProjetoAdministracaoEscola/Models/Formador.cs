@@ -3,29 +3,21 @@ using System.Collections.Generic;
 
 namespace ProjetoAdministracaoEscola.Models;
 
-public partial class Formadore
+public partial class Formador
 {
     public int IdFormador { get; set; }
 
     public int IdUtilizador { get; set; }
 
-    public string Nome { get; set; } = null!;
+    public string? Iban { get; set; }
 
-    public string Nif { get; set; } = null!;
-
-    public string? Phone { get; set; } = null!;
-
-    public DateOnly DataNascimento { get; set; }
-
-    public string Sexo { get; set; } = null!;
-
-    public string Morada { get; set; } = null!;
+    public string? Qualificacoes { get; set; }
 
     public byte[]? Fotografia { get; set; }
 
     public byte[]? AnexoFicheiro { get; set; }
 
-    public virtual ICollection<DisponibilidadeFormadore> DisponibilidadeFormadores { get; set; } = new List<DisponibilidadeFormadore>();
+    public virtual ICollection<DisponibilidadeFormador> DisponibilidadeFormadores { get; set; } = new List<DisponibilidadeFormador>();
 
     public virtual ICollection<Horario> Horarios { get; set; } = new List<Horario>();
 

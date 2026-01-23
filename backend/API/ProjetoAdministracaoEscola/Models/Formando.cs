@@ -9,21 +9,13 @@ public partial class Formando
 
     public int IdUtilizador { get; set; }
 
-    public string Nome { get; set; } = null!;
-
-    public string Nif { get; set; } = null!;
-
-    public string? Phone { get; set; } = null!;
-
-    public DateOnly DataNascimento { get; set; }
-
-    public string Sexo { get; set; } = null!;
-
-    public string Morada { get; set; } = null!;
+    public int? IdEscolaridade { get; set; }
 
     public byte[]? Fotografia { get; set; }
 
     public byte[]? AnexoFicheiro { get; set; }
+
+    public virtual Escolaridade? IdEscolaridadeNavigation { get; set; }
 
     public virtual Utilizador IdUtilizadorNavigation { get; set; } = null!;
 

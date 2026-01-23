@@ -17,7 +17,7 @@ public partial class Inscrico
 
     public decimal? NotaFinal { get; set; }
 
-    public virtual ICollection<Avaliaco> Avaliacos { get; set; } = new List<Avaliaco>();
+    public virtual ICollection<Avaliacao> Avaliacos { get; set; } = new List<Avaliacao>();
 
     public virtual Formando IdFormandoNavigation { get; set; } = null!;
 

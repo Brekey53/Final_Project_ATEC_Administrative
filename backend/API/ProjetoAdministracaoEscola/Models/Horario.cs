@@ -9,7 +9,7 @@ public partial class Horario
 
     public int IdTurma { get; set; }
 
-    public int IdModulo { get; set; }
+    public int IdCursoModulo { get; set; }
 
     public int IdFormador { get; set; }
 
@@ -21,9 +21,9 @@ public partial class Horario
 
     public TimeOnly HoraFim { get; set; }
 
-    public virtual Formadore IdFormadorNavigation { get; set; } = null!;
+    public virtual CursosModulo IdCursoModuloNavigation { get; set; } = null!;
 
-    public virtual Modulo IdModuloNavigation { get; set; } = null!;
+    public virtual Formador IdFormadorNavigation { get; set; } = null!;
 
     public virtual Sala IdSalaNavigation { get; set; } = null!;
 

@@ -1,16 +1,9 @@
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -19,115 +12,192 @@ namespace ProjetoAdministracaoEscola.Controllers
     public class FormandosController : ControllerBase
     {
         private readonly SistemaGestaoContext _context;
-        private readonly IConfiguration _configuration;
 
-        public FormandosController(SistemaGestaoContext context, IConfiguration configuration)
+        public FormandosController(SistemaGestaoContext context)
         {
             _context = context;
-            _configuration = configuration;
         }
 
         // GET: api/Formandos
+        // Retorna a lista simplificada para a tabela/grid
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FormandoDto>>> GetFormandos()
+        public async Task<ActionResult> GetFormandos()
         {
-            var formandos = await _context.Formandos.Select(f => new FormandoDto
-            {
-                IdFormando = f.IdFormando,
-                Nome = f.Nome,
-                Email = f.IdUtilizadorNavigation.Email, //a chave estrangeira tem esse nome
-                Phone = f.Phone
-            }).ToListAsync();
+            var formandos = await _context.Formandos
+                .Include(f => f.IdUtilizadorNavigation)
+                .Select(f => new
+                {
+                    f.IdFormando,
+                    Nome = f.IdUtilizadorNavigation.Nome,
+                    Email = f.IdUtilizadorNavigation.Email,
+                    Nif = f.IdUtilizadorNavigation.Nif,
+                    Telefone = f.IdUtilizadorNavigation.Telefone,
+                    Status = f.IdUtilizadorNavigation.StatusAtivacao
+                })
+                .ToListAsync();
 
             return Ok(formandos);
         }
 
+        // GET: api/Formandos/5
         [HttpGet("{id}")]
         public async Task<ActionResult> GetFormando(int id)
         {
-            // É importante usar o Include para garantir que o Email (IdUtilizadorNavigation) não venha nulo
             var formando = await _context.Formandos
                 .Include(f => f.IdUtilizadorNavigation)
+                .Include(f => f.IdEscolaridadeNavigation)
                 .FirstOrDefaultAsync(f => f.IdFormando == id);
 
             if (formando == null)
-            {
-                return NotFound();
-            }
+                return NotFound(new { message = "Formando não encontrado!" });
 
-            var respostaFormando = new
+            var resposta = new
             {
                 IdFormando = formando.IdFormando,
                 IdUtilizador = formando.IdUtilizador,
-                Nome = formando.Nome,
-                Nif = formando.Nif,
-                Phone = formando.Phone,
-                DataNascimento = formando.DataNascimento,
-                Sexo = formando.Sexo,
-                Morada = formando.Morada,
-                Email = formando.IdUtilizadorNavigation?.Email,
-                Fotografia = formando.Fotografia != null
-                    ? $"data:image/jpeg;base64,{Convert.ToBase64String(formando.Fotografia)}"
-                    : null,
-                // Documento (PDF/DOC/DOCX) - prefixo genérico para ficheiros
-                AnexoFicheiro = formando.AnexoFicheiro != null
-                    ? $"data:application/pdf;base64,{Convert.ToBase64String(formando.AnexoFicheiro)}"
-                    : null
+                Nome = formando.IdUtilizadorNavigation.Nome,
+                Nif = formando.IdUtilizadorNavigation.Nif,
+                DataNascimento = formando.IdUtilizadorNavigation.DataNascimento,
+                Morada = formando.IdUtilizadorNavigation.Morada,
+                Telefone = formando.IdUtilizadorNavigation.Telefone,
+                Sexo = formando.IdUtilizadorNavigation.Sexo,
+                Email = formando.IdUtilizadorNavigation.Email,
+                IdEscolaridade = formando.IdEscolaridade,
+                EscolaridadeNivel = formando.IdEscolaridadeNavigation?.Nivel,
+                Fotografia = formando.Fotografia != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(formando.Fotografia)}" : null,
+                AnexoFicheiro = formando.AnexoFicheiro != null ? $"data:application/pdf;base64,{Convert.ToBase64String(formando.AnexoFicheiro)}" : null
             };
-            return Ok(respostaFormando);
+
+            return Ok(resposta);
         }
 
-        // PUT: api/Formandos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutFormando(int id, [FromForm] FormandoCompletoDTO dto)
+        // POST: api/Formandos/completo
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpPost("completo")]
+        public async Task<IActionResult> CreateFormando([FromForm] FormandoCompletoDTO dto)
         {
-            // verificar Nif na BD
-            bool nifEmUso = await _context.Formandos.AnyAsync(f => f.Nif == dto.Nif && f.IdFormando != id);
-            if (nifEmUso)
-            {
-                return Conflict(new { message = "O NIF introduzido já pertence a outro formando." });
-            }
+            // Verificações de unicidade na tabela UTILIZADORES
+            if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
+                return Conflict(new { message = "Este Email já está registado." });
 
-            var formandoExistente = await _context.Formandos
-                .Include(f => f.Inscricos)
-                .FirstOrDefaultAsync(f => f.IdFormando == id);
-
-            if (formandoExistente == null)
-            {
-                return NotFound(new { message = "Formando não encontrado." });
-            }
+            if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
+                return Conflict(new { message = "Este NIF já está registado." });
 
             using var transaction = await _context.Database.BeginTransactionAsync();
 
-
             try
             {
-                // Atualizar dados de perfil (Formando)
-                formandoExistente.Nome = dto.Nome;
-                formandoExistente.Nif = dto.Nif;
-                formandoExistente.Phone = dto.Telefone;
-                formandoExistente.DataNascimento = dto.DataNascimento;
-                formandoExistente.Morada = dto.Morada;
-                formandoExistente.Sexo = dto.Sexo;
+                // Criar Utilizador base
+                var novoUtilizador = new Utilizador
+                {
+                    Nome = dto.Nome,
+                    Nif = dto.Nif,
+                    Email = dto.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    DataNascimento = dto.DataNascimento,
+                    Morada = dto.Morada,
+                    Telefone = dto.Telefone,
+                    Sexo = dto.Sexo,
+                    IdTipoUtilizador = 3, // Formando
+                    StatusAtivacao = true
+                };
 
-                // Atualizar Ficheiros (APENAS se novos ficheiros forem enviados)
+                _context.Utilizadores.Add(novoUtilizador);
+                await _context.SaveChangesAsync();
+
+                // Criar Perfil Formando
+                var novoFormando = new Formando
+                {
+                    IdUtilizador = novoUtilizador.IdUtilizador,
+                    IdEscolaridade = dto.IdEscolaridade // Novo campo da BD
+                };
+
                 if (dto.Fotografia != null)
                 {
                     using var ms = new MemoryStream();
                     await dto.Fotografia.CopyToAsync(ms);
-                    formandoExistente.Fotografia = ms.ToArray();
+                    novoFormando.Fotografia = ms.ToArray();
                 }
 
                 if (dto.Documento != null)
                 {
                     using var ms = new MemoryStream();
                     await dto.Documento.CopyToAsync(ms);
-                    formandoExistente.AnexoFicheiro = ms.ToArray();
+                    novoFormando.AnexoFicheiro = ms.ToArray();
                 }
 
-                // Gestão de Inscrição/Turma
-                // Procurar inscrição ativa
+                _context.Formandos.Add(novoFormando);
+                await _context.SaveChangesAsync();
+
+                // Inscrição em Turma
+                if (dto.IdTurma.HasValue && dto.IdTurma > 0)
+                {
+                    _context.Inscricoes.Add(new Inscrico
+                    {
+                        IdFormando = novoFormando.IdFormando,
+                        IdTurma = dto.IdTurma.Value,
+                        DataInscricao = DateOnly.FromDateTime(DateTime.Now),
+                        Estado = "Ativo"
+                    });
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                return Ok(new { message = "Formando e Utilizador criados com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest(new { message = "Erro no registo: " + ex.Message });
+            }
+        }
+
+        // PUT: api/Formandos/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutFormando(int id, [FromForm] FormandoCompletoDTO dto)
+        {
+            var formando = await _context.Formandos
+                .Include(f => f.IdUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdFormando == id);
+
+            if (formando == null) return NotFound();
+
+            // Validar NIF noutros utilizadores
+            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif && u.IdUtilizador != formando.IdUtilizador);
+            if (nifEmUso) return Conflict(new { message = "O NIF já pertence a outro utilizador." });
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Atualizar Utilizador
+                var u = formando.IdUtilizadorNavigation;
+                u.Nome = dto.Nome;
+                u.Nif = dto.Nif;
+                u.Telefone = dto.Telefone;
+                u.Morada = dto.Morada;
+                u.DataNascimento = dto.DataNascimento;
+                u.Sexo = dto.Sexo;
+
+                // Atualizar Formando
+                formando.IdEscolaridade = dto.IdEscolaridade;
+
+                if (dto.Fotografia != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Fotografia.CopyToAsync(ms);
+                    formando.Fotografia = ms.ToArray();
+                }
+
+                if (dto.Documento != null)
+                {
+                    using var ms = new MemoryStream();
+                    await dto.Documento.CopyToAsync(ms);
+                    formando.AnexoFicheiro = ms.ToArray();
+                }
+
+                // Gestão de Inscrição
                 var inscricaoAtual = await _context.Inscricoes
                     .FirstOrDefaultAsync(i => i.IdFormando == id && i.Estado == "Ativo");
 
@@ -135,7 +205,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                 {
                     if (inscricaoAtual == null)
                     {
-                        // Se não tinha turma e agora tem, criar nova inscrição
                         _context.Inscricoes.Add(new Inscrico
                         {
                             IdFormando = id,
@@ -146,206 +215,54 @@ namespace ProjetoAdministracaoEscola.Controllers
                     }
                     else if (inscricaoAtual.IdTurma != dto.IdTurma.Value)
                     {
-                        // Se mudou de turma, atualiza a existente
                         inscricaoAtual.IdTurma = dto.IdTurma.Value;
                     }
                 }
                 else if (inscricaoAtual != null)
                 {
-                    // Se selecionou "Sem Turma", suspende a inscrição
                     inscricaoAtual.Estado = "Suspenso";
                 }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return Ok(new { message = "Formando atualizado com sucesso!" });
+                return Ok(new { message = "Dados atualizados com sucesso!" });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return BadRequest(new { message = "Erro ao atualizar: " + (ex.InnerException?.Message ?? ex.Message) });
-            }
-        }
-
-        // POST: api/Formandos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<Formando>> PostFormando(Formando formando)
-        //{
-        //    _context.Formandos.Add(formando);
-        //    await _context.SaveChangesAsync();
-
-        //    return CreatedAtAction("GetFormando", new { id = formando.IdFormando }, formando);
-        //}
-
-        [Authorize(Policy = "AdminOrAdministrativo")]
-        [HttpPost("completo")]
-        public async Task<IActionResult> CreateFormando([FromForm] FormandoCompletoDTO dto)
-        {
-
-            if (await _context.Formandos.AnyAsync(f => f.Nif == dto.Nif))
-            {
-                return Conflict(new { message = "Este NIF já se encontra registado no sistema." });
-            }
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var user = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == dto.Email);
-
-
-                if (user == null)
-                {
-                    // Criar o Utilizador
-                    var novoUtilizador = new Utilizador
-                    {
-                        Email = dto.Email,
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                        IdTipoUtilizador = 3,
-                        StatusAtivacao = true
-                    };
-
-                    _context.Utilizadores.Add(novoUtilizador);
-                    await _context.SaveChangesAsync();
-
-                    // Criar o Perfil do Formando
-                    var novoFormando = new Formando
-                    {
-                        IdUtilizador = novoUtilizador.IdUtilizador,
-                        Nome = dto.Nome,
-                        Nif = dto.Nif,
-                        Phone = dto.Telefone, // Mapeado para 'Phone' da tua Entidade
-                        DataNascimento = dto.DataNascimento,
-                        Morada = dto.Morada,
-                        Sexo = dto.Sexo
-                    };
-
-                    // Conversão BLOB (MemoryStream)
-                    if (dto.Fotografia != null)
-                    {
-                        using var ms = new MemoryStream();
-                        await dto.Fotografia.CopyToAsync(ms);
-                        novoFormando.Fotografia = ms.ToArray();
-                    }
-
-                    if (dto.Documento != null)
-                    {
-                        using var ms = new MemoryStream();
-                        await dto.Documento.CopyToAsync(ms);
-                        novoFormando.AnexoFicheiro = ms.ToArray();
-                    }
-
-                    _context.Formandos.Add(novoFormando);
-                    await _context.SaveChangesAsync();
-
-                    // Criar Inscrição (se houver turma)
-                    if (dto.IdTurma.HasValue && dto.IdTurma > 0)
-                    {
-                        var novaInscricao = new Inscrico
-                        {
-                            IdFormando = novoFormando.IdFormando,
-                            IdTurma = dto.IdTurma.Value,
-                            DataInscricao = DateOnly.FromDateTime(DateTime.Now),
-                            Estado = "Ativo"
-                        };
-                        _context.Inscricoes.Add(novaInscricao);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    await transaction.CommitAsync();
-
-                    return Ok(new { message = "Formando criado com sucesso!" });
-                } 
-                else
-                {
-                    if (await _context.Formandos.AnyAsync(f => f.IdUtilizador == user.IdUtilizador))
-                    {
-                        return Conflict(new { message = "Esse email já está associado a um formando" });
-                    }
-                    // Criar o Perfil do Formando
-                    var novoFormando = new Formando
-                    {
-                        IdUtilizador = user.IdUtilizador,
-                        Nome = dto.Nome,
-                        Nif = dto.Nif,
-                        Phone = dto.Telefone, // Mapeado para 'Phone' da tua Entidade
-                        DataNascimento = dto.DataNascimento,
-                        Morada = dto.Morada,
-                        Sexo = dto.Sexo
-                    };
-
-                    // Conversão BLOB (MemoryStream)
-                    if (dto.Fotografia != null)
-                    {
-                        using var ms = new MemoryStream();
-                        await dto.Fotografia.CopyToAsync(ms);
-                        novoFormando.Fotografia = ms.ToArray();
-                    }
-
-                    if (dto.Documento != null)
-                    {
-                        using var ms = new MemoryStream();
-                        await dto.Documento.CopyToAsync(ms);
-                        novoFormando.AnexoFicheiro = ms.ToArray();
-                    }
-
-                    _context.Formandos.Add(novoFormando);
-                    await _context.SaveChangesAsync();
-
-                    // Criar Inscrição (se houver turma)
-                    if (dto.IdTurma.HasValue && dto.IdTurma > 0)
-                    {
-                        var novaInscricao = new Inscrico
-                        {
-                            IdFormando = novoFormando.IdFormando,
-                            IdTurma = dto.IdTurma.Value,
-                            DataInscricao = DateOnly.FromDateTime(DateTime.Now),
-                            Estado = "Ativo"
-                        };
-                        _context.Inscricoes.Add(novaInscricao);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    await transaction.CommitAsync();
-
-                    return Ok(new { message = "Formando criado com sucesso!" });
-                }
-
-                
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                // Log detalhado para ajudar a encontrar erros de SQL (ex: NIF duplicado)
-                return BadRequest(new { message = "Não foi possível concluir o registo. Verifique se os dados estão corretos." });
+                return BadRequest(new { message = "Erro: " + ex.Message });
             }
         }
 
         // DELETE: api/Formandos/5
-        [Authorize(Policy = "AdminOrAdministrativo")]
+        // Nota: Devido às FKs, remover um formando sem remover o utilizador 
+        // ou usar Cascade Delete. Aqui removemos o perfil e mantemos o utilizador (Soft Delete mental)
+        // Ou removemos ambos.
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFormando(int id)
         {
-            var formando = await _context.Formandos
-            .Include(f => f.IdUtilizadorNavigation)
-            .FirstOrDefaultAsync(f => f.IdFormando == id);
+            var formando = await _context.Formandos.FindAsync(id);
+            if (formando == null) return NotFound();
 
-            if (formando == null)
-                return NotFound("Formando não encontrado");
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Remover inscrições primeiro (se não houver cascade no SQL)
+                var inscricoes = _context.Inscricoes.Where(i => i.IdFormando == id);
+                _context.Inscricoes.RemoveRange(inscricoes);
 
+                _context.Formandos.Remove(formando);
+                await _context.SaveChangesAsync();
 
-            _context.Formandos.Remove(formando);
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool FormandoExists(int id)
-        {
-            return _context.Formandos.Any(e => e.IdFormando == id);
+                await transaction.CommitAsync();
+                return NoContent();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Não é possível remover o formando pois existem dados vinculados (notas, etc).");
+            }
         }
     }
 }

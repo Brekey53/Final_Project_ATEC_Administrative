@@ -18,9 +18,6 @@ namespace ProjetoAdministracaoEscola.ModelsDTO
         [StringLength(9, MinimumLength = 9, ErrorMessage = "O NIF deve ter 9 dígitos.")]
         public string Nif { get; set; } = null!;
 
-        [StringLength(13)]
-        public string? Telefone { get; set; }
-
         [Required(ErrorMessage = "A data de nascimento é obrigatória.")]
         public DateOnly DataNascimento { get; set; }
 
@@ -28,8 +25,13 @@ namespace ProjetoAdministracaoEscola.ModelsDTO
         [StringLength(100)]
         public string Morada { get; set; } = null!;
 
+        [StringLength(13)]
+        public string? Telefone { get; set; }
+
         [Required(ErrorMessage = "O campo sexo é obrigatório.")]
-        public string Sexo { get; set; } = null!;
+        public string? Sexo { get; set; } = null!;
+
+        public int? IdEscolaridade { get; set; }
 
         public int? IdTurma { get; set; }
         public IFormFile? Fotografia { get; set; }

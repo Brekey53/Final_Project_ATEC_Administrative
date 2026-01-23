@@ -13,7 +13,7 @@ public partial class TurmaAlocaco
 
     public int IdFormador { get; set; }
 
-    public virtual Formadore IdFormadorNavigation { get; set; } = null!;
+    public virtual Formador IdFormadorNavigation { get; set; } = null!;
 
     public virtual Modulo IdModuloNavigation { get; set; } = null!;
 
