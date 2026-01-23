@@ -324,7 +324,7 @@ export default function AddNewStudent() {
                         window.history.back();
                       }}
                     >
-                      Back
+                      Voltar
                     </button>
 
                     <button
