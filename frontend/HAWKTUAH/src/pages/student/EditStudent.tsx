@@ -4,7 +4,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "../../config.constants";
 import FotoPlaceholder from "../../img/avatar.png";
-import { updateFormando } from "../../services/UpdateStudentService";
+import { updateFormando } from "../../services/students/UpdateStudentService";
 
 export default function EditFormando() {
   const { id } = useParams();

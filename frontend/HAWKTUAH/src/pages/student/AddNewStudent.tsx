@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
 import FotoPlaceholder from "../../img/avatar.png";
-import { postNewFormandos } from "../../services/AddNewStudentService";
+import { postNewFormandos } from "../../services/students/AddNewStudentService";
 import "../../css/addNewStudent.css";
 
 export default function AddNewStudent() {
