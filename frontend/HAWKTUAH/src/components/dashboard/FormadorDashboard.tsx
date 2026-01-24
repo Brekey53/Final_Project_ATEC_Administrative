@@ -1,8 +1,52 @@
 import { authService } from "../../auth/AuthService";
-import { Link } from "react-router-dom"
+import { useEffect, useState } from "react";
+import { getHorariosFormador, getHorasFormadorMesAtual, getHorasFormadorMesAnterior } from "../../services/calendar/CalendarService";
+import CalendarSchedule from "../CalendarSchedule";
 
 export default function FormadorDashboard() {
+  const [events, setEvents] = useState<[]>([]);
+  const [horasMesAtual, setHorasMesAtual] = useState();
+  const [horasMesAnterior, setHorasMesAnterior] = useState<[]>([]);
+
   const user = authService.decodeToken();
+
+  useEffect(() => {
+    async function fetchHorarios() {
+      try {
+        const data = await getHorariosFormador();
+
+        const events = data.map((h: any) => ({
+          id: h.idHorario,
+          title: `${h.nomeCurso} - ${h.nomeSala}`,
+          start: `${h.data}T${h.horaInicio}`,
+          end: `${h.data}T${h.horaFim}`,
+        }));
+
+        setEvents(events);
+      } catch (error) {
+        console.error("Erro ao carregar horários", error);
+      }
+    }
+
+    fetchHorarios();
+  }, []);
+
+  useEffect(() => {
+    async function fetchHorasDesteMes() {
+      try {
+        const dataAtual = await getHorasFormadorMesAtual();
+        const dataAnterior = await getHorasFormadorMesAnterior();
+        
+        setHorasMesAtual(dataAtual);
+        setHorasMesAnterior(dataAnterior);
+      } catch (error) {
+        console.error("Erro ao carregar horas", error);
+      }
+    }
+
+    fetchHorasDesteMes();
+  }, []);
+
   if (!user) return null;
 
   return (
@@ -27,8 +71,7 @@ export default function FormadorDashboard() {
           <div className="card shadow-sm">
             <div className="card-body">
               <h6 className="text-muted mb-1">Horas dadas este mês</h6>
-              {/*TODO: IMPLEMENTAR BACKEND AQUI */}
-              <h3 className="mb-0">32h</h3>
+              <h3>{horasMesAtual}h</h3>
             </div>
           </div>
         </div>
@@ -38,7 +81,7 @@ export default function FormadorDashboard() {
             <div className="card-body">
               <h6 className="text-muted mb-1">Horas dadas mês passado</h6>
               {/*TODO: IMPLEMENTAR BACKEND AQUI */}
-              <h3 className="mb-0">28h</h3>
+              <h3>{horasMesAnterior}h</h3>
             </div>
           </div>
         </div>
@@ -50,8 +93,7 @@ export default function FormadorDashboard() {
           <h5 className="mb-3">Horário desta semana</h5>
 
           <div className="text-muted">
-            {/*TODO: IMPLEMENTAR BACKEND AQUI , GET SEMANAL ?*/}
-            Segunda a Sexta · 09:00 – 17:00
+            <CalendarSchedule events={events} />
           </div>
         </div>
       </div>
