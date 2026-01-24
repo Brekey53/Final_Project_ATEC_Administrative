@@ -1,12 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
+using ProjetoAdministracaoEscola.ModelsDTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -40,6 +42,88 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
             return horario;
+        }
+        [HttpGet("formador")]
+        public async Task<ActionResult<IEnumerable<ScheduleCalendarDTO>>> GetHorariosFormador()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null) return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            // ir buscar o formador associado ao utilizador
+            var formadorId = await _context.Formadores
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.IdFormador)
+                .FirstOrDefaultAsync();
+
+            var horarios = await _context.Horarios
+                .Where(h => h.IdFormador == formadorId)
+                .Include(h => h.IdSalaNavigation)
+                .Include(h => h.IdCursoModuloNavigation)
+                    .ThenInclude(cm => cm.IdCursoNavigation)
+                .Select(h => new ScheduleCalendarDTO
+                {
+                    IdHorario = h.IdHorario,
+                    Data = h.Data,
+                    HoraInicio = h.HoraInicio,
+                    HoraFim = h.HoraFim,
+                    NomeSala = h.IdSalaNavigation.Descricao,
+                    NomeCurso = h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                })
+                .OrderBy(h => h.Data)
+                .ThenBy(h => h.HoraInicio)
+                .ToListAsync();
+
+            return Ok(horarios);
+        }
+
+        [HttpGet("formando")]
+        public async Task<ActionResult<IEnumerable<ScheduleCalendarDTO>>> GetHorariosFormando()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null) 
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            // tirar o IdFormando a partir do utilizador
+            var formandoId = await _context.Formandos
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.IdFormando)
+                .FirstOrDefaultAsync();
+
+            if (formandoId == 0)
+                return Forbid("Utilizador não é formando");
+
+            // obter as turmas onde o formando está inscrito
+            var turmasIds = await _context.Inscricoes
+                .Where(i => i.IdFormando == formandoId)
+                .Select(i => i.IdTurma)
+                .ToListAsync();
+
+            if (!turmasIds.Any())
+                return Ok(new List<ScheduleCalendarDTO>());
+
+            var horarios = await _context.Horarios
+                .Where(h => turmasIds.Contains(h.IdTurma))
+                .Include(h => h.IdSalaNavigation)
+                .Include(h => h.IdCursoModuloNavigation)
+                    .ThenInclude(cm => cm.IdCursoNavigation)
+                .Select(h => new ScheduleCalendarDTO
+                {
+                    IdHorario = h.IdHorario,
+                    Data = h.Data,
+                    HoraInicio = h.HoraInicio,
+                    HoraFim = h.HoraFim,
+                    NomeSala = h.IdSalaNavigation.Descricao,
+                    NomeCurso = h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                })
+                .OrderBy(h => h.Data)
+                .ThenBy(h => h.HoraInicio)
+                .ToListAsync();
+
+            return Ok(horarios);
         }
 
         // PUT: api/Horarios/5

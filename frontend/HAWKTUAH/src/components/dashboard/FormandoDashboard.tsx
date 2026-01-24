@@ -1,14 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Cursos from "../../pages/course/Cursos";
 import Horarios from "../../pages/schedule/Schedules";
 import { authService } from "../../auth/AuthService";
+import { getHorariosFormando } from "../../services/calendar/CalendarService"
 
 type Tab = "cursos" | "horarios";
 
 export default function FormandoDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("cursos");
+  const [events, setEvents] = useState<[]>([]);
 
   const user = authService.decodeToken();
+
+useEffect(() => {
+    async function fetchHorarios() {
+      try {
+        const data = await getHorariosFormando();
+
+        const events = data.map((h: any) => ({
+          id: h.idHorario,
+          title: `${h.nomeCurso} - ${h.nomeSala}`,
+          start: `${h.data}T${h.horaInicio}`,
+          end: `${h.data}T${h.horaFim}`,
+        }));
+
+        setEvents(events);
+      } catch (error) {
+        console.error("Erro ao carregar horários", error);
+      }
+    }
+
+    fetchHorarios();
+  }, []);
+
+
   if (!user) return null;
 
   return (
