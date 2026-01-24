@@ -196,6 +196,7 @@ export default function AdminDashboard() {
                     >
                       Ver todos
                     </a>
+                    {/* TODO: INSERIR AQUI TODOS OS CURSOS A DECORRER */}
                   </div>
                   <div className="d-flex flex-column align-items-center justify-content-center my-auto py-5">
                     <p className="text-muted small">Nenhum curso a decorrer</p>
@@ -215,6 +216,7 @@ export default function AdminDashboard() {
                     >
                       Ver todos
                     </a>
+                    {/* TODO: INSERIR AQUI TODOS OS CURSOS A COMEÇAR NOS PROXIMOS 60 DIAS*/}
                   </div>
                   <div className="p-3 rounded-3 d-flex justify-content-between align-items-center"></div>
                 </div>
@@ -236,6 +238,7 @@ export default function AdminDashboard() {
                     >
                       Ver todos
                     </a>
+                    {/* TODO: INSERIR AQUI TODOS OS CURSOS POR ÁREA */}
                   </div>
                 </div>
               </div>
