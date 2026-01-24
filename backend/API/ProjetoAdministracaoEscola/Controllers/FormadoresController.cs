@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO;
@@ -78,44 +80,77 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateFormador([FromForm] FormadorCreateDTO dto)
         {
-            // Validação de unicidade na tabela Utilizadores
-            if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
-                return Conflict(new { message = "Este email já está registado." });
-
-            if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
-                return Conflict(new { message = "Este NIF já está registado." });
+            
 
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                // Criar Utilizador base
-                var novoUtilizador = new Utilizador
+                var utilizadorExistente = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == dto.Email);
+                int userId;
+
+                if (utilizadorExistente == null)
                 {
-                    Nome = dto.Nome,
-                    Nif = dto.Nif,
-                    Email = dto.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                    DataNascimento = dto.DataNascimento,
-                    Morada = dto.Morada,
-                    Telefone = dto.Telefone,
-                    Sexo = dto.Sexo,
-                    IdTipoUtilizador = 2, // 2 = Formador
-                    StatusAtivacao = true // ativado por predefinição
-                };
+                    // Validação nif unico
+                    if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
+                        return Conflict(new { message = "Este NIF já está registado." });
 
-                _context.Utilizadores.Add(novoUtilizador);
-                await _context.SaveChangesAsync();
+                    // criar utilizador
+                    if (string.IsNullOrEmpty(dto.Password))
+                        return BadRequest(new { message = "A password é obrigatória para novos utilizadores." });
 
-                // Criar Perfil de Formador
+                    var novoUtilizador = new Utilizador
+                    {
+                        Nome = dto.Nome,
+                        Nif = dto.Nif,
+                        Email = dto.Email,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                        DataNascimento = dto.DataNascimento,
+                        Morada = dto.Morada,
+                        Telefone = dto.Telefone,
+                        Sexo = dto.Sexo,
+                        IdTipoUtilizador = 2, // Formador
+                        StatusAtivacao = true // ativado por defeito
+                    };
+
+                    _context.Utilizadores.Add(novoUtilizador);
+                    await _context.SaveChangesAsync();
+                    userId = novoUtilizador.IdUtilizador;
+                }
+                else
+                {
+
+                    // Verificar se ele já tem perfil de formador
+                    if (await _context.Formadores.AnyAsync(f => f.IdUtilizador == utilizadorExistente.IdUtilizador))
+                        return Conflict(new { message = "Este utilizador já tem um perfil de formador ativo." });
+
+                    // Verificar se ele já tem perfil de formando
+                    if (await _context.Formandos.AnyAsync(f => f.IdUtilizador == utilizadorExistente.IdUtilizador))
+                        return Conflict(new { message = "Este utilizador já tem um perfil de formando ativo, por favor altere o tipo de utilizador na tab utilizador!" });
+
+                    // Alteramos os dados se necessario (ou colocamos os que vao preencher automaticamente os campos)
+                    utilizadorExistente.Nome = dto.Nome;
+                    utilizadorExistente.Nif = dto.Nif;
+                    utilizadorExistente.Telefone = dto.Telefone;
+                    utilizadorExistente.DataNascimento = dto.DataNascimento;
+                    utilizadorExistente.Morada = dto.Morada;
+                    utilizadorExistente.Telefone = dto.Telefone;
+                    utilizadorExistente.Sexo = dto.Sexo;
+                    // Não trocamos a password e email
+
+
+                    userId = utilizadorExistente.IdUtilizador;
+                }
+
+                // Criar Perfil de Formador vinculado ao userId
                 var novoFormador = new Formador
                 {
-                    IdUtilizador = novoUtilizador.IdUtilizador,
+                    IdUtilizador = userId,
                     Iban = dto.Iban,
                     Qualificacoes = dto.Qualificacoes
                 };
 
-                // Tratamento de Ficheiros BLOB
+                // Tratamento de Ficheiros
                 if (dto.Fotografia != null)
                 {
                     using var ms = new MemoryStream();
@@ -134,7 +169,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                return Ok(new { message = "Formador criado com sucesso!" });
+                return Ok(new { message = "Formador registado com sucesso!" });
             }
             catch (Exception ex)
             {
