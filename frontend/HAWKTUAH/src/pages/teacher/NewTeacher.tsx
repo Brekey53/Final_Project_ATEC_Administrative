@@ -83,10 +83,11 @@ export default function NewTeacher() {
 
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-formadores">
             {/* TODO: Criar css e alterar tabela-alunos ?? */}
             <div>Formador</div>
-            <div>Email | DataNascimento</div>
+            <div>Email</div>
+            <div>Qualificações</div>
             <div>Nif</div>
             <div className="text-end">Ações</div>
           </div>
@@ -96,7 +97,7 @@ export default function NewTeacher() {
             filteredFormadores.map((f) => (
               <div
                 key={f.idFormador}
-                className="px-4 py-3 border-bottom tabela-alunos"
+                className="px-4 py-3 border-bottom tabela-formadores"
               >
                 <div className="d-flex align-items-center gap-3">
                   <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
@@ -106,7 +107,10 @@ export default function NewTeacher() {
                 </div>
 
                 <div className="d-flex align-items-center gap-2 text-muted">
-                  <span>{f.dataNascimento || "-"}</span>
+                  <span>{f.email || "-"}</span>
+                </div>
+                <div className="d-flex align-items-center gap-2 text-muted">
+                  <span>{f.qualificacoes || "-"}</span>
                 </div>
 
                 <div className="text-muted">{f.nif || "-"}</div>
