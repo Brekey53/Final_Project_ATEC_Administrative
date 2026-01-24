@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO;
+using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
-    [Authorize(Policy = "AdminOrAdministrativo")]
     [Route("api/[controller]")]
     [ApiController]
     public class FormadoresController : ControllerBase
@@ -222,6 +222,68 @@ namespace ProjetoAdministracaoEscola.Controllers
                 await transaction.RollbackAsync();
                 return BadRequest(new { message = "Não é possível remover o formador pois existem dados vinculados." });
             }
+        }
+
+        [HttpGet("mesatual")]
+        public async Task<ActionResult<HorasFormadorDTO>> GetHorasMesAtual()
+        {
+            var formadorId = await GetFormadorIdFromToken();
+            if (formadorId == null) return Unauthorized();
+
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+            var horarios = await _context.Horarios
+                .Where(h =>
+                    h.IdFormador == formadorId &&
+                    h.Data.Month == hoje.Month &&
+                    h.Data.Year == hoje.Year
+                )
+                .ToListAsync();
+
+            var totalHoras = horarios.Sum(h =>
+                (h.HoraFim.ToTimeSpan() - h.HoraInicio.ToTimeSpan()).TotalHours
+            );
+
+            return Ok(new HorasFormadorDTO { TotalHoras = totalHoras });
+        }
+
+
+        // GET: api/formadores/mesanterior
+        [HttpGet("mesanterior")]
+        public async Task<ActionResult<HorasFormadorDTO>> GetHorasMesAnterior()
+        {
+            var formadorId = await GetFormadorIdFromToken();
+            if (formadorId == null) return Unauthorized();
+
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+            var mesAnterior = hoje.AddMonths(-1);
+
+            var horarios = await _context.Horarios
+                .Where(h =>
+                    h.IdFormador == formadorId &&
+                    h.Data.Month == mesAnterior.Month &&
+                    h.Data.Year == mesAnterior.Year
+                )
+                .ToListAsync();
+
+            var totalHoras = horarios.Sum(h =>
+                (h.HoraFim.ToTimeSpan() - h.HoraInicio.ToTimeSpan()).TotalHours
+            );
+
+            return Ok(new HorasFormadorDTO { TotalHoras = totalHoras });
+        }
+
+        private async Task<int?> GetFormadorIdFromToken()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null) return null;
+
+            int userId = int.Parse(userIdClaim);
+
+            return await _context.Formadores
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.IdFormador)
+                .FirstOrDefaultAsync();
         }
     }
 }
