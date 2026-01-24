@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ProjetoAdministracaoEscola.Data;
 using Microsoft.EntityFrameworkCore;
+using ProjetoAdministracaoEscola.Data;
+using ProjetoAdministracaoEscola.Models;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -18,10 +19,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpGet("stats")]
         public async Task<IActionResult> GetStats()
         {
-            // Contagens rápidas e eficientes usando CountAsync
             var stats = new
             {
-                // Altera esta linha no teu DashboardController:
                 CursosDecorrer = await _context.Turmas.CountAsync(t => t.DataFim > DateOnly.FromDateTime(DateTime.Now)),
                 TotalCursos = await _context.Cursos.CountAsync(),
                 FormandosAtivos = await _context.Formandos.CountAsync(),
@@ -32,5 +31,95 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(stats);
         }
+
+       
+        [HttpGet("turmasDecorrer")]
+        public async Task<ActionResult<IEnumerable<TurmaDecorrerDTO>>> GetTurmasADecorrer()
+        {
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+            var turmas = await _context.Horarios
+                .Include(h => h.IdTurmaNavigation)
+                .Include(h => h.IdCursoModuloNavigation)
+                    .ThenInclude(cm => cm.IdCursoNavigation)
+                .GroupBy(h => new
+                {
+                    h.IdTurma,
+                    h.IdTurmaNavigation.NomeTurma,
+                    h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                })
+                .Select(g => new TurmaDecorrerDTO
+                {
+                    IdTurma = g.Key.IdTurma,
+                    NomeTurma = g.Key.NomeTurma,
+                    NomeCurso = g.Key.Nome,
+                    DataInicio = g.Min(x => x.Data),
+                    DataFim = g.Max(x => x.Data)
+                })
+                .Where(t => t.DataInicio <= hoje && t.DataFim >= hoje)
+                .OrderBy(t => t.DataInicio)
+                .ToListAsync();
+
+            return Ok(turmas);
+        }
+
+        // GET: api/dashboard/turmasAIniciar
+        [HttpGet("turmasAIniciar")]
+        public async Task<ActionResult<IEnumerable<TurmaDecorrerDTO>>> GetTurmasAIniciar()
+        {
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+            var limite = hoje.AddDays(60);
+
+            var turmas = await _context.Horarios
+                .Include(h => h.IdTurmaNavigation)
+                .Include(h => h.IdCursoModuloNavigation)
+                    .ThenInclude(cm => cm.IdCursoNavigation)
+                .GroupBy(h => new
+                {
+                    h.IdTurma,
+                    h.IdTurmaNavigation.NomeTurma,
+                    h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                })
+                .Select(g => new TurmaDecorrerDTO
+                {
+                    IdTurma = g.Key.IdTurma,
+                    NomeTurma = g.Key.NomeTurma,
+                    NomeCurso = g.Key.Nome,
+                    DataInicio = g.Min(x => x.Data),
+                    DataFim = g.Max(x => x.Data)
+                })
+                .Where(t =>
+                    t.DataInicio > hoje &&
+                    t.DataInicio <= limite
+                )
+                .OrderBy(t => t.DataInicio)
+                .ToListAsync();
+
+            return Ok(turmas);
+        }
+
+        // GET: api/dashboard/cursosPorArea
+        [HttpGet("cursosPorArea")]
+        public async Task<ActionResult<IEnumerable<CursosPorAreaDTO>>> GetCursosPorArea()
+        {
+            var data = await _context.Cursos
+                .Include(c => c.IdAreaNavigation)
+                .GroupBy(c => new
+                {
+                    c.IdArea,
+                    c.IdAreaNavigation.Nome
+                })
+                .Select(g => new CursosPorAreaDTO
+                {
+                    IdArea = g.Key.IdArea,
+                    NomeArea = g.Key.Nome,
+                    TotalCursos = g.Count()
+                })
+                .OrderByDescending(x => x.TotalCursos)
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
     }
 }
