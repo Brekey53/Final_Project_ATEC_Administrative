@@ -5,13 +5,18 @@ export interface Utilizador {
   idUtilizador: string;
   nome: string;
   nif: string;
-  telefone?: string;
-  idTipoUtilizador: number;
   dataNascimento: string;
-  sexo: string;
   morada: string;
+  telefone?: string;
+  sexo: string;
+  email: string;
+  idTipoUtilizador: number;
+  tipoUtilizador: string;
   fotografia: File | null;
   anexoFicheiro: File | null;
+
+  
+  
 }
 
 export async function getUtilizadores(): Promise<Utilizador[]> {
