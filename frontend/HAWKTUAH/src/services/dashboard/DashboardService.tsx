@@ -51,3 +51,17 @@ export async function getCursosPorArea(): Promise<CursosPorArea[]> {
   const res = await axios.get(`${API_BASE_URL}/dashboard/cursosPorArea`);
   return res.data;
 }
+
+/* DASHBOARD SERVICE FOR FORMANDO AVALIAÇÕES */
+
+export interface AvaliacaoFormando {
+  idAvaliacao: number;
+  nomeModulo: string;
+  nota: number | null;
+  dataAvaliacao: string | null;
+}
+
+export async function getAvaliacoesFormando(): Promise<AvaliacaoFormando[]> {
+  const res = await axios.get(`${API_BASE_URL}/avaliacoes/formando`);
+  return res.data;
+}
