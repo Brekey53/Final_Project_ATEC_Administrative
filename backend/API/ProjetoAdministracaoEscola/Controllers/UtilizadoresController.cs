@@ -201,6 +201,27 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new { existe });
         }
 
+        [HttpGet("details-by-email")]
+        public async Task<IActionResult> GetUserDetails(string email)
+        {
+            var user = await _context.Utilizadores
+                .Select(u => new {
+                    u.Email,
+                    u.Nome,
+                    u.Nif,
+                    u.DataNascimento,
+                    u.Telefone,
+                    u.Sexo,
+                    u.Morada,
+                    Existe = true
+                })
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null) return Ok(new { Existe = false });
+
+            return Ok(user);
+        }
+
         private bool UtilizadorExists(int id)
         {
             return _context.Utilizadores.Any(e => e.IdUtilizador == id);
