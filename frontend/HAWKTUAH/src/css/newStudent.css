@@ -11,6 +11,13 @@
   gap: 1rem;
 }
 
+.tabela-formadores {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr 130px;
+  align-items: center;
+  gap: 1rem;
+}
+
 .custom-modal-overlay {
   position: fixed;
   inset: 0;
