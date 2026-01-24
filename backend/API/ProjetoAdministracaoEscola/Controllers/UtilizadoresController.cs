@@ -33,15 +33,14 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             return await _context.Utilizadores
                 .Include(u => u.IdTipoUtilizadorNavigation)
-                .Where(u => u.IdTipoUtilizador == 2 || u.IdTipoUtilizador == 3) // Formadores e Formandos
                 .Select(u => new
                 {
-                    UserId = u.IdUtilizador,
-                    u.Nome,
-                    u.Email,
-                    u.Telefone,
-                    u.Nif,
-                    Tipo = u.IdTipoUtilizadorNavigation.TipoUtilizador // Admin, Formador, Formando, Administrativo, Geral
+                    idUtilizador = u.IdUtilizador,
+                    nome = u.Nome,
+                    email = u.Email,
+                    telefone = u.Telefone,
+                    nif = u.Nif,
+                    tipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador // Admin, Formador, Formando, Administrativo, Geral
                 })
                 .ToListAsync();
         }
