@@ -1,27 +1,40 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getFormandos, type Formando } from "../../services/students/formandoService";
+import {
+  getFormandos,
+  type Formando,
+} from "../../services/students/formandoService";
 import "../../css/newStudent.css";
 import { deleteFormando } from "../../services/students/DeleteStudentService";
 import { toast } from "react-hot-toast";
 
 export default function NewStudent() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formandoSelecionado, setFormandoSelecionado] =
     useState<Formando | null>(null);
   const [loading, setLoading] = useState(true);
-  const [err, setError] = useState("");
 
   useEffect(() => {
     async function fetchFormandos() {
-      const data = await getFormandos();
-      setFormandos(data);
-      setLoading(false);
+      try {
+        const data = await getFormandos();
+        setFormandos(data);
+      } catch {
+        toast.error("Erro ao carregar formandos");
+      } finally {
+        setLoading(false);
+      }
     }
-
     fetchFormandos();
   }, []);
+
+  const formandosFiltrados = formandos.filter(
+    (f) =>
+      f.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (f.nif && f.nif.includes(searchTerm)),
+  );
 
   async function handleDeleteFormando() {
     if (!formandoSelecionado) return;
@@ -57,12 +70,15 @@ export default function NewStudent() {
         </Link>
       </div>
 
+      {/* Barra de Pesquisa */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
           <input
             type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar formandos..."
+            className="form-control form-control-lg rounded-3"
+            placeholder="Pesquisar por nome ou NIF..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -72,90 +88,110 @@ export default function NewStudent() {
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
             <div>Formando</div>
             <div>Email</div>
-            <div>Telefone</div>
+            <div>Turma</div> {/* Alterado de Telefone para Turma */}
             <div className="text-end">Ações</div>
           </div>
-          {formandos.map((f) => (
-            <div
-              key={f.idFormando}
-              className="px-4 py-3 border-bottom tabela-alunos"
-            >
-              <div className="d-flex align-items-center gap-3">
-                <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
-                  {f.nome.charAt(0)}
-                </div>
-                <span className="fw-medium">{f.nome}</span>
-              </div>
-              <div className="d-flex align-items-center gap-2 text-muted">
-                <span>{f.email || "-"}</span>
-              </div>
-              <div className="text-muted">{f.phone || "-"}</div>{" "}
-              <div className="d-flex justify-content-end gap-3">
-                <Link to={`edit-formando/${f.idFormando}`}>Editar</Link>
-                <button
-                  className="btn btn-link text-danger p-0"
-                  onClick={() => {
-                    setFormandoSelecionado(f);
-                    setShowDeleteModal(true);
-                  }}
-                >
-                  Apagar
-                </button>
-              </div>
-            </div>
-          ))}
-          {showDeleteModal && formandoSelecionado && (
-            <div
-              className="modal fade show d-block"
-              tabIndex={-1}
-              onClick={() => setShowDeleteModal(false)}
-              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-            >
+
+          {loading ? (
+            <div className="text-center py-5">A carregar...</div>
+          ) : formandosFiltrados.length > 0 ? (
+            formandosFiltrados.map((f) => (
               <div
-                className="modal-dialog modal-dialog-centered"
-                onClick={(e) => e.stopPropagation()}
+                key={f.idFormando}
+                className="px-4 py-3 border-bottom tabela-alunos align-items-center"
               >
-                <div className="modal-content rounded-4 shadow">
-                  <div className="modal-header">
-                    <h5 className="modal-title">Confirmar eliminação</h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowDeleteModal(false)}
-                    />
+                <div className="d-flex align-items-center gap-3">
+                  <div
+                    className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold text-primary"
+                    style={{ width: "40px", height: "40px" }}
+                  >
+                    {f.nome.charAt(0).toUpperCase()}
                   </div>
-
-                  <div className="modal-body">
-                    <p>
-                      Tem a certeza que pretende eliminar o formando{" "}
-                      <strong>{formandoSelecionado.nome}</strong> da plataforma?
-                    </p>
-                    <p className="text-muted mb-0">
-                      Esta ação não pode ser revertida.
-                    </p>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button
-                      className="btn btn-light"
-                      onClick={() => setShowDeleteModal(false)}
-                    >
-                      Cancelar
-                    </button>
-
-                    <button
-                      className="btn btn-danger"
-                      onClick={handleDeleteFormando}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+                  <span className="fw-medium">{f.nome}</span>
+                </div>
+                <div className="text-muted text-truncate">{f.email || "-"}</div>
+                <div>
+                  <span
+                    className={`badge badge-turma-fixa ${
+                      f.turma === "Sem Turma"
+                        ? "bg-light text-muted border"
+                        : "bg-info-subtle text-info-emphasis border border-info"
+                    }`}
+                  >
+                    {f.turma || "Sem Turma"}
+                  </span>
+                </div>
+                <div className="d-flex justify-content-end gap-3">
+                  <Link
+                    to={`edit-formando/${f.idFormando}`}
+                    className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                  >
+                    Editar
+                  </Link>
+                  <button
+                    className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                    onClick={() => {
+                      setFormandoSelecionado(f);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Apagar
+                  </button>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-5 text-muted">
+              Nenhum formando encontrado para "{searchTerm}"
             </div>
           )}
         </div>
       </div>
+
+      {/* Modal de Eliminação */}
+      {showDeleteModal && formandoSelecionado && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4 shadow border-0">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-bold">Confirmar eliminação</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                />
+              </div>
+              <div className="modal-body py-4">
+                <p>
+                  Tem a certeza que pretende eliminar o formando{" "}
+                  <strong>{formandoSelecionado.nome}</strong>?
+                </p>
+                <p className="text-muted mb-0 small">
+                  Esta ação removerá o perfil e as inscrições associadas.
+                </p>
+              </div>
+              <div className="modal-footer border-0 pt-0">
+                <button
+                  className="btn btn-light rounded-pill px-4"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="btn btn-danger rounded-pill px-4"
+                  onClick={handleDeleteFormando}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
