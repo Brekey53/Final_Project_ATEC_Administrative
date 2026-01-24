@@ -40,9 +40,6 @@ export default function NewRoom() {
         prev.filter((s) => s.idSala !== salaSelecionado.idSala),
       );
 
-      setSalas((prev) =>
-        prev.filter((s) => s.idSala !== salaSelecionado.idSala),
-      );
       setShowDeleteModal(false);
       setSalaSelecionado(null);
       toast.success("Sala eliminado com sucesso");
@@ -85,7 +82,6 @@ export default function NewRoom() {
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
-            {" "}
             {/* TODO: Criar css e alterar tabela-alunos ?? */}
             <div>Sala</div>
             <div>N. Sala</div>
