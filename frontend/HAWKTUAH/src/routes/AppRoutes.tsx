@@ -32,6 +32,8 @@ import EditRoom from "../pages/room/EditRoom";
 import AddNewSchedule from "../pages/schedule/AddNewSchedule";
 import EditSchedule from "../pages/schedule/EditSchedule";
 import CursoDetalhe from "../pages/course/CursoDetalhe";
+import AddNewUser from "../pages/users/AddNewUser";
+import EditUser from "../pages/users/EditUser";
 
 function AppRoutes() {
   return (
@@ -60,10 +62,10 @@ function AppRoutes() {
 
           {/* Utilizadores - Admin*/}
           <Route path="/gerir-utilizadores" element={<ManageUsers />} />
-          <Route path="/adicionar-utilizadores" element={<AddNewTeacher />} />
+          <Route path="/adicionar-utilizadores" element={<AddNewUser />} />
           <Route
-            path="/gerir-utilizadores/edit-utilizadores/:id"
-            element={<EditTeacher />}
+            path="gerir-utilizadores/edit-utilizador/:id"
+            element={<EditUser />}
           />
 
           {/* PERFIL - Público*/}
