@@ -136,6 +136,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     utilizadorExistente.Morada = dto.Morada;
                     utilizadorExistente.Telefone = dto.Telefone;
                     utilizadorExistente.Sexo = dto.Sexo;
+                    utilizadorExistente.IdTipoUtilizador = 2; // Formador
                     // Não trocamos a password e email
 
 
@@ -189,7 +190,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (formador == null) return NotFound(new { message = "Formador não encontrado." });
 
             // Validar se o NIF/Email já existe em outro utilizador
-            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif && u.IdUtilizador != formador.IdUtilizador);
+            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif);
             if (nifEmUso) return Conflict(new { message = "O NIF introduzido já pertence a outro utilizador." });
 
             using var transaction = await _context.Database.BeginTransactionAsync();
