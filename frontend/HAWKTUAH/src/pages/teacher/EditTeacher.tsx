@@ -42,7 +42,7 @@ export default function EditTeacher() {
           email: f.email ?? "",
           nome: f.nome ?? "",
           nif: f.nif ?? "",
-          telefone: f.phone ?? "", // Mapeado de 'phone' da API para o estado
+          telefone: f.telefone ?? "", // Mapeado de 'phone' da API para o estado
           dataNascimento: f.dataNascimento?.split("T")[0] ?? "",
           sexo: f.sexo ?? "Masculino",
           morada: f.morada ?? "",

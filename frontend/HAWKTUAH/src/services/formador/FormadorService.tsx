@@ -5,7 +5,7 @@ export interface Formador {
   idFormador: string;
   nome: string;
   nif: string;
-  phone?: string;
+  telefone?: string;
   dataNascimento: string;
   sexo: string;
   morada: string;

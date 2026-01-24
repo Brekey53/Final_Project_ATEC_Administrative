@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -80,20 +81,23 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UtilizadorRegisterDTO userdto)
+        public async Task<IActionResult> Register(UtilizadorRegisterDTO dto)
         {
             string token = Guid.NewGuid().ToString(); // gerar token único
 
-            if (await _context.Utilizadores.AnyAsync(u => u.Email == userdto.Email))
+            if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
             {
                 return BadRequest(new { message = "Email já está em uso." });
             }
 
             var newUser = new Utilizador
             {
-                Email = userdto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(userdto.Password),
-                IdTipoUtilizador = 5,
+                Nome = dto.Nome,
+                Nif = dto.Nif,
+                DataNascimento = dto.DataNascimento,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                IdTipoUtilizador = 5, // criar como geral
+                Email = dto.Email,
                 StatusAtivacao = false,
                 TokenAtivacao = token
             };
@@ -104,7 +108,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 await _context.SaveChangesAsync();
 
                 // Enviar email de ativação
-                bool emailEnviado = await _emailService.SendActivationEmail(newUser.Email, userdto.UserName, token);
+                bool emailEnviado = await _emailService.SendActivationEmail(newUser.Email, dto.Nome, token);
 
                 if (emailEnviado)
                 {
