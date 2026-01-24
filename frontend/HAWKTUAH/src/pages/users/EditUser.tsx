@@ -169,7 +169,7 @@ export default function EditUser() {
       <h2 className="mb-4">Editar Utilizador</h2>
 
       <form onSubmit={handleSubmit} className="row">
-        {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}
+        {/* COLUNA ESQUERDA: FOTO E DOCUMENTO
         <div className="col-lg-4 text-center">
           <div className="card p-3 shadow-sm mb-4">
             <img
@@ -245,10 +245,10 @@ export default function EditUser() {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* COLUNA DIREITA: DADOS */}
-        <div className="col-lg-8">
+        <div className="col-lg-12">
           <div className="card p-4 shadow-sm">
             <div className="row">
               <h5 className="text-primary mb-3">
