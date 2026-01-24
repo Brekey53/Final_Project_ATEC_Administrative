@@ -3,8 +3,8 @@
     public class FormadorCreateDTO
     {
         // Campos Utilizador
-        public string? Email { get; set; }
-        public string? Password { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
         public string Nome { get; set; }
         public string Nif { get; set; }
         public DateOnly DataNascimento { get; set; }
