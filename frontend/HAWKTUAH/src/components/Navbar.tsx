@@ -102,7 +102,7 @@ export default function Navbar() {
             <div className="d-flex justify-content-around">
               <div className="d-flex flex-row justify-content-between align-items-center gap-4">
                 <div className="nav-links d-flex flex-row gap-4 mt-3">
-                  <Link to="Dashboard">
+                  <Link to="dashboard">
                     <p className="mb-0" onClick={closeMenu}>
                       Dashboard
                     </p>
