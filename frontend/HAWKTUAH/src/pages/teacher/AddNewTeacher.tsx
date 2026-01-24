@@ -21,6 +21,8 @@ export default function AddNewTeacher() {
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
+    iban: "",
+    qualificacoes: "",
     fotografia: null as File | null,
     documento: null as File | null,
   });
@@ -37,13 +39,25 @@ export default function AddNewTeacher() {
     setIsExiting(true);
     setTimeout(() => {
       setEmailStatus("idle");
+      setFormData({
+        ...formData,
+        nome: "",
+        nif: "",
+        telefone: "",
+        dataNascimento: "",
+        sexo: "Masculino",
+        morada: "",
+        iban: "",
+        qualificacoes: "",
+        password: "",
+      });
       setIsExiting(false);
     }, 400);
   };
 
   const handleVerificarEmail = async () => {
     if (!formData.email) {
-      toast.error("Por favor, insira o email institucional.");
+      toast.error("Insira o email institucional.");
       return;
     }
 
@@ -54,7 +68,20 @@ export default function AddNewTeacher() {
 
       if (res.data.existe) {
         setEmailStatus("exists");
-        toast.success("Utilizador existente encontrado.");
+        // Preencher os campos com dados da BD
+        setFormData({
+          ...formData,
+          nome: res.data.nome || "",
+          nif: res.data.nif || "",
+          telefone: res.data.telefone || "",
+          dataNascimento: res.data.dataNascimento || "",
+          sexo: res.data.sexo || "Masculino",
+          morada: res.data.morada || "",
+          iban: res.data.iban || "",
+          qualificacoes: res.data.qualificacoes || "",
+          password: "ChangeMe123!", // Valor fictício para passar na validação do DTO se necessário
+        });
+        toast.success("Utilizador encontrado! Dados carregados.");
       } else {
         setEmailStatus("new");
         toast.success("Novo email detetado. Defina uma password.");
@@ -96,7 +123,7 @@ export default function AddNewTeacher() {
     try {
       await postNewFormador(data);
       toast.success("Formador registado com sucesso!");
-      navigate(-1); // Volta para a lista de formadores
+      navigate("/gerir-formadores"); // Volta para a lista de formadores
     } catch (err: any) {
       const errorData = err.response?.data;
 
@@ -196,12 +223,12 @@ export default function AddNewTeacher() {
                   </>
                 ) : (
                   <div className="alert alert-success py-2 mb-0 text-center small">
-                    ✅ Conta vinculada
+                    ✅ Conta vinculada (Utilizador existente)
                   </div>
                 )}
               </div>
 
-              {/* DADOS PESSOAIS */}
+              {/* DADOS PESSOAIS E PROFISSIONAIS (Só aparecem após verificar email) */}
               {emailStatus !== "idle" && (
                 <div
                   className={`row mt-3 ${isExiting ? "fade-out-section" : "fade-in-section"}`}
@@ -211,29 +238,53 @@ export default function AddNewTeacher() {
                     Dados Profissionais e Pessoais
                   </h5>
 
+                  {/* Nome Completo */}
                   <div className="col-md-12 mb-3">
                     <label className="form-label">Nome Completo</label>
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted small mb-1"
+                        style={{ fontSize: "11px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                     <input
                       type="text"
                       name="nome"
-                      className="form-control"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
+                      value={formData.nome}
                       onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
                       required
                     />
                   </div>
 
+                  {/* NIF */}
                   <div className="col-md-4 mb-3">
                     <label className="form-label">NIF</label>
                     <input
                       type="text"
                       name="nif"
-                      className="form-control"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
                       maxLength={9}
+                      value={formData.nif}
                       onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
                       required
                     />
+                    {/* O aviso aparece aqui em baixo para não empurrar o input */}
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                   </div>
 
+                  {/* Sexo */}
                   <div className="col-md-4 mb-3">
                     <label className="form-label">Sexo</label>
                     <select
@@ -241,56 +292,114 @@ export default function AddNewTeacher() {
                       className="form-select"
                       value={formData.sexo}
                       onChange={handleChange}
+                      disabled={emailStatus === "exists"}
                       required
                     >
                       <option value="Masculino">Masculino</option>
                       <option value="Feminino">Feminino</option>
                     </select>
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                   </div>
 
+                  {/* Data Nascimento */}
                   <div className="col-md-4 mb-3">
                     <label className="form-label">Data Nascimento</label>
                     <input
                       type="date"
                       name="dataNascimento"
-                      className="form-control"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
+                      value={formData.dataNascimento}
                       onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
                       required
                     />
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                   </div>
 
+                  {/* Morada */}
+                  <div className="col-md-12 mb-4">
+                    <label className="form-label">Morada Completa</label>
+                    <input
+                      type="text"
+                      name="morada"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
+                      value={formData.morada}
+                      onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
+                      required
+                    />
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contacto e IBAN */}
                   <div className="col-md-6 mb-3">
                     <label className="form-label">Telefone de Contacto</label>
                     <input
                       type="text"
                       name="telefone"
                       className="form-control"
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="col-md-12 mb-4">
-                    <label className="form-label">Morada Completa</label>
-                    <input
-                      type="text"
-                      name="morada"
-                      className="form-control"
+                      value={formData.telefone}
                       onChange={handleChange}
                       required
                     />
                   </div>
 
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">IBAN</label>
+                    <input
+                      type="text"
+                      name="iban"
+                      className="form-control"
+                      value={formData.iban}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  {/* Qualificações */}
+                  <div className="col-md-12 mb-3">
+                    <label className="form-label">Qualificações</label>
+                    <input
+                      type="text"
+                      name="qualificacoes"
+                      className="form-control"
+                      value={formData.qualificacoes}
+                      onChange={handleChange}
+                      placeholder="Ex: Licenciatura em Engenharia Informática, CCP..."
+                    />
+                  </div>
+
+                  {/* Botões de Ação */}
                   <div className="d-flex justify-content-end gap-2 mt-2">
                     <button
                       type="button"
                       className="btn btn-light"
-                      onClick={() => {
-                        window.history.back();
-                      }}
+                      onClick={() => navigate("/gerir-formadores")}
                     >
-                      Voltar
+                      Cancelar
                     </button>
-                    
+
                     <button
                       type="button"
                       className="btn btn-outline-secondary"
