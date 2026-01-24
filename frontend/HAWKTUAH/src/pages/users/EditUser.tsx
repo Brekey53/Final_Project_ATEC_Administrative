@@ -1,14 +1,14 @@
-
-//TODO: alterar isto tudo, está para formadores 
+//TODO: alterar isto tudo, está para formadores
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import FotoPlaceholder from "../../img/avatar.png";
+
 import {
-  updateFormador,
-  getFormador,
-} from "../../services/formador/FormadorService";
+  getUtilizador,
+  updateUtilizador,
+} from "../../services/users/UserService";
 
 export default function EditUser() {
   const { id } = useParams();
@@ -19,6 +19,7 @@ export default function EditUser() {
     nome: "",
     nif: "",
     telefone: "",
+    IdTipoUtilizador: 0,
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
@@ -36,32 +37,31 @@ export default function EditUser() {
 
     const fetchData = async () => {
       try {
-        const res = await getFormador(id);
-        const f = res.data;
-
-        console.log("Dados recebidos:", f); // Verifica aqui os nomes exatos das chaves
-
+        const res = await getUtilizador(id);
+        const u = res.data;
+        console.log(res.data)
         setFormData({
-          email: f.email ?? "",
-          nome: f.nome ?? "",
-          nif: f.nif ?? "",
-          telefone: f.telefone ?? "", // Mapeado de 'phone' da API para o estado
-          dataNascimento: f.dataNascimento?.split("T")[0] ?? "",
-          sexo: f.sexo ?? "Masculino",
-          morada: f.morada ?? "",
+          email: u.email ?? "",
+          nome: u.nome ?? "",
+          nif: u.nif ?? "",
+          telefone: u.telefone ?? "",
+          IdTipoUtilizador: Number(u.idTipoUtilizador),
+          dataNascimento: u.dataNascimento?.split("T")[0] ?? "",
+          sexo: u.sexo,
+          morada: u.morada ?? "",
           fotografia: null,
           documento: null,
         });
 
-        if (f.fotografia) {
-          setFotoPreview(f.fotografia);
+        if (u.fotografia) {
+          setFotoPreview(u.fotografia);
         }
 
-        if (f.anexoFicheiro) {
-          setDocumentPreview(f.anexoFicheiro);
+        if (u.anexoFicheiro) {
+          setDocumentPreview(u.anexoFicheiro);
         }
       } catch (err) {
-        toast.error("Erro ao carregar dados do formador.");
+        toast.error("Erro ao carregar dados do utilizador.");
       } finally {
         setFetching(false);
       }
@@ -73,9 +73,13 @@ export default function EditUser() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    const { name, value } = e.target;
 
+    setFormData({
+      ...formData,
+      [name]: name === "IdTipoUtilizador" ? Number(value) : value,
+    });
+  };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
     if (!files || !files[0]) return;
@@ -102,6 +106,7 @@ export default function EditUser() {
     data.append("Nome", formData.nome);
     data.append("Nif", formData.nif);
     data.append("Telefone", formData.telefone);
+    data.append("IdTipoUtilizador", formData.IdTipoUtilizador.toString());
     data.append("DataNascimento", formData.dataNascimento);
     data.append("Sexo", formData.sexo);
     data.append("Morada", formData.morada);
@@ -115,8 +120,8 @@ export default function EditUser() {
     }
 
     try {
-      await updateFormador(id, data);
-      toast.success("Perfil do formador atualizado!");
+      await updateUtilizador(id, data);
+      toast.success("Perfil do Utilizador atualizado!");
       navigate(-1); // Volta para a listagem
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar dados.");
@@ -161,7 +166,7 @@ export default function EditUser() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Editar Formador</h2>
+      <h2 className="mb-4">Editar Utilizador</h2>
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}
@@ -323,6 +328,23 @@ export default function EditUser() {
                   value={formData.telefone}
                   onChange={handleChange}
                 />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tipo Utilizador</label>
+                <select
+                  name="IdTipoUtilizador"
+                  className="form-select"
+                  value={formData.IdTipoUtilizador}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value={1}>Admin</option>
+                  <option value={2}>Formador</option>
+                  <option value={3}>Formando</option>
+                  <option value={4}>Administrativo</option>
+                  <option value={5}>Geral</option>
+                </select>
               </div>
 
               <div className="col-md-12 mb-3">
