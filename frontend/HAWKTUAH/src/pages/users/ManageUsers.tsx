@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getUtilizadores, type Utilizador } from "../../services/users/ListUsers";
-import "../../css/manageUsers.css"
+import {
+  getUtilizadores,
+  deleteUtilizador,
+  type Utilizador,
+} from "../../services/users/UserService";
+import "../../css/manageUsers.css";
+import { Target } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function ManageUsers() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [utilizadorSelecionado, setUtilizadorelecionado] =
+    useState<Utilizador | null>(null);
 
   useEffect(() => {
     async function fetchUtilizadores() {
@@ -16,6 +26,39 @@ export default function ManageUsers() {
 
     fetchUtilizadores();
   }, []);
+
+  const filteredUtilizadores = utilizadores.filter((u) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      u.nome.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term) ||
+      u.tipoUtilizador.toLowerCase().includes(term) ||
+      u.telefone?.toLowerCase().includes(term)
+    );
+  });
+
+  async function handleDeleteUtilizador() {
+    if (!utilizadorSelecionado) return;
+
+    try {
+      await deleteUtilizador(utilizadorSelecionado.idUtilizador);
+
+      setUtilizadores((prev) =>
+        prev.filter(
+          (u) => u.idUtilizador !== utilizadorSelecionado.idUtilizador,
+        ),
+      );
+
+      setShowDeleteModal(false);
+      setUtilizadorelecionado(null);
+      toast.success("Utilizador eliminado com sucesso");
+    } catch (err: any) {
+      const errorData = err.response?.data;
+      if (errorData?.message) {
+        toast.error(errorData.message || "Erro ao eliminar utilizador");
+      }
+    }
+  }
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -38,7 +81,9 @@ export default function ManageUsers() {
           <input
             type="text"
             className="form-control form-control-lg"
-            placeholder="Pesquisar Utilizadores..."
+            placeholder="Pesquisar Utilizadores (nome, email, telefone, tipo de utilizador)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -52,25 +97,106 @@ export default function ManageUsers() {
             <div>Tipo Utilizador</div>
             <div className="text-end">Ações</div>
           </div>
-          {utilizadores.map((u) => (
-            <div key={u.idUtilizador} className="px-4 py-3 border-bottom tabela-utilizadores">
-              <div className="d-flex align-items-center gap-3">
-                <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
-                  {u.nome.charAt(0)}
+
+          {/* utilizadore com filtro */}
+          {filteredUtilizadores.length > 0 ? (
+            filteredUtilizadores.map((u) => (
+              <div
+                key={u.idUtilizador}
+                className="px-4 py-3 border-bottom tabela-utilizadores"
+              >
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                    {u.nome.charAt(0)}
+                  </div>
+                  <span className="fw-medium">{u.nome}</span>
                 </div>
-                <span className="fw-medium">{u.nome}</span>
+                <div className="d-flex align-items-center gap-2 text-muted">
+                  <span>{u.email}</span>
+                </div>
+                <div className="text-muted">{u.telefone || "-"}</div>{" "}
+                <div className="text-muted">{u.tipoUtilizador || "-"}</div>{" "}
+                <div className="d-flex justify-content-end gap-3">
+                  <Link
+                    to={`edit-utilizador/${u.idUtilizador}`}
+                    className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                  >
+                    Editar
+                  </Link>
+                  <button
+                    className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                    onClick={() => {
+                      setUtilizadorelecionado(u);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Apagar
+                  </button>
+                </div>
               </div>
-              <div className="d-flex align-items-center gap-2 text-muted">
-                <span>{u.email}</span>
-              </div>
-              <div className="text-muted">{u.telefone||"-"}</div>{" "}
-              <div className="text-muted">{u.tipoUtilizador||"-"}</div>{" "}
-              <div className="d-flex justify-content-end gap-3">
-                <Link to={`edit-utilizador/${u.idUtilizador}`}>Editar</Link>
-                <button className="btn btn-link text-danger p-0">Apagar</button>
+            ))
+          ) : (
+            <div className="p-5 text-center text-muted">
+              Nenhum utilizador encontrado para "{searchTerm}"
+            </div>
+          )}
+
+          {/* Modal Delete */}
+
+          {showDeleteModal && utilizadorSelecionado && (
+            <div
+              className="modal fade show d-block"
+              tabIndex={-1}
+              onClick={() => setShowDeleteModal(false)}
+              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+            >
+              <div
+                className="modal-dialog modal-dialog-centered"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-content rounded-4 shadow">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Confirmar eliminação</h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowDeleteModal(false)}
+                    />
+                  </div>
+
+                  <div className="modal-body">
+                    <p>
+                      Tem a certeza que pretende eliminar o utilizador{" "}
+                      <strong>
+                        {utilizadorSelecionado?.nome} -{" "}
+                        {utilizadorSelecionado?.email}{" "}
+                      </strong>{" "}
+                      da plataforma?
+                    </p>
+                    <p className="text-muted mb-0">
+                      Esta ação não pode ser revertida.
+                    </p>
+                  </div>
+
+                  <div className="modal-footer">
+                    <button
+                      className="btn btn-light"
+                      onClick={() => setShowDeleteModal(false)}
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleDeleteUtilizador}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
