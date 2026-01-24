@@ -47,7 +47,7 @@ export default function Navbar() {
     { key: "formandos", label: "Formandos", to: "/formandos" },
     { key: "formadores", label: "Formadores", to: "/formadores" },
     { key: "horarios", label: "Horários", to: "/horarios" },
-    { key: "assistente", label: "Assistente IA", to: "/assistenteAI" },
+    { key: "chatbot", label: "Assistente IA", to: "/chatbot" },
   ];
 
   return (
