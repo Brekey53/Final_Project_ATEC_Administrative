@@ -42,6 +42,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     nif = u.Nif,
                     tipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador // Admin, Formador, Formando, Administrativo, Geral
                 })
+                .OrderBy(u => u.nome)
                 .ToListAsync();
         }
 
