@@ -132,32 +132,24 @@ namespace ProjetoAdministracaoEscola.Controllers
 
 
         // PUT: api/Utilizadores/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUtilizador(int id, UtilizadorUpdateDTO dto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto)
         {
             var user = await _context.Utilizadores.FindAsync(id);
             if (user == null) return NotFound();
 
-            // Atualização de campos permitidos
             user.Nome = dto.Nome;
             user.Telefone = dto.Telefone;
             user.Morada = dto.Morada;
             user.Sexo = dto.Sexo;
             user.DataNascimento = dto.DataNascimento;
+            user.IdTipoUtilizador = dto.IdTipoUtilizador;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UtilizadorExists(id)) return NotFound();
-                throw;
-            }
-
+            await _context.SaveChangesAsync();
             return NoContent();
         }
+
 
         // POST: api/Utilizadores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
