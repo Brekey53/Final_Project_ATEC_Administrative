@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
+using ProjetoAdministracaoEscola.ModelsDTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -23,10 +24,40 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Turmas
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Turma>>> GetTurmas()
+        public async Task<ActionResult<IEnumerable<TurmaDTO>>> GetTurmas()
         {
-            return await _context.Turmas.ToListAsync();
+            return await _context.Turmas
+                .Select(t => new TurmaDTO
+                {
+                    IdTurma = t.IdTurma,
+                    NomeTurma = t.NomeTurma,
+                    DataInicio = t.DataInicio,
+                    DataFim = t.DataFim,
+                    IdCurso = t.IdCurso
+                })
+                .ToListAsync();
         }
+
+        // GET: api/proximasturmas
+        [HttpGet("proximasturmas")]
+        public async Task<ActionResult<IEnumerable<TurmaDTO>>> GetProximasTurmas()
+        {
+            var hoje = DateOnly.FromDateTime(DateTime.Now);
+
+            return await _context.Turmas
+                .Where(t => t.DataInicio > hoje)
+                .OrderBy(t => t.DataInicio)
+                .Select(t => new TurmaDTO
+                {
+                    IdTurma = t.IdTurma,
+                    NomeTurma = t.NomeTurma,
+                    DataInicio = t.DataInicio,
+                    DataFim = t.DataFim,
+                    IdCurso = t.IdCurso
+                })
+                .ToListAsync();
+        }
+
 
         // GET: api/Turmas/5
         [HttpGet("{id}")]
