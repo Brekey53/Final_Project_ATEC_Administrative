@@ -114,11 +114,29 @@ export default function AddNewTeacher() {
     setLoading(true);
 
     const data = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null) {
-        data.append(key, value as any);
-      }
-    });
+
+    // Dados de Utilizador / Perfil
+    data.append("Nome", formData.nome);
+    data.append("Email", formData.email);
+    data.append("Password", formData.password); // Será ignorada no backend se user existir
+    data.append("Nif", formData.nif);
+    data.append("Telefone", formData.telefone);
+    data.append("DataNascimento", formData.dataNascimento);
+    data.append("Sexo", formData.sexo);
+    data.append("Morada", formData.morada);
+
+    // Dados específicos de Formador
+    data.append("Iban", formData.iban);
+    data.append("Qualificacoes", formData.qualificacoes);
+
+    // Ficheiros: O nome aqui DEVE ser igual à propriedade no FormadorCreateDTO
+    if (formData.fotografia) {
+      data.append("Fotografia", formData.fotografia);
+    }
+
+    if (formData.documento) {
+      data.append("Documento", formData.documento);
+    }
 
     try {
       await postNewFormador(data);
