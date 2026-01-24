@@ -61,12 +61,12 @@ export default function ManageUsers() {
                 <span className="fw-medium">{u.nome}</span>
               </div>
               <div className="d-flex align-items-center gap-2 text-muted">
-                <span>{"-"}</span>
+                <span>{u.email}</span>
               </div>
-              <div className="text-muted">{u.phone||"-"}</div>{" "}
-              <div className="text-muted">{u.phone||"-"}</div>{" "}
+              <div className="text-muted">{u.telefone||"-"}</div>{" "}
+              <div className="text-muted">{u.tipoUtilizador||"-"}</div>{" "}
               <div className="d-flex justify-content-end gap-3">
-                <Link to="edit-formando">Editar</Link>
+                <Link to={`edit-utilizador/${u.idUtilizador}`}>Editar</Link>
                 <button className="btn btn-link text-danger p-0">Apagar</button>
               </div>
             </div>

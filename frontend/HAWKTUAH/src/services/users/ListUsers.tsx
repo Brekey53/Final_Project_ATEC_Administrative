@@ -5,18 +5,12 @@ export interface Utilizador {
   idUtilizador: number;
   nome: string;
   email: string;
-  phone?: string;
-  tipoUtilizador: number;
+  telefone: string;
+  tipoUtilizador: string;
 }
 
-const authHeaders = {
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-};
-
 export async function getUtilizadores() {
-  const res = await axios.get(`${API_BASE_URL}/utilizadores`, {
-    headers: authHeaders,
-  });
+  const res = await axios.get(`${API_BASE_URL}/utilizadores`);
 
   return res.data;
 }
