@@ -1,22 +1,29 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config.constants";
 
+export interface RegisterData {
+  Email: string;
+  Password: string;
+  Nome: string;
+  Nif: string;
+  DataNascimento: string; // Formato YYYY-MM-DD
+}
 
-export async function Register(name: string, email: string, password: string) {
+/**
+ * Função de Registo de Utilizadores
+ * Envia os dados para a tabela centralizada de Utilizadores
+ */
+export async function Register(userData: RegisterData) {
   try {
-    const res = await axios.post(`${API_BASE_URL}/auth/register`, {
-      UserName: name,
-      Email: email,
-      Password: password,
-    });
+    const res = await axios.post(
+      `${API_BASE_URL}/auth/register`,
+      userData,
+    );
+
     return res.data;
   } catch (error: any) {
-    // if (error.response) {
-    //   const message = error.response.data.message || error.response.data;
-    //   throw Error(message);
-    // }
-    // throw Error("Erro ao ligar ao servidor");
-    console.log(error.response);
+    console.error("Erro no Registo:", error.response?.data || error.message);
+
     throw error;
   }
 }

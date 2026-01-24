@@ -1,22 +1,24 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Register } from "../../auth/ResgisterService";
 import toast from "react-hot-toast";
 
 export default function CreateAccount() {
   const navigate = useNavigate();
+
+  // Estados alinhados com o DTO
+  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
+  const [nif, setNif] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Função para validar a força da password
   const isPasswordStrong = (pass: string) => {
-    // Exige: Mínimo 6 caracteres, pelo menos uma letra e um número
     const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
     return regex.test(pass);
   };
@@ -24,28 +26,34 @@ export default function CreateAccount() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    //Validação de Tamanho e Complexidade
-    if (password.length < 6) {
-      toast.error("A password deve ter pelo menos 6 caracteres.");
+    if (password !== confirmPassword) {
+      toast.error("As passwords não coincidem");
       return;
     }
 
     if (!isPasswordStrong(password)) {
-      toast.error("A password deve conter pelo menos uma letra e um número.");
-      return;
-    }
-
-    // Validação de Confirmação
-    if (password !== confirmPassword) {
-      toast.error("As passwords não coincidem");
+      toast.error(
+        "A password deve ter pelo menos 6 caracteres, incluindo uma letra e um número.",
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      await Register(name, email, password);
-      toast.success("Registado com sucesso, verifique o seu email!");
+      // Objeto formatado para o C# (as chaves devem bater com o DTO ou o JSON da API)
+      const registerData = {
+        Email: email,
+        Password: password,
+        Nome: name,
+        Nif: nif,
+        DataNascimento: birthDate,
+      };
+
+      await Register(registerData);
+      toast.success(
+        "Registado com sucesso! Verifique o seu email para ativar a conta.",
+      );
       navigate("/Login", { replace: true });
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao criar conta.");
@@ -61,15 +69,16 @@ export default function CreateAccount() {
           <button className="btn text-muted rounded-3">← Voltar</button>
         </Link>
 
-        <h2 className="text-center">Insira os seus dados</h2>
+        <h2 className="text-center">Criar Conta</h2>
 
         <form
           className="d-flex flex-column justify-content-center mt-4"
           onSubmit={handleSubmit}
         >
+          {/* Nome Completo */}
           <div className="mb-3">
             <label className="form-label">
-              Nome <span className="required-star">*</span>
+              Nome Completo <span className="required-star">*</span>
             </label>
             <input
               type="text"
@@ -79,6 +88,39 @@ export default function CreateAccount() {
               required
             />
           </div>
+
+          <div className="row">
+            {/* NIF */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label">
+                NIF <span className="required-star">*</span>
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                value={nif}
+                onChange={(e) => setNif(e.target.value)}
+                maxLength={9}
+                required
+              />
+            </div>
+
+            {/* Data Nascimento */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label">
+                Data de Nascimento <span className="required-star">*</span>
+              </label>
+              <input
+                type="date"
+                className="form-control"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Email */}
           <div className="mb-3">
             <label className="form-label">
               Email <span className="required-star">*</span>
@@ -91,6 +133,8 @@ export default function CreateAccount() {
               required
             />
           </div>
+
+          {/* Password */}
           <div className="mb-3">
             <label className="form-label">
               Password <span className="required-star">*</span>
@@ -101,12 +145,10 @@ export default function CreateAccount() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
             />
-            <div className="form-text">
-              Mínimo de 6 caracteres com letras e números.
-            </div>
           </div>
+
+          {/* Confirmar Password */}
           <div className="mb-2">
             <label className="form-label">
               Repita Password <span className="required-star">*</span>
@@ -119,6 +161,7 @@ export default function CreateAccount() {
               required
             />
           </div>
+
           <div className="mb-3 form-check">
             <input
               type="checkbox"
@@ -136,8 +179,8 @@ export default function CreateAccount() {
             </label>
           </div>
 
-          <button className="btn btn-primary" disabled={loading}>
-            {loading ? "A registar..." : "Enviar"}
+          <button className="btn btn-primary py-2 fw-bold" disabled={loading}>
+            {loading ? "A registar..." : "Criar Conta"}
           </button>
         </form>
       </div>
