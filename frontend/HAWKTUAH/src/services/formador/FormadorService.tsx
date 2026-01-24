@@ -3,12 +3,15 @@ import { API_BASE_URL } from "../../config.constants";
 
 export interface Formador {
   idFormador: string;
+  iban: string;
+  qualificacoes: string;
   nome: string;
   nif: string;
-  telefone?: string;
   dataNascimento: string;
-  sexo: string;
   morada: string;
+  telefone?: string;
+  sexo: string;
+  email: string;
   fotografia: File | null;
   anexoFicheiro: File | null;
 }
@@ -39,9 +42,7 @@ export async function updateFormador(idFormador: string, data: any) {
 }
 
 export async function checkEmail(email: string) {
-  const res = await axios.get(
-    `${API_BASE_URL}/utilizadores/check-email?email=${email}`,
-  );
-
+  const res = await axios.get(`${API_BASE_URL}/utilizadores/details-by-email?email=${email}`);
+  
   return res;
 }
