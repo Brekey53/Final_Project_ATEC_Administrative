@@ -1,69 +1,75 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { API_BASE_URL } from "../../config.constants";
+import { useParams, useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 import FotoPlaceholder from "../../img/avatar.png";
-import { updateFormando } from "../../services/students/UpdateStudentService";
+import {
+  updateFormando,
+  getFormandoById,
+  getTurmas,
+  getEscolaridades,
+} from "../../services/students/formandoService";
 
 export default function EditFormando() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
     nome: "",
     nif: "",
-    phone: "",
+    telefone: "",
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
     idTurma: "",
+    idEscolaridade: "",
     fotografia: null as File | null,
     anexoFicheiro: null as File | null,
   });
 
   const [turmas, setTurmas] = useState<any[]>([]);
+  const [escolaridades, setEscolaridades] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [fotoPreview, setFotoPreview] = useState<string>(FotoPlaceholder);
-  const [documentPreview, setDocumemtPreview] = useState<string | null>(null);
+  const [documentPreview, setDocumentPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
       try {
-        const [formandoRes, turmasRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/formandos/${id}`),
-          axios.get(`${API_BASE_URL}/turmas`),
+        // Carrega dados do formando, turmas e escolaridades
+        const [f, dadosTurmas, dadosEscolaridades] = await Promise.all([
+          getFormandoById(id),
+          getTurmas(),
+          getEscolaridades(),
         ]);
 
-        const f = formandoRes.data;
-        console.log("Dados recebidos:", f); // Verifica aqui os nomes exatos das chaves
+        setTurmas(dadosTurmas);
+        setEscolaridades(dadosEscolaridades);
 
+        // Preenche o formulário (split na data para o formato YYYY-MM-DD)
         setFormData({
           email: f.email ?? "",
           nome: f.nome ?? "",
           nif: f.nif ?? "",
-          phone: f.phone ?? "",
+          telefone: f.telefone ?? "",
           dataNascimento: f.dataNascimento?.split("T")[0] ?? "",
           sexo: f.sexo ?? "Masculino",
           morada: f.morada ?? "",
           idTurma: f.idTurma ?? "",
+          idEscolaridade: f.idEscolaridade ?? "",
           fotografia: null,
           anexoFicheiro: null,
         });
 
-        if (f.fotografia) {
-          setFotoPreview(f.fotografia);
-        }
-
-        if (f.anexoFicheiro) {
-          setDocumemtPreview(f.anexoFicheiro);
-        }
-
-        setTurmas(turmasRes.data);
-      } catch {
+        if (f.fotografia) setFotoPreview(f.fotografia);
+        if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro);
+      } catch (err) {
         toast.error("Erro ao carregar dados do formando.");
+      } finally {
+        setFetching(false);
       }
     };
 
@@ -84,42 +90,48 @@ export default function EditFormando() {
     setFormData({ ...formData, [name]: file });
 
     const previewUrl = URL.createObjectURL(file);
-
     if (name === "fotografia") {
       setFotoPreview(previewUrl);
-    } else if (name === "anexoFicheiro") {
-      setDocumemtPreview(previewUrl);
+    } else {
+      setDocumentPreview(previewUrl);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
-
     setLoading(true);
 
     const data = new FormData();
+    // Dados de Utilizador / Perfil
     data.append("Nome", formData.nome);
     data.append("Nif", formData.nif);
-    data.append("Telefone", formData.phone);
+    data.append("Telefone", formData.telefone);
     data.append("DataNascimento", formData.dataNascimento);
     data.append("Sexo", formData.sexo);
     data.append("Morada", formData.morada);
 
-    if (formData.idTurma) data.append("IdTurma", formData.idTurma.toString());
+    // Dados específicos de formando
+    data.append("IdEscolaridade", formData.idEscolaridade);
+    if (formData.idTurma) {
+      data.append("IdTurma", formData.idTurma);
+    }
 
-    // Ficheiros: Só anexar se forem do tipo File (novos uploads)
-    if (formData.fotografia instanceof File)
+    // Só anexa ficheiros se o utilizador tiver feito upload de novos (tipo File)
+    if (formData.fotografia instanceof File) {
       data.append("Fotografia", formData.fotografia);
-    if (formData.anexoFicheiro instanceof File)
+    }
+    if (formData.anexoFicheiro instanceof File) {
       data.append("Documento", formData.anexoFicheiro);
+    }
 
     try {
       await updateFormando(id, data);
-      toast.success("Perfil atualizado!");
-      window.history.back();
+      toast.success("Perfil atualizado com sucesso!");
+      navigate("/gerir-formandos");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro no servidor.");
+      const msg = err.response?.data?.message || "Erro ao atualizar dados.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -154,9 +166,12 @@ export default function EditFormando() {
     }
   };
 
+  if (fetching)
+    return <div className="container mt-5">A carregar dados...</div>;
+
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Editar Formando</h2>
+      <h2 className="mb-4 text-primary fw-bold">Editar Formando</h2>
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}
@@ -182,11 +197,11 @@ export default function EditFormando() {
 
           <div className="card p-3 shadow-sm">
             <label className="form-label text-start d-block fw-bold">
-              Documento Anexo
+              Currículo / Documento
             </label>
             <input
               type="file"
-              name="anexoFicheiro"
+              name="documento"
               className="form-control mb-3"
               accept=".pdf,.doc,.docx"
               onChange={handleFileChange}
@@ -239,10 +254,13 @@ export default function EditFormando() {
 
         {/* COLUNA DIREITA: DADOS */}
         <div className="col-lg-8">
-          <div className="card p-4 shadow-sm">
+          <div className="card p-4 shadow-sm border-0 rounded-4">
             <div className="row">
-              <h5 className="text-primary mb-3">Dados Pessoais</h5>
+              <h5 className="text-secondary mb-3">
+                Dados de Acesso e Pessoais
+              </h5>
 
+              {/* Email */}
               <div className="col-md-12 mb-3">
                 <label className="form-label">Email</label>
                 <input
@@ -251,8 +269,12 @@ export default function EditFormando() {
                   value={formData.email}
                   disabled
                 />
+                <div className="form-text">
+                  O email não pode ser alterado por razões de segurança.
+                </div>
               </div>
 
+              {/* Nome Completo */}
               <div className="col-md-12 mb-3">
                 <label className="form-label">Nome Completo</label>
                 <input
@@ -265,65 +287,88 @@ export default function EditFormando() {
                 />
               </div>
 
+              {/* NIF */}
               <div className="col-md-4 mb-3">
                 <label className="form-label">NIF</label>
                 <input
-                  required
                   type="text"
                   name="nif"
                   className="form-control"
                   value={formData.nif}
                   onChange={handleChange}
                   maxLength={9}
+                  required
                 />
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* Sexo */}
+              <div className="col-md-4 mb-3">
                 <label className="form-label">Sexo</label>
                 <select
-                  required
                   name="sexo"
                   className="form-select"
                   value={formData.sexo}
                   onChange={handleChange}
+                  required
                 >
                   <option value="Masculino">Masculino</option>
                   <option value="Feminino">Feminino</option>
                 </select>
               </div>
 
-              <div className="col-md-5 mb-3">
+              {/* Data de Nascimento */}
+              <div className="col-md-4 mb-3">
                 <label className="form-label">Data de Nascimento</label>
                 <input
-                  required
                   type="date"
                   name="dataNascimento"
                   className="form-control"
                   value={formData.dataNascimento}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
+              {/* Contacto */}
               <div className="col-md-6 mb-3">
-                <label className="form-label">Telefone</label>
+                <label className="form-label">Telefone de Contacto</label>
                 <input
                   type="text"
-                  name="phone"
+                  name="telefone"
                   className="form-control"
-                  value={formData.phone}
+                  value={formData.telefone}
                   onChange={handleChange}
                 />
               </div>
 
+              {/* Turma e Escolaridade */}
               <div className="col-md-6 mb-3">
-                <label className="form-label">Turma</label>
+                <label className="form-label">Escolaridade</label>
+                <select
+                  name="idEscolaridade"
+                  className="form-select"
+                  value={formData.idEscolaridade}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Selecionar Nível...</option>
+                  {escolaridades.map((e) => (
+                    <option key={e.idEscolaridade} value={e.idEscolaridade}>
+                      {e.nivel}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Turma Atual</label>
                 <select
                   name="idTurma"
                   className="form-select"
                   value={formData.idTurma}
                   onChange={handleChange}
                 >
-                  <option value="">Sem turma</option>
+                  <option value="">Sem Turma Ativa</option>
                   {turmas.map((t) => (
                     <option key={t.idTurma} value={t.idTurma}>
                       {t.nomeTurma}
@@ -332,30 +377,32 @@ export default function EditFormando() {
                 </select>
               </div>
 
-              <div className="col-md-12 mb-3">
-                <label className="form-label">Morada</label>
+              {/* Morada */}
+              <div className="col-md-12 mb-4">
+                <label className="form-label">Morada Completa</label>
                 <input
-                  required
                   type="text"
                   name="morada"
                   className="form-control"
                   value={formData.morada}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
+            {/* Botões de Ação */}
+            <div className="d-flex justify-content-end gap-2 mt-2">
               <button
                 type="button"
-                className="btn btn-light"
-                onClick={() => window.history.back()}
+                className="btn btn-light rounded-pill px-4"
+                onClick={() => navigate("/gerir-formandos")}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary rounded-pill px-4"
                 disabled={loading}
               >
                 {loading ? "A atualizar..." : "Guardar Alterações"}
