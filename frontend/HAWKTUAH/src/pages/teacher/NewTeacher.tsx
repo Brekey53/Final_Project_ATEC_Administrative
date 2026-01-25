@@ -92,7 +92,7 @@ export default function NewTeacher() {
             <div className="text-end">Ações</div>
           </div>
 
-          {/* Map de modulos filtrados */}
+          {/* Map de formandores filtrados */}
           {filteredFormadores.length > 0 ? (
             filteredFormadores.map((f) => (
               <div
