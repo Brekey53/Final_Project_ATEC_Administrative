@@ -19,6 +19,8 @@ export default function EditTeacher() {
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
+    iban: "",
+    qualificacoes: "",
     fotografia: null as File | null,
     documento: null as File | null,
   });
@@ -42,10 +44,12 @@ export default function EditTeacher() {
           email: f.email ?? "",
           nome: f.nome ?? "",
           nif: f.nif ?? "",
-          telefone: f.telefone ?? "", // Mapeado de 'phone' da API para o estado
+          telefone: f.telefone ?? "",
           dataNascimento: f.dataNascimento?.split("T")[0] ?? "",
           sexo: f.sexo ?? "Masculino",
           morada: f.morada ?? "",
+          iban: res.data.iban || "",
+          qualificacoes: res.data.qualificacoes || "",
           fotografia: null,
           documento: null,
         });
@@ -96,12 +100,17 @@ export default function EditTeacher() {
     setLoading(true);
 
     const data = new FormData();
+    // Dados de Utilizador / Perfil
     data.append("Nome", formData.nome);
     data.append("Nif", formData.nif);
     data.append("Telefone", formData.telefone);
     data.append("DataNascimento", formData.dataNascimento);
     data.append("Sexo", formData.sexo);
     data.append("Morada", formData.morada);
+
+    // Dados específicos de Formador
+    data.append("Iban", formData.iban);
+    data.append("Qualificacoes", formData.qualificacoes);
 
     // Ficheiros: Só anexar se forem novos (instância de File)
     if (formData.fotografia instanceof File) {
@@ -114,7 +123,7 @@ export default function EditTeacher() {
     try {
       await updateFormador(id, data);
       toast.success("Perfil do formador atualizado!");
-      navigate(-1); // Volta para a listagem
+      navigate("/gerir-formadores"); // Volta para a listagem
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar dados.");
     } finally {
@@ -247,6 +256,7 @@ export default function EditTeacher() {
                 Dados Pessoais e Profissionais
               </h5>
 
+              {/* Email */}
               <div className="col-md-12 mb-3">
                 <label className="form-label">Email</label>
                 <input
@@ -260,6 +270,7 @@ export default function EditTeacher() {
                 </div>
               </div>
 
+              {/* Nome Completo */}
               <div className="col-md-12 mb-3">
                 <label className="form-label">Nome Completo</label>
                 <input
@@ -272,6 +283,7 @@ export default function EditTeacher() {
                 />
               </div>
 
+              {/* NIF */}
               <div className="col-md-4 mb-3">
                 <label className="form-label">NIF</label>
                 <input
@@ -285,6 +297,7 @@ export default function EditTeacher() {
                 />
               </div>
 
+              {/* Sexo */}
               <div className="col-md-4 mb-3">
                 <label className="form-label">Sexo</label>
                 <select
@@ -299,6 +312,7 @@ export default function EditTeacher() {
                 </select>
               </div>
 
+              {/* Data de Nascimento */}
               <div className="col-md-4 mb-3">
                 <label className="form-label">Data de Nascimento</label>
                 <input
@@ -311,35 +325,64 @@ export default function EditTeacher() {
                 />
               </div>
 
+              {/* Morada */}
+              <div className="col-md-12 mb-4">
+                <label className="form-label">Morada Completa</label>
+                <input
+                  type="text"
+                  name="morada"
+                  className={`form-control bg-light"}`}
+                  value={formData.morada}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* Contacto e IBAN */}
               <div className="col-md-6 mb-3">
-                <label className="form-label">Telefone</label>
+                <label className="form-label">Telefone de Contacto</label>
                 <input
                   type="text"
                   name="telefone"
                   className="form-control"
                   value={formData.telefone}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
-              <div className="col-md-12 mb-3">
-                <label className="form-label">Morada</label>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">IBAN</label>
                 <input
                   type="text"
-                  name="morada"
+                  name="iban"
                   className="form-control"
-                  value={formData.morada}
+                  value={formData.iban}
                   onChange={handleChange}
                   required
                 />
               </div>
+
+              {/* Qualificações */}
+              <div className="col-md-12 mb-3">
+                <label className="form-label">Qualificações</label>
+                <input
+                  type="text"
+                  name="qualificacoes"
+                  className="form-control"
+                  value={formData.qualificacoes}
+                  onChange={handleChange}
+                  placeholder="Ex: Licenciatura em Engenharia Informática, CCP..."
+                />
+              </div>
             </div>
 
+            {/* Botões de Ação */}
             <div className="d-flex justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/gerir-formadores")}
               >
                 Cancelar
               </button>
