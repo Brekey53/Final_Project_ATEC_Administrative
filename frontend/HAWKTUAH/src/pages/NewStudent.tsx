@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getFormandos, type Formando } from "../services/students/formandoService";
+import {
+  getFormandos,
+  type Formando,
+} from "../services/students/FormandoService";
 import "../css/newStudent.css";
 import { deleteFormando } from "../services/students/DeleteStudentService";
 import { toast } from "react-hot-toast";
@@ -30,7 +33,7 @@ export default function NewStudent() {
       await deleteFormando(formandoSelecionado.idFormando);
 
       setFormandos((prev) =>
-        prev.filter((f) => f.idFormando !== formandoSelecionado.idFormando)
+        prev.filter((f) => f.idFormando !== formandoSelecionado.idFormando),
       );
 
       setShowDeleteModal(false);
