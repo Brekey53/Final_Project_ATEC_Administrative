@@ -35,6 +35,10 @@ import CursoDetalhe from "../pages/course/CursoDetalhe";
 import AddNewUser from "../pages/users/AddNewUser";
 import EditUser from "../pages/users/EditUser";
 
+import Schedule from "../pages/schedule/Schedules";
+
+import Chatbot from "../pages/chatbot/Chatbot";
+
 function AppRoutes() {
   return (
     <Routes>
@@ -116,6 +120,7 @@ function AppRoutes() {
           
           {/*Privado (?) */}
           {/*<Route path="/horarios" element={<Horario />} /> */}
+          <Route path="/horarios" element={<Schedule />} />
           
           {/* Horarios - Admin */}
           <Route path="/gerir-horarios" element={<NewSchedule />} />
@@ -124,6 +129,9 @@ function AppRoutes() {
             path="/gerir-horarios/edit-horario/:id"
             element={<EditSchedule />}
           />
+          ~
+          {/* CHATBOT */}
+          <Route path="/chatbot" element={<Chatbot />} />
         </Route>
       </Route>
     </Routes>

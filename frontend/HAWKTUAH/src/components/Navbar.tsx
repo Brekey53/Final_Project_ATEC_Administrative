@@ -6,6 +6,8 @@ import fotoDefault from "../img/avatarNavbar.png";
 import { useEffect, useState } from "react";
 
 import NavbarService from "../services/navbar/NavbarService";
+import { mapUserRole } from "../auth/MapUserRole";
+import { NAV_PERMISSIONS } from "../auth/NavPermissions";
 
 export default function Navbar() {
   const [isNavExpanded, setIsNavExpanded] = useState(false);
@@ -30,6 +32,23 @@ export default function Navbar() {
 
     carregarFoto();
   }, []);
+  const user = authService.decodeToken();
+  const role = user
+  ? mapUserRole(Number(user.tipoUtilizador))
+  : "GERAL";
+
+
+  const allowedLinks = NAV_PERMISSIONS[role];
+
+  const navLinks = [
+    { key: "dashboard", label: "Dashboard", to: "/dashboard" },
+    { key: "perfil", label: "Perfil", to: "/perfil" },
+    { key: "cursos", label: "Cursos", to: "/cursos" },
+    { key: "formandos", label: "Formandos", to: "/formandos" },
+    { key: "formadores", label: "Formadores", to: "/formadores" },
+    { key: "horarios", label: "Horários", to: "/horarios" },
+    { key: "chatbot", label: "Assistente IA", to: "/chatbot" },
+  ];
 
   return (
     <>
@@ -102,41 +121,13 @@ export default function Navbar() {
             <div className="d-flex justify-content-around">
               <div className="d-flex flex-row justify-content-between align-items-center gap-4">
                 <div className="nav-links d-flex flex-row gap-4 mt-3">
-                  <Link to="Dashboard">
-                    <p className="mb-0" onClick={closeMenu}>
-                      Dashboard
-                    </p>
-                  </Link>
-                  <Link to="Perfil">
-                    <p className="mb-0" onClick={closeMenu}>
-                      Perfil
-                    </p>{" "}
-                  </Link>
-                  <Link to="Cursos">
-                    <p className="mb-0" onClick={closeMenu}>
-                      Cursos
-                    </p>
-                  </Link>
-                  <Link to="Formandos">
-                    <p className="mb-0" onClick={closeMenu}>
-                      Formandos
-                    </p>
-                  </Link>
-                  <Link to="Perfil">
-                    <p className="mb-0" onClick={closeMenu}>
-                      Formadores
-                    </p>
-                  </Link>
-                  <Link to="Perfil">
-                    <p className="mb-0" onClick={closeMenu}>
-                      Horários
-                    </p>
-                  </Link>
-                  <Link to="Perfil">
-                    <p className="mb-0" onClick={closeMenu}>
-                      Assistente IA
-                    </p>
-                  </Link>
+                  {navLinks
+                    .filter((link) => allowedLinks.includes(link.key as any))
+                    .map((link) => (
+                      <Link key={link.key} to={link.to} onClick={closeMenu}>
+                        <p className="mb-0">{link.label}</p>
+                      </Link>
+                    ))}
                 </div>
               </div>
             </div>

@@ -2,17 +2,16 @@ import { useEffect, useState } from "react";
 import Cursos from "../../pages/course/Cursos";
 import Horarios from "../../pages/schedule/Schedules";
 import { authService } from "../../auth/AuthService";
-import { getHorariosFormando } from "../../services/calendar/CalendarService"
-
-type Tab = "cursos" | "horarios";
+import { getHorariosFormando } from "../../services/calendar/CalendarService";
+import {type AvaliacaoFormando, getAvaliacoesFormando} from "../../services/dashboard/DashboardService"
 
 export default function FormandoDashboard() {
-  const [activeTab, setActiveTab] = useState<Tab>("cursos");
   const [events, setEvents] = useState<[]>([]);
 
   const user = authService.decodeToken();
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoFormando[]>([]);
 
-useEffect(() => {
+  useEffect(() => {
     async function fetchHorarios() {
       try {
         const data = await getHorariosFormando();
@@ -33,6 +32,9 @@ useEffect(() => {
     fetchHorarios();
   }, []);
 
+  useEffect(() => {
+  getAvaliacoesFormando().then(setAvaliacoes);
+}, []);
 
   if (!user) return null;
 
@@ -47,48 +49,36 @@ useEffect(() => {
         </small>
       </div>
 
-      {/* Tabs */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <div className="d-flex justify-content-center gap-4 mb-4">
-            <button
-              className={`btn ${
-                activeTab === "cursos" ? "btn-success" : "btn-outline-primary"
-              }`}
-              onClick={() => setActiveTab("cursos")}
-            >
-              Cursos
-            </button>
-
-            <button
-              className={`btn ${
-                activeTab === "horarios" ? "btn-success" : "btn-outline-primary"
-              }`}
-              onClick={() => setActiveTab("horarios")}
-            >
-              Horário Semanal
-            </button>
-          </div>
-
-          {activeTab === "cursos" && <Cursos />}
-          {activeTab === "horarios" && <Horarios />}
-        </div>
-      </div>
-
       {/* Avaliações */}
       <div className="card shadow-sm">
         <div className="card-body">
-          <h5 className="mb-3">Avaliações</h5>
+          <h4 className="mb-3">Avaliações</h4>
 
-          <ul className="list-group">
-            <li className="list-group-item d-flex justify-content-between">
-              <span>Módulo React</span>
-              <strong>16</strong>
-            </li>
-          </ul>
+          {avaliacoes.length === 0 ? (
+            <p className="text-muted">Ainda não existem avaliações</p>
+          ) : (
+            <ul className="list-group">
+              {avaliacoes.map((a) => (
+                <li key={a.idAvaliacao} className="list-group-item">
+                  <strong>{a.nomeModulo}</strong>
+                  <div className="small text-muted">
+                    {a.dataAvaliacao ?? "-"} · Nota: {a.nota ?? "-"}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
+      {/* Horários */}
+      <div className="card shadow-sm mt-4">
+        <div className="card-body">
+          <div className="d-flex justify-content-center gap-4 mb-4">
+            <Horarios />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

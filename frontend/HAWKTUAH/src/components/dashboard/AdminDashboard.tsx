@@ -7,6 +7,12 @@ import QuickActionsCards from "../../components/QuickActionsCards";
 import {
   getDashboardStats,
   type DashboardStats,
+  getCursosADecorrer,
+  type CursosADecorrer,
+  getTurmasAIniciar,
+  getCursosPorArea,
+  type CursosPorArea,
+  type TurmaAIniciar,
 } from "../../services/dashboard/DashboardService";
 
 import {
@@ -29,6 +35,19 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
+  const [cursosADecorrer, setCursosADecorrer] = useState<CursosADecorrer[]>([]);
+
+  const [turmasAIniciar, setTurmasAIniciar] = useState<TurmaAIniciar[]>([]);
+  const [cursosPorArea, setCursosPorArea] = useState<CursosPorArea[]>([]);
+
+  useEffect(() => {
+    getCursosPorArea().then(setCursosPorArea);
+  }, []);
+
+  useEffect(() => {
+    getTurmasAIniciar().then(setTurmasAIniciar);
+  }, []);
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -41,6 +60,20 @@ export default function AdminDashboard() {
       }
     }
     loadData();
+  }, []);
+
+  useEffect(() => {
+    async function loadTurmasADecorrer() {
+      try {
+        const data = await getCursosADecorrer();
+        setCursosADecorrer(data);
+      } catch (error) {
+        console.error("Erro ao carregar dashboard", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTurmasADecorrer();
   }, []);
 
   return (
@@ -196,11 +229,34 @@ export default function AdminDashboard() {
                     >
                       Ver todos
                     </a>
-                    {/* TODO: INSERIR AQUI TODOS OS CURSOS A DECORRER */}
                   </div>
-                  <div className="d-flex flex-column align-items-center justify-content-center my-auto py-5">
-                    <p className="text-muted small">Nenhum curso a decorrer</p>
-                  </div>
+                  {cursosADecorrer.length === 0 ? (
+                    <div className="d-flex flex-column align-items-center justify-content-center my-auto py-5">
+                      <p className="text-muted small">
+                        Nenhuma turma a decorrer
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="list-group list-group-flush">
+                      {cursosADecorrer.map((t) => (
+                        <li
+                          key={t.idTurma}
+                          className="list-group-item d-flex justify-content-between align-items-center px-0"
+                        >
+                          <div>
+                            <strong>{t.nomeCurso}</strong>
+                            <div className="text-muted small">
+                              {t.nomeTurma}
+                            </div>
+                          </div>
+
+                          <span className="badge bg-success-subtle text-success">
+                            A decorrer
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
               <div className="col-md-6">
@@ -216,9 +272,41 @@ export default function AdminDashboard() {
                     >
                       Ver todos
                     </a>
-                    {/* TODO: INSERIR AQUI TODOS OS CURSOS A COMEÇAR NOS PROXIMOS 60 DIAS*/}
                   </div>
-                  <div className="p-3 rounded-3 d-flex justify-content-between align-items-center"></div>
+                  {turmasAIniciar.length === 0 ? (
+                    <div className="text-center py-5">
+                      <p className="text-muted small">
+                        Nenhuma turma a iniciar nos próximos 60 dias
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="list-group list-group-flush">
+                      {turmasAIniciar.map((t) => (
+                        <li
+                          key={t.idTurma}
+                          className="list-group-item px-0 py-3 border-0"
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            {/* INFO */}
+                            <div>
+                              <div className="fw-semibold">{t.nomeCurso}</div>
+                              <div className="text-muted small">
+                                {t.nomeTurma} · Início{" "}
+                                {new Date(t.dataInicio).toLocaleDateString(
+                                  "pt-PT",
+                                )}
+                              </div>
+                            </div>
+
+                            {/* STATUS */}
+                            <span className="badge bg-primary-subtle text-primary rounded-pill px-3">
+                              Em breve
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </div>
@@ -238,8 +326,24 @@ export default function AdminDashboard() {
                     >
                       Ver todos
                     </a>
-                    {/* TODO: INSERIR AQUI TODOS OS CURSOS POR ÁREA */}
                   </div>
+                  {cursosPorArea.length === 0 ? (
+                    <p className="text-muted small">Sem dados disponíveis</p>
+                  ) : (
+                    <ul className="list-group list-group-flush">
+                      {cursosPorArea.map((area) => (
+                        <li
+                          key={area.idArea}
+                          className="list-group-item d-flex justify-content-between align-items-center px-0"
+                        >
+                          <span>{area.nomeArea}</span>
+                          <span className="badge bg-primary rounded-pill">
+                            {area.totalCursos}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </div>
