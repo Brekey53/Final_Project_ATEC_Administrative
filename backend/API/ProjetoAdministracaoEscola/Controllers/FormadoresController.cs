@@ -81,7 +81,6 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> CreateFormador([FromForm] FormadorCreateDTO dto)
         {
             
-
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -190,7 +189,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (formador == null) return NotFound(new { message = "Formador não encontrado." });
 
             // Validar se o NIF/Email já existe em outro utilizador
-            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif);
+            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif && u.IdUtilizador != formador.IdUtilizador);
             if (nifEmUso) return Conflict(new { message = "O NIF introduzido já pertence a outro utilizador." });
 
             using var transaction = await _context.Database.BeginTransactionAsync();
