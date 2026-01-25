@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getFormandos,
+  deleteFormando,
   type Formando,
 } from "../../services/students/formandoService";
 import "../../css/newStudent.css";
-import { deleteFormando } from "../../services/students/DeleteStudentService";
 import { toast } from "react-hot-toast";
 
 export default function NewStudent() {
@@ -102,7 +102,7 @@ export default function NewStudent() {
               >
                 <div className="d-flex align-items-center gap-3">
                   <div
-                    className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold text-primary"
+                    className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border"
                     style={{ width: "40px", height: "40px" }}
                   >
                     {f.nome.charAt(0).toUpperCase()}
