@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_BASE_URL } from "../../config.constants";
-import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 import FotoPlaceholder from "../../img/avatar.png";
-import { postNewFormandos } from "../../services/students/AddNewStudentService";
+import {
+  postNewFormandos,
+  getTurmas,
+  getEscolaridades,
+  checkEmail,
+} from "../../services/students/formandoService";
 import "../../css/addNewStudent.css";
 
 export default function AddNewStudent() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -16,55 +21,83 @@ export default function AddNewStudent() {
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
-    idTurma: 0,
+    idTurma: "", // Alterado para string para lidar com o select
+    idEscolaridade: "",
     fotografia: null as File | null,
     documento: null as File | null,
   });
 
   const [turmas, setTurmas] = useState<any[]>([]);
+  const [escolaridades, setEscolaridades] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [verificandoEmail, setVerificandoEmail] = useState(false);
-  // 'idle' (inicial), 'exists' (email já na BD), 'new' (email novo, precisa pass)
   const [emailStatus, setEmailStatus] = useState<"idle" | "exists" | "new">(
     "idle",
   );
   const [isExiting, setIsExiting] = useState(false);
   const [fotoPreview, setFotoPreview] = useState(FotoPlaceholder);
 
-  // Turmas disponíveis para o seletor
+  // Carregar dados iniciais (Turmas e Escolaridades)
   useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/turmas`)
-      .then((res) => setTurmas(res.data))
-      .catch(() => toast.error("Erro ao carregar turmas."));
+    async function carregarDadosIniciais() {
+      try {
+        const [dadosTurmas, dadosEscolaridades] = await Promise.all([
+          getTurmas(),
+          getEscolaridades(),
+        ]);
+        setTurmas(dadosTurmas);
+        setEscolaridades(dadosEscolaridades);
+      } catch (err) {
+        toast.error("Erro ao carregar listas de apoio.");
+      }
+    }
+    carregarDadosIniciais();
   }, []);
 
   const handleBackToEmail = () => {
     setIsExiting(true);
-
-    // Aguarda 400ms (tempo da animação) antes de mudar o status real
     setTimeout(() => {
       setEmailStatus("idle");
-      setIsExiting(false); // Reseta para a próxima vez
+      setFormData({
+        ...formData,
+        nome: "",
+        nif: "",
+        telefone: "",
+        dataNascimento: "",
+        sexo: "Masculino",
+        morada: "",
+        idTurma: "",
+        idEscolaridade: "",
+        password: "",
+      });
+      setIsExiting(false);
     }, 400);
   };
 
   const handleVerificarEmail = async () => {
     if (!formData.email) {
-      toast.error("Por favor, insira o email institucional.");
+      toast.error("Insira o email institucional.");
       return;
     }
 
     setVerificandoEmail(true);
-
     try {
-      const res = await axios.get(
-        `${API_BASE_URL}/utilizadores/check-email?email=${formData.email}`,
-      );
+      // O seu serviço já retorna res.data, então 'res' aqui já é o objeto do utilizador
+      const res = await checkEmail(formData.email);
 
-      if (res.data.existe) {
+      if (res.existe) {
         setEmailStatus("exists");
-        toast.success("Utilizador existente encontrado.");
+        setFormData((prev) => ({
+          ...prev,
+          nome: res.nome || "",
+          nif: res.nif || "",
+          telefone: res.telefone || "",
+          dataNascimento: res.dataNascimento || "",
+          sexo: res.sexo || "Masculino",
+          morada: res.morada || "",
+          password: "USER_ALREADY_EXISTS",
+        }));
+        toast.success("Utilizador encontrado! Dados carregados.");
       } else {
         setEmailStatus("new");
         toast.success("Novo email detetado. Defina uma password.");
@@ -97,39 +130,28 @@ export default function AddNewStudent() {
     setLoading(true);
 
     const data = new FormData();
+    data.append("Nome", formData.nome);
+    data.append("Email", formData.email);
+    data.append("Password", formData.password);
+    data.append("Nif", formData.nif);
+    data.append("Telefone", formData.telefone);
+    data.append("DataNascimento", formData.dataNascimento);
+    data.append("Sexo", formData.sexo);
+    data.append("Morada", formData.morada);
+    data.append("IdTurma", formData.idTurma);
+    data.append("IdEscolaridade", formData.idEscolaridade);
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null) {
-        // Se idTurma for 0 ou vazio, não enviamos ou enviamos null
-        if (key === "idTurma" && (value === 0 || value === "")) return;
-        data.append(key, value as any);
-      }
-    });
+    if (formData.fotografia) data.append("Fotografia", formData.fotografia);
+    if (formData.documento) data.append("Documento", formData.documento);
 
     try {
       await postNewFormandos(data);
       toast.success("Formando criado e inscrito com sucesso!");
-      window.history.back();
+      navigate("/gerir-formandos"); // Volta para a lista de formadores
     } catch (err: any) {
-      const errorData = err.response?.data;
-
-      if (errorData?.errors) {
-        // Extrai todas as mensagens (Password, NIF, etc) e mostra no toast
-        Object.values(errorData.errors)
-          .flat()
-          .forEach((msg: any) => {
-            toast.error(msg);
-          });
-      }
-      // Erro Manual do C#
-      else if (errorData?.message) {
-        toast.error(errorData.message);
-      }
-      // Fallback para erros genéricos
-      else {
-        toast.error("Erro inesperado ao criar formando.");
-        window.location.href = "/login";
-      }
+      const errorMsg =
+        err.response?.data?.message || "Erro inesperado ao criar formando.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -139,7 +161,7 @@ export default function AddNewStudent() {
     <div className="container mt-5">
       <h2 className="mb-4">Registar Novo Formando</h2>
       <form onSubmit={handleSubmit} className="row">
-        {/* COLUNA ESQUERDA: FOTO E DOCUMENTOS (Fica sempre visível) */}
+        {/* COLUNA ESQUERDA: FOTO E DOCUMENTOS */}
         <div className="col-lg-4 text-center">
           <div className="card p-3 shadow-sm">
             <img
@@ -178,20 +200,19 @@ export default function AddNewStudent() {
             <div className="row align-items-end">
               <h5 className="text-primary mb-3">Dados de Acesso</h5>
 
-              {/* EMAIL INSTITUCIONAL */}
               <div className="col-md-7 mb-3">
                 <label className="form-label">Email Institucional</label>
                 <input
                   type="email"
                   name="email"
                   className="form-control"
+                  placeholder="exemplo@atec.pt"
                   onChange={handleChange}
-                  disabled={emailStatus !== "idle"} // Bloqueia para não mudar email após verificar
+                  disabled={emailStatus !== "idle"}
                   required
                 />
               </div>
 
-              {/* ÁREA DINÂMICA: BOTÃO OU PASSWORD (Conforme o teu desenho BTN) */}
               <div className="col-md-5 mb-3">
                 {emailStatus === "idle" ? (
                   <button
@@ -204,7 +225,7 @@ export default function AddNewStudent() {
                   </button>
                 ) : emailStatus === "new" ? (
                   <>
-                    <label className="form-label">Password Inicial</label>
+                    <label className="form-label">Password Provisória</label>
                     <input
                       type="password"
                       name="password"
@@ -215,86 +236,136 @@ export default function AddNewStudent() {
                   </>
                 ) : (
                   <div className="alert alert-success py-2 mb-0 text-center small">
-                    ✅ Utilizador pronto
+                    ✅ Conta vinculada (Utilizador existente)
                   </div>
                 )}
               </div>
 
-              {/* DADOS PESSOAIS (Escondidos até o email ser verificado) */}
+              {/* DADOS PESSOAIS E PROFISSIONAIS (Só aparecem após verificar email) */}
               {emailStatus !== "idle" && (
                 <div
-                  className={`row mt-3 ${
-                    isExiting ? "fade-out-section" : "fade-in-section"
-                  }`}
+                  className={`row mt-3 ${isExiting ? "fade-out-section" : "fade-in-section"}`}
                 >
                   <hr className="my-3" />
                   <h5 className="text-primary mb-3">Dados Pessoais</h5>
 
+                  {/* Nome Completo */}
                   <div className="col-md-12 mb-3">
                     <label className="form-label">Nome Completo</label>
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted small mb-1"
+                        style={{ fontSize: "11px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                     <input
                       type="text"
                       name="nome"
-                      className="form-control"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
+                      value={formData.nome}
                       onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
                       required
                     />
                   </div>
 
+                  {/* NIF */}
                   <div className="col-md-4 mb-3">
                     <label className="form-label">NIF</label>
                     <input
                       type="text"
                       name="nif"
-                      className="form-control"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
                       maxLength={9}
+                      value={formData.nif}
                       onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
                       required
                     />
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                   </div>
 
-                  <div className="col-md-3 mb-3">
-                    <label className="form-label">Sexo:</label>
+                  {/* Sexo */}
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label">Sexo</label>
                     <select
                       name="sexo"
                       className="form-select"
                       value={formData.sexo}
                       onChange={handleChange}
+                      disabled={emailStatus === "exists"}
                       required
                     >
                       <option value="Masculino">Masculino</option>
                       <option value="Feminino">Feminino</option>
                     </select>
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                   </div>
 
-                  <div className="col-md-5 mb-3">
-                    <label className="form-label">Data de Nascimento</label>
+                  {/* Data Nascimento */}
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label">Data Nascimento</label>
                     <input
                       type="date"
                       name="dataNascimento"
-                      className="form-control"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
+                      value={formData.dataNascimento}
                       onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
                       required
                     />
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                   </div>
 
+                  {/* Turma e Escolaridade */}
                   <div className="col-md-6 mb-3">
-                    <label className="form-label">Telefone</label>
-                    <input
-                      type="text"
-                      name="telefone"
-                      className="form-control"
+                    <label className="form-label">Escolaridade</label>
+                    <select
+                      name="idEscolaridade"
+                      className="form-select"
+                      value={formData.idEscolaridade}
                       onChange={handleChange}
-                    />
+                      required
+                    >
+                      <option value="">Selecionar...</option>
+                      {escolaridades.map((e) => (
+                        <option key={e.idEscolaridade} value={e.idEscolaridade}>
+                          {e.nivel}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="col-md-6 mb-3">
-                    <label className="form-label">Inscrição em Turma</label>
+                    <label className="form-label">Turma</label>
                     <select
                       name="idTurma"
                       className="form-select"
-                      onChange={handleChange}
                       value={formData.idTurma}
+                      onChange={handleChange}
                     >
                       <option value="">Sem turma</option>
                       {turmas.map((t) => (
@@ -305,36 +376,43 @@ export default function AddNewStudent() {
                     </select>
                   </div>
 
+                  {/* Morada */}
                   <div className="col-md-12 mb-4">
-                    <label className="form-label">Morada</label>
+                    <label className="form-label">Morada Completa</label>
                     <input
                       type="text"
                       name="morada"
-                      className="form-control"
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
+                      value={formData.morada}
                       onChange={handleChange}
+                      readOnly={emailStatus === "exists"}
                       required
                     />
+                    {emailStatus === "exists" && (
+                      <div
+                        className="form-text text-muted"
+                        style={{ fontSize: "10px", marginTop: "2px" }}
+                      >
+                        (Dados vinculados à conta. Alteração desativada.)
+                      </div>
+                    )}
                   </div>
 
                   <div className="d-flex justify-content-end gap-2 mt-4">
                     <button
                       type="button"
                       className="btn btn-light"
-                      onClick={() => {
-                        window.history.back();
-                      }}
+                      onClick={() => navigate("/gerir-formandos")}
                     >
                       Voltar
                     </button>
-
                     <button
                       type="button"
-                      className="btn btn-light"
+                      className="btn btn-outline-secondary"
                       onClick={handleBackToEmail}
                     >
                       Alterar Email
                     </button>
-
                     <button
                       type="submit"
                       className="btn btn-primary"
