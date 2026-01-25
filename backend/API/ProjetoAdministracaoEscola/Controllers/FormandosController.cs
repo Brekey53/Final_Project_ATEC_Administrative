@@ -132,11 +132,11 @@ namespace ProjetoAdministracaoEscola.Controllers
 
                     // Verificar se ele já tem perfil de formador
                     if (await _context.Formadores.AnyAsync(f => f.IdUtilizador == utilizadorExistente.IdUtilizador))
-                        return Conflict(new { message = "Este utilizador já tem um perfil de formador ativo." });
+                        return Conflict(new { message = "Este utilizador já tem um perfil de formador ativo, por favor altere o tipo de utilizador na tab utilizador!" });
 
                     // Verificar se ele já tem perfil de formando
                     if (await _context.Formandos.AnyAsync(f => f.IdUtilizador == utilizadorExistente.IdUtilizador))
-                        return Conflict(new { message = "Este utilizador já tem um perfil de formando ativo, por favor altere o tipo de utilizador na tab utilizador!" });
+                        return Conflict(new { message = "Este utilizador já tem um perfil de formando ativo." });
 
                     // Alteramos os dados se necessario (ou colocamos os que vao preencher automaticamente os campos)
                     utilizadorExistente.Nome = dto.Nome;
@@ -153,7 +153,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     userId = utilizadorExistente.IdUtilizador;
                 }
 
-                // Criar Perfil de Formador vinculado ao userId
+                // Criar Perfil de formando vinculado ao userId
                 var novoFormando = new Formando
                 {
                     IdUtilizador = userId,
@@ -214,7 +214,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (formando == null) return NotFound();
 
             // Validar NIF noutros utilizadores
-            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif);
+            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif && u.IdUtilizador != formando.IdUtilizador);
             if (nifEmUso) return Conflict(new { message = "O NIF já pertence a outro utilizador." });
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -286,9 +286,6 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         // DELETE: api/Formandos/5
-        // Nota: Devido às FKs, remover um formando sem remover o utilizador 
-        // ou usar Cascade Delete. Aqui removemos o perfil e mantemos o utilizador (Soft Delete mental)
-        // Ou removemos ambos.
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFormando(int id)
         {
