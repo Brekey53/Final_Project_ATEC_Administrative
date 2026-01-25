@@ -129,7 +129,6 @@ export default function AddNewTeacher() {
     data.append("Iban", formData.iban);
     data.append("Qualificacoes", formData.qualificacoes);
 
-    // Ficheiros: O nome aqui DEVE ser igual à propriedade no FormadorCreateDTO
     if (formData.fotografia) {
       data.append("Fotografia", formData.fotografia);
     }
@@ -291,7 +290,6 @@ export default function AddNewTeacher() {
                       readOnly={emailStatus === "exists"}
                       required
                     />
-                    {/* O aviso aparece aqui em baixo para não empurrar o input */}
                     {emailStatus === "exists" && (
                       <div
                         className="form-text text-muted"
