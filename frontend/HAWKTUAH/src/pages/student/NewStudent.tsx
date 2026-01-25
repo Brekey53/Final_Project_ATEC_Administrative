@@ -4,7 +4,7 @@ import {
   getFormandos,
   deleteFormando,
   type Formando,
-} from "../../services/students/formandoService";
+} from "../../services/students/FormandoService";
 import "../../css/newStudent.css";
 import { toast } from "react-hot-toast";
 

@@ -7,7 +7,7 @@ import {
   getTurmas,
   getEscolaridades,
   checkEmail,
-} from "../../services/students/formandoService";
+} from "../../services/students/FormandoService";
 import "../../css/addNewStudent.css";
 
 export default function AddNewStudent() {
