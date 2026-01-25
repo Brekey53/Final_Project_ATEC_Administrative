@@ -246,3 +246,7 @@ INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hor
 (3, 4, 4, 1, '2026-01-26', '14:00:00', '18:00:00'),
 (5, 5, 5, 3, '2026-01-28', '09:00:00', '13:00:00'),
 (1, 3, 1, 1, '2026-01-29', '09:00:00', '11:00:00');
+
+-- AVALIAÇÕES
+INSERT INTO avaliacoes (`id_avaliacao`, `id_inscricao`, `id_modulo`, `nota`, `data_avaliacao`) VALUES 
+('1', '1', '1', '17.98', '2025-10-10'), ('2', '1', '2', '19.00', '2025-10-12');
