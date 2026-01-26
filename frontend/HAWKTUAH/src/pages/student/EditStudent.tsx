@@ -7,7 +7,7 @@ import {
   getFormandoById,
   getTurmas,
   getEscolaridades,
-} from "../../services/students/formandoService";
+} from "../../services/students/FormandoService";
 
 export default function EditFormando() {
   const { id } = useParams();
