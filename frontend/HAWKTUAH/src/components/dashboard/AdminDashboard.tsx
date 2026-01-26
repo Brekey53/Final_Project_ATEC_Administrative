@@ -110,7 +110,7 @@ export default function AdminDashboard() {
               <Link to="/gerir-modulos" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
-                    title="Novo Módulo"
+                    title="Gerir Módulos"
                     icon={<Layers size={20} color="#28a745" />}
                   />
                 </div>
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
               <Link to="/gerir-salas" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
-                    title="Nova Sala"
+                    title="Gerir Salas"
                     icon={<Building size={20} color="#28a745" />}
                   />
                 </div>
@@ -126,8 +126,16 @@ export default function AdminDashboard() {
               <Link to="/gerir-cursos" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
-                    title="Novo Curso"
+                    title="Gerir Cursos"
                     icon={<BookOpen size={20} color="#28a745" />}
+                  />
+                </div>
+              </Link>
+              <Link to="/gerir-horarios" className="text-decoration-none">
+                <div className="col">
+                  <QuickActionsCards
+                    title="Gerir Horários "
+                    icon={<CalendarClock size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
@@ -155,10 +163,10 @@ export default function AdminDashboard() {
                   />
                 </div>
               </Link>
-              <Link to="/gerir-horarios" className="text-decoration-none">
+              <Link to="/gerir-turmas" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
-                    title="Criar Horário"
+                    title="Gerir Turmas"
                     icon={<CalendarClock size={20} color="#28a745" />}
                   />
                 </div>
