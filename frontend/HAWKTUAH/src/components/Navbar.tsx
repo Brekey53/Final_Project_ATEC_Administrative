@@ -70,7 +70,6 @@ export default function Navbar() {
               <span className="navbar-toggler-icon"></span>
             </button>
           </div>
-          \
           <div className="d-flex align-items-center gap-4">
             <ul>
               <li className="nav-item dropdown">
