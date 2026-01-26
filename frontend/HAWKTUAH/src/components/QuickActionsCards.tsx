@@ -6,17 +6,13 @@ interface CardProps {
   icon: React.ReactNode;
 }
 
-export default function QuickActionsCards({ title, icon,}: CardProps) {
+export default function QuickActionsCards({ title, icon }: CardProps) {
   return (
-    <div className="dashboard-card">
-      <div className="d-flex justify-content-between align-items-start">
-        <div>
-          <p className="card-title-text">{title}</p>
-        </div>
+    <div className="quick-action-card">
+      <p className="quick-action-title mb-0">{title}</p>
 
-        <div className="icon-container">
-          {icon}
-        </div>
+      <div className="quick-action-icon">
+        {icon}
       </div>
     </div>
   );

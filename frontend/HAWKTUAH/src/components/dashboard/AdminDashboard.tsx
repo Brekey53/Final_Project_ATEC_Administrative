@@ -24,6 +24,15 @@ import {
   Calendar,
 } from "lucide-react";
 
+import {
+  Layers,
+  Building,
+  UserCog,
+  UsersRound,
+  CalendarClock,
+} from "lucide-react";
+
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     cursosDecorrer: 0,
@@ -33,47 +42,35 @@ export default function AdminDashboard() {
     salas: 0,
     modulos: 0,
   });
+
   const [loading, setLoading] = useState(true);
-
   const [cursosADecorrer, setCursosADecorrer] = useState<CursosADecorrer[]>([]);
-
   const [turmasAIniciar, setTurmasAIniciar] = useState<TurmaAIniciar[]>([]);
   const [cursosPorArea, setCursosPorArea] = useState<CursosPorArea[]>([]);
 
   useEffect(() => {
-    getCursosPorArea().then(setCursosPorArea);
-  }, []);
-
-  useEffect(() => {
-    getTurmasAIniciar().then(setTurmasAIniciar);
-  }, []);
-
-  useEffect(() => {
-    async function loadData() {
+    async function loadAll() {
       try {
-        const data = await getDashboardStats();
-        setStats(data);
-      } catch (error) {
-        console.error("Erro ao carregar dashboard", error);
+        const [statsData, cursosData, turmasData, areasData] =
+          await Promise.all([
+            getDashboardStats(),
+            getCursosADecorrer(),
+            getTurmasAIniciar(),
+            getCursosPorArea(),
+          ]);
+
+        setStats(statsData);
+        setCursosADecorrer(cursosData);
+        setTurmasAIniciar(turmasData);
+        setCursosPorArea(areasData);
+      } catch (e) {
+        console.error("Erro ao carregar dashboard", e);
       } finally {
         setLoading(false);
       }
     }
-    loadData();
-  }, []);
 
-  useEffect(() => {
-    async function loadTurmasADecorrer() {
-      try {
-        const data = await getCursosADecorrer();
-        setCursosADecorrer(data);
-      } catch (error) {
-        console.error("Erro ao carregar dashboard", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadTurmasADecorrer();
+    loadAll();
   }, []);
 
   return (
@@ -83,19 +80,26 @@ export default function AdminDashboard() {
           {/*  Titulo e Açoes rápidas*/}
           <div className="title-dashboard d-flex justify-content-between w-100">
             <div className="title-dashboard-left ">
-              <h2>
-                Dasboard
+              <h1>
+                Bem vindo
                 <br />
-              </h2>
+              </h1>
               <span className="text-muted">
                 Informação Rápida sobre o Sistema
               </span>
             </div>
-            <div className="title-dashboard-right justify-content-end">
-              <Link to="/assistenteAI" className="btn rounded">
+            <div className="title-dashboard-right d-flex justify-content-end align-items-center gap-2">
+              <Link
+                to="/chatbot"
+                className="btn btn-outline-primary rounded px-4"
+              >
                 Assistente AI
               </Link>
-              <Link to="/horarios" className="btn rounded">
+
+              <Link
+                to="/horarios"
+                className="btn btn-outline-secondary rounded px-4"
+              >
                 Ver Horários
               </Link>
             </div>
@@ -103,59 +107,59 @@ export default function AdminDashboard() {
           <div className="quick-access-menu mt-3 p-3 shadow-sm">
             <h3>Ações Rápidas</h3>
             <div className="row row-cols-2 row-cols-md-4 g-3">
-              <Link to="/gerir-modulos">
+              <Link to="/gerir-modulos" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Novo Módulo"
-                    icon={<GraduationCap size={20} color="#28a745" />}
+                    icon={<Layers size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
-              <Link to="/gerir-salas">
+              <Link to="/gerir-salas" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Nova Sala"
-                    icon={<GraduationCap size={20} color="#28a745" />}
+                    icon={<Building size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
-              <Link to="/gerir-cursos">
+              <Link to="/gerir-cursos" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Novo Curso"
-                    icon={<GraduationCap size={20} color="#28a745" />}
+                    icon={<BookOpen size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
-              <Link to="/gerir-formandos">
+              <Link to="/gerir-formandos" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Gerir Formandos"
-                    icon={<GraduationCap size={20} color="#28a745" />}
+                    icon={<Users size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
-              <Link to="/gerir-formadores">
+              <Link to="/gerir-formadores" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Gerir Formadores"
-                    icon={<GraduationCap size={20} color="#28a745" />}
+                    icon={<UserCog size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
-              <Link to="/gerir-utilizadores">
+              <Link to="/gerir-utilizadores" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Gerir Utilizadores"
-                    icon={<GraduationCap size={20} color="#28a745" />}
+                    icon={<UsersRound size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
-              <Link to="/gerir-horarios">
+              <Link to="/gerir-horarios" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Criar Horário"
-                    icon={<GraduationCap size={20} color="#28a745" />}
+                    icon={<CalendarClock size={20} color="#28a745" />}
                   />
                 </div>
               </Link>
@@ -170,6 +174,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.cursosDecorrer}
                 icon={<GraduationCap size={20} color="#28a745" />}
                 iconBgColor="#e8f5e9"
+                detailsLink="/turmas"
               />
             </div>
             <div className="col">
@@ -178,6 +183,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.totalCursos}
                 icon={<BookOpen size={20} color="#007bff" />}
                 iconBgColor="#e3f2fd"
+                detailsLink="/cursos"
               />
             </div>
             <div className="col">
@@ -186,6 +192,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.formandosAtivos}
                 icon={<Users size={20} color="#6f42c1" />}
                 iconBgColor="#f3e5f5"
+                detailsLink="/formandos"
               />
             </div>
             <div className="col">
@@ -194,6 +201,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.formandosAtivos}
                 icon={<UserRound size={20} color="#fd7e14" />}
                 iconBgColor="#fff3e0"
+                detailsLink="/formadores"
               />
             </div>
             <div className="col">
@@ -202,6 +210,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.salas}
                 icon={<LayoutGrid size={20} color="#20c997" />}
                 iconBgColor="#e0f2f1"
+                detailsLink="/salas"
               />
             </div>
             <div className="col">
@@ -210,6 +219,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.modulos}
                 icon={<Calendar size={20} color="#e83e8c" />}
                 iconBgColor="#fce4ec"
+                detailsLink="/modulos"
               />
             </div>
           </div>

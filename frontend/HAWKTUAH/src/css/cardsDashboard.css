@@ -1,14 +1,53 @@
-/* CardsDashboard.css */
-
 .dashboard-card {
-  border: 0;
-  background-color: white;
+  border: 1px solid #e9ecef;
+  background-color: #ffffff;
   padding: 1rem;
-  margin-bottom: 1rem;
   border-radius: 12px;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: 
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
+.dashboard-card-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+
+.dashboard-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.dashboard-card:hover {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+.card-footer-link {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--bs-primary);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-card-link:hover .card-footer-link {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dashboard-card-link:hover .dashboard-card {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
 
 .card-title-text {
   color: #6c757d;
@@ -29,4 +68,44 @@
   width: 45px;
   height: 45px;
   border-radius: 10px;
+}
+
+.quick-action-card {
+  margin-top: 1em;
+  background: #ffffff;
+  border: 1px solid #eef1f4;
+  border-radius: 12px;
+  padding: 16px 18px;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.quick-action-card:hover {
+  border-color: var(--bs-primary);
+  background: #f8fbff;
+  transform: translateY(-1px);
+}
+
+.quick-action-title {
+  font-weight: 500;
+  color: #212529;
+  text-decoration: none;
+}
+
+.quick-action-icon {
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.quick-action-card:hover .quick-action-icon {
+  color: var(--bs-primary);
 }
