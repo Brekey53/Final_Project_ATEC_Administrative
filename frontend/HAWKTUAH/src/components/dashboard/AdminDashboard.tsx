@@ -239,7 +239,7 @@ export default function AdminDashboard() {
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
                       <span className="green-circle-active-courses"></span>
-                      Cursos a decorrer
+                      Turmas/Cursos a decorrer
                     </div>
                     <a
                       href="#"
