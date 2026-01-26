@@ -34,6 +34,7 @@ import EditSchedule from "../pages/schedule/EditSchedule";
 import CursoDetalhe from "../pages/course/CursoDetalhe";
 import AddNewUser from "../pages/users/AddNewUser";
 import EditUser from "../pages/users/EditUser";
+import Formadores from "../pages/Formadores"
 
 import Schedule from "../pages/schedule/Schedules";
 
@@ -87,6 +88,7 @@ function AppRoutes() {
           />
 
           {/* Formadores */}
+          <Route path="/formadores" element={<Formadores />} />
           <Route path="/gerir-formadores" element={<NewTeacher />} />
           <Route path="/adicionar-formadores" element={<AddNewTeacher />} />
           <Route
