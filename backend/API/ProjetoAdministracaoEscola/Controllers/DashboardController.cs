@@ -38,23 +38,38 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             var hoje = DateOnly.FromDateTime(DateTime.Today);
 
-            var turmas = await _context.Horarios
-                .Include(h => h.IdTurmaNavigation)
-                .Include(h => h.IdCursoModuloNavigation)
-                    .ThenInclude(cm => cm.IdCursoNavigation)
-                .GroupBy(h => new
+            // Very nice try but yeyy!
+            //var turmas = await _context.Horarios
+            //    .Include(h => h.IdTurmaNavigation)
+            //    .Include(h => h.IdCursoModuloNavigation)
+            //        .ThenInclude(cm => cm.IdCursoNavigation)
+            //    .GroupBy(h => new
+            //    {
+            //        h.IdTurma,
+            //        h.IdTurmaNavigation.NomeTurma,
+            //        h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+            //    })
+            //    .Select(g => new TurmaDecorrerDTO
+            //    {
+            //        IdTurma = g.Key.IdTurma,
+            //        NomeTurma = g.Key.NomeTurma,
+            //        NomeCurso = g.Key.Nome,
+            //        DataInicio = g.Min(x => x.Data),
+            //        DataFim = g.Max(x => x.Data)
+            //    })
+            //    .Where(t => t.DataInicio <= hoje && t.DataFim >= hoje)
+            //    .OrderBy(t => t.DataInicio)
+            //    .ToListAsync();
+
+            var turmas = await _context.Turmas
+                .Include(t => t.IdCursoNavigation)
+                .Select(t => new TurmaDecorrerDTO
                 {
-                    h.IdTurma,
-                    h.IdTurmaNavigation.NomeTurma,
-                    h.IdCursoModuloNavigation.IdCursoNavigation.Nome
-                })
-                .Select(g => new TurmaDecorrerDTO
-                {
-                    IdTurma = g.Key.IdTurma,
-                    NomeTurma = g.Key.NomeTurma,
-                    NomeCurso = g.Key.Nome,
-                    DataInicio = g.Min(x => x.Data),
-                    DataFim = g.Max(x => x.Data)
+                    IdTurma = t.IdTurma,
+                    NomeTurma = t.NomeTurma,
+                    NomeCurso = t.IdCursoNavigation.Nome,
+                    DataInicio = t.DataInicio,
+                    DataFim = t.DataFim
                 })
                 .Where(t => t.DataInicio <= hoje && t.DataFim >= hoje)
                 .OrderBy(t => t.DataInicio)
@@ -70,28 +85,43 @@ namespace ProjetoAdministracaoEscola.Controllers
             var hoje = DateOnly.FromDateTime(DateTime.Today);
             var limite = hoje.AddDays(60);
 
-            var turmas = await _context.Horarios
-                .Include(h => h.IdTurmaNavigation)
-                .Include(h => h.IdCursoModuloNavigation)
-                    .ThenInclude(cm => cm.IdCursoNavigation)
-                .GroupBy(h => new
+            // Another one
+            //var turmas = await _context.Horarios
+            //    .Include(h => h.IdTurmaNavigation)
+            //    .Include(h => h.IdCursoModuloNavigation)
+            //        .ThenInclude(cm => cm.IdCursoNavigation)
+            //    .GroupBy(h => new
+            //    {
+            //        h.IdTurma,
+            //        h.IdTurmaNavigation.NomeTurma,
+            //        h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+            //    })
+            //    .Select(g => new TurmaDecorrerDTO
+            //    {
+            //        IdTurma = g.Key.IdTurma,
+            //        NomeTurma = g.Key.NomeTurma,
+            //        NomeCurso = g.Key.Nome,
+            //        DataInicio = g.Min(x => x.Data),
+            //        DataFim = g.Max(x => x.Data)
+            //    })
+            //    .Where(t =>
+            //        t.DataInicio > hoje &&
+            //        t.DataInicio <= limite
+            //    )
+            //    .OrderBy(t => t.DataInicio)
+            //    .ToListAsync();
+
+            var turmas = await _context.Turmas
+                .Include(t => t.IdCursoNavigation)
+                .Select(t => new TurmaDecorrerDTO
                 {
-                    h.IdTurma,
-                    h.IdTurmaNavigation.NomeTurma,
-                    h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                    IdTurma = t.IdTurma,
+                    NomeTurma = t.NomeTurma,
+                    NomeCurso = t.IdCursoNavigation.Nome,
+                    DataInicio = t.DataInicio,
+                    DataFim = t.DataFim
                 })
-                .Select(g => new TurmaDecorrerDTO
-                {
-                    IdTurma = g.Key.IdTurma,
-                    NomeTurma = g.Key.NomeTurma,
-                    NomeCurso = g.Key.Nome,
-                    DataInicio = g.Min(x => x.Data),
-                    DataFim = g.Max(x => x.Data)
-                })
-                .Where(t =>
-                    t.DataInicio > hoje &&
-                    t.DataInicio <= limite
-                )
+                .Where(t => t.DataInicio <= limite && t.DataInicio > hoje)
                 .OrderBy(t => t.DataInicio)
                 .ToListAsync();
 
