@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getCursos, type Curso } from "../../services/cursos/CursosService";
+import {
+  getCursos,
+  deleteCurso,
+  type Curso,
+} from "../../services/cursos/CursosService";
 import "../../css/cursos.css";
 import toast from "react-hot-toast";
+import editar from "../../img/edit.png"
+import apagar from "../../img/delete.png"
 
 export default function NewCourse() {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [cursoSelecionado, setCursoSelecionado] = useState();
+  const [cursoSelecionado, setCursoSelecionado] = useState<Curso | null>(null);
   const [search, setSearch] = useState("");
   const [areaFiltro, setAreaFiltro] = useState("todas");
 
@@ -38,23 +44,29 @@ export default function NewCourse() {
         prev.filter((c) => c.idCurso !== cursoSelecionado.idCurso),
       );
 
+      setCursoSelecionado(null);
       setShowDeleteModal(false);
-      //setFormandoSelecionado(null);
-      toast.success("Formando eliminado com sucesso");
+
+      toast.success("Curso eliminado com sucesso");
     } catch {
-      toast.error("Erro ao eliminar formando");
+      toast.error("Erro ao eliminar curso");
     }
   }
-  const cursosFiltrados = cursos.filter((c) => {
-    const termo = search.toLowerCase();
 
-    const matchPesquisa =
-      c.nome.toLowerCase().includes(termo) || String(c.idCurso).includes(termo);
+  const cursosFiltrados = loading
+    ? []
+    : cursos.filter((c) => {
+        const termo = search.toLowerCase();
 
-    const matchArea = areaFiltro === "todas" || String(c.idArea) === areaFiltro;
+        const matchPesquisa =
+          c.nome.toLowerCase().includes(termo) ||
+          String(c.idCurso).includes(termo);
 
-    return matchPesquisa && matchArea;
-  });
+        const matchArea =
+          areaFiltro === "todas" || String(c.idArea) === areaFiltro;
+
+        return matchPesquisa && matchArea;
+      });
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -128,7 +140,9 @@ export default function NewCourse() {
                 <span>{c.idArea}</span>
               </div>
               <div className="d-flex justify-content-end gap-3">
-                <Link to={`/gerir-cursos/edit-curso/${c.idCurso}`}>Editar</Link>
+                <Link to={`/gerir-cursos/edit-curso/${c.idCurso}`}>
+                <img src={editar} alt="editar" title="Editar" className="img-edit-apagar"></img>
+                </Link>
                 <button
                   className="btn btn-link text-danger p-0"
                   onClick={() => {
@@ -136,7 +150,7 @@ export default function NewCourse() {
                     setShowDeleteModal(true);
                   }}
                 >
-                  Apagar
+                  <img src={apagar} alt="apagar" title="Apagar" className="img-edit-apagar"></img>
                 </button>
               </div>
             </div>
@@ -164,8 +178,8 @@ export default function NewCourse() {
 
                   <div className="modal-body">
                     <p>
-                      Tem a certeza que pretende eliminar o formando{" "}
-                      {/* <strong>{cursoSelecionado.}</strong> da plataforma? */}
+                      Tem a certeza que pretende eliminar o curso{" "}
+                      <strong>{cursoSelecionado?.nome}</strong>?
                     </p>
                     <p className="text-muted mb-0">
                       Esta ação não pode ser revertida.
