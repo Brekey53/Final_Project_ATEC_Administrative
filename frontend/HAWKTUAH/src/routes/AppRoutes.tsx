@@ -40,6 +40,8 @@ import Schedule from "../pages/schedule/Schedules";
 
 import Chatbot from "../pages/chatbot/Chatbot";
 
+import Turmas from "../pages/turmas/Turmas";
+
 function AppRoutes() {
   return (
     <Routes>
@@ -67,7 +69,7 @@ function AppRoutes() {
 
           {/* Utilizadores - Admin*/}
           <Route path="/gerir-utilizadores" element={<ManageUsers />} />
-          <Route path="/adicionar-utilizadores" element={<AddNewUser />} />
+          <Route path="/gerir-utilizadores/adicionar-utilizador" element={<AddNewUser />} />
           <Route
             path="gerir-utilizadores/edit-utilizador/:id"
             element={<EditUser />}
@@ -131,9 +133,13 @@ function AppRoutes() {
             path="/gerir-horarios/edit-horario/:id"
             element={<EditSchedule />}
           />
-          ~
+          
           {/* CHATBOT */}
           <Route path="/chatbot" element={<Chatbot />} />
+
+
+          {/*TURMAS*/}
+          <Route path="/turmas" element={<Turmas />} />
         </Route>
       </Route>
     </Routes>
