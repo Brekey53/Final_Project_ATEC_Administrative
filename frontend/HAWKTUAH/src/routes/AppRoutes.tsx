@@ -40,9 +40,7 @@ import Schedule from "../pages/schedule/Schedules";
 
 import Chatbot from "../pages/chatbot/Chatbot";
 
-import Turmas from "../pages/turmas/Turmas";
-
-import ManageTurmas from "../pages/turmas/ManageTurmas";
+import Turmas from "../pages/turmas/ManageTurmas";
 import EditTurma from "../pages/turmas/EditTurma";
 import AddNewTurma from "../pages/turmas/AddNewTurma";
 
@@ -146,7 +144,6 @@ function AppRoutes() {
           <Route path="/turmas" element={<Turmas />} />
 
           {/*TURMAS - admin*/}
-          <Route path="/gerir-turmas" element={<ManageTurmas />} />
           <Route path="/gerir-turmas/adicionar-turma" element={<AddNewTurma />} />
           <Route path="/gerir-turmas/edit-turma/:id" element={<EditTurma />} />
 

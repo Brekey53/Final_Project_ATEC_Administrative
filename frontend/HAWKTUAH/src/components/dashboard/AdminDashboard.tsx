@@ -162,7 +162,7 @@ export default function AdminDashboard() {
                   />
                 </div>
               </Link>
-              <Link to="/gerir-turmas" className="text-decoration-none">
+              <Link to="/turmas" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
                     title="Gerir Turmas"
