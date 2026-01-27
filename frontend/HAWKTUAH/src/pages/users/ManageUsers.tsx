@@ -6,8 +6,9 @@ import {
   type Utilizador,
 } from "../../services/users/UserService";
 import "../../css/manageUsers.css";
-import { Target } from "lucide-react";
 import { toast } from "react-hot-toast";
+import editar from "../../img/edit.png"
+import apagar from "../../img/delete.png"
 
 export default function ManageUsers() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
@@ -16,6 +17,10 @@ export default function ManageUsers() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [utilizadorSelecionado, setUtilizadorelecionado] =
     useState<Utilizador | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 8;
 
   useEffect(() => {
     async function fetchUtilizadores() {
@@ -60,6 +65,19 @@ export default function ManageUsers() {
     }
   }
 
+
+  const totalPages = Math.ceil(filteredUtilizadores.length / ITEMS_PER_PAGE);
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  const utilizadoresPaginados = filteredUtilizadores.slice(startIndex, endIndex);
+
+  // Quando pesquisa muda → voltar à página 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
@@ -69,7 +87,7 @@ export default function ManageUsers() {
             Inserir, alterar, eliminar e consultar utilizadores
           </p>
         </div>
-        <Link to="adicionar-utilizadores">
+        <Link to="adicionar-utilizador">
           <div className="btn btn-success px-4 py-2 rounded-pill">
             + Novo Utilizador
           </div>
@@ -98,9 +116,9 @@ export default function ManageUsers() {
             <div className="text-end">Ações</div>
           </div>
 
-          {/* utilizadore com filtro */}
-          {filteredUtilizadores.length > 0 ? (
-            filteredUtilizadores.map((u) => (
+          {/* utilizadores com filtro */}
+          {!loading && filteredUtilizadores.length > 0 ? (
+            utilizadoresPaginados.map((u) => (
               <div
                 key={u.idUtilizador}
                 className="px-4 py-3 border-bottom tabela-utilizadores"
@@ -116,21 +134,21 @@ export default function ManageUsers() {
                 </div>
                 <div className="text-muted">{u.telefone || "-"}</div>{" "}
                 <div className="text-muted">{u.tipoUtilizador || "-"}</div>{" "}
-                <div className="d-flex justify-content-end gap-3">
+                <div className="d-flex justify-content-end ">
                   <Link
                     to={`edit-utilizador/${u.idUtilizador}`}
-                    className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                    className="btn rounded-pill px-1"
                   >
-                    Editar
+                    <img src={editar} alt="editar" title="Editar" className="img-edit-apagar"></img>
                   </Link>
                   <button
-                    className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                    className="btn rounded-pill px-1"
                     onClick={() => {
                       setUtilizadorelecionado(u);
                       setShowDeleteModal(true);
                     }}
                   >
-                    Apagar
+                    <img src={apagar} alt="apagar" title="Apagar" className="img-edit-apagar"></img>
                   </button>
                 </div>
               </div>
@@ -199,6 +217,32 @@ export default function ManageUsers() {
           )}
         </div>
       </div>
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+      <p className="text-muted small text-center mt-5">
+        {filteredUtilizadores.length} utilizador(es) encontrado(s)
+      </p>
     </div>
   );
 }
