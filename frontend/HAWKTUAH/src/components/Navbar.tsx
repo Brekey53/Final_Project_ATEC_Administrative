@@ -46,6 +46,7 @@ export default function Navbar() {
     { key: "cursos", label: "Cursos", to: "/cursos" },
     { key: "formandos", label: "Formandos", to: "/formandos" },
     { key: "formadores", label: "Formadores", to: "/formadores" },
+    { key: "turmas", label: "Turmas", to :"/turmas" },
     { key: "horarios", label: "Horários", to: "/horarios" },
     { key: "chatbot", label: "Assistente IA", to: "/chatbot" },
   ];
