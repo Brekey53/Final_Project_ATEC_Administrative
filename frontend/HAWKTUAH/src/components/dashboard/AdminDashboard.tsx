@@ -241,12 +241,12 @@ export default function AdminDashboard() {
                       <span className="green-circle-active-courses"></span>
                       Turmas/Cursos a decorrer
                     </div>
-                    <a
-                      href="#"
+                    <Link
+                      to="/turmas"
                       className="text-muted small text-decoration-none"
                     >
                       Ver todos
-                    </a>
+                    </Link>
                   </div>
                   {cursosADecorrer.length === 0 ? (
                     <div className="d-flex flex-column align-items-center justify-content-center my-auto py-5">
@@ -284,12 +284,12 @@ export default function AdminDashboard() {
                       <span className="text-primary">🕒</span>
                       Próximos 60 Dias
                     </div>
-                    <a
-                      href="#"
+                    <Link
+                      to="/turmas"
                       className="text-muted small text-decoration-none"
                     >
                       Ver todos
-                    </a>
+                    </Link>
                   </div>
                   {turmasAIniciar.length === 0 ? (
                     <div className="text-center py-5">
