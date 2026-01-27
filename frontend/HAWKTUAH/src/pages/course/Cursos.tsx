@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getCursos, type Curso } from "../../services/cursos/CursosService";
+import { Link } from "react-router-dom";
 import "../../css/cursos.css";
 
 export default function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-   const [cursoSelecionado, setCursoSelecionado] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchCursos() {
@@ -24,14 +26,31 @@ export default function Cursos() {
     fetchCursos();
   }, []);
 
+  const cursosFiltrados = cursos.filter((c) => {
+    const termo = searchTerm.toLowerCase();
+
+    return (
+      c.nome.toLowerCase().includes(termo) || String(c.idCurso).includes(termo)
+    );
+  });
+
+  const totalPages = Math.ceil(cursosFiltrados.length / ITEMS_PER_PAGE);
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  const cursosPaginados = cursosFiltrados.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Cursos</h2>
-          <p className="text-muted mb-0">
-            Consulta de Cursos Disponíveis
-          </p>
+          <p className="text-muted mb-0">Consulta de Cursos Disponíveis</p>
         </div>
       </div>
 
@@ -40,7 +59,9 @@ export default function Cursos() {
           <input
             type="text"
             className="form-control form-control-lg"
-            placeholder="Pesquisar cursos..."
+            placeholder="Pesquisar curso por nome ou código..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -52,24 +73,62 @@ export default function Cursos() {
             <div>Área</div>
             <div> Ver detalhes????</div>
           </div>
-          {cursos.map((c) => (
-            <div
+          {cursosPaginados.map((c) => (
+            <Link
               key={c.idCurso}
-              className="px-4 py-3 border-bottom tabela-alunos"
+              to={`/cursos/${c.idCurso}`}
+              className="text-decoration-none text-reset"
             >
-              <div className="d-flex align-items-center gap-3">
-                <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
-                  {c.nome.charAt(0)}
+              <div className="px-4 py-3 border-bottom tabela-alunos curso-row">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                    {c.nome.charAt(0)}
+                  </div>
+                  <span className="fw-medium">{c.nome}</span>
                 </div>
-                <span className="fw-medium">{c.nome}</span>
+
+                <div className="d-flex align-items-center gap-2 text-muted">
+                  <span>{c.idArea}</span>
+                </div>
+
+                <div className="text-primary fw-medium">Ver detalhes →</div>
               </div>
-              <div className="d-flex align-items-center gap-2 text-muted">
-                <span>{c.idArea}</span>
-              </div>
-            </div>
+            </Link>
           ))}
+
+          {!loading && cursosFiltrados.length === 0 && (
+            <div className="text-center py-4 text-muted">
+              Nenhum curso encontrado
+            </div>
+          )}
         </div>
       </div>
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+      <p className="text-muted small text-center mt-5">
+        {cursosFiltrados.length} curso(s) encontrado(s)
+      </p>
     </div>
   );
 }
