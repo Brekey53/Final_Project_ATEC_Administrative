@@ -151,6 +151,43 @@ namespace ProjetoAdministracaoEscola.Controllers
             return NoContent();
         }
 
+        // POST: api/Utilizadores/new-user
+        [HttpPost ("new-user")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
+        {
+            // Verificar se email já existe
+            var emailExists = await _context.Utilizadores
+                .AnyAsync(u => u.Email == dto.Email);
+
+            if (emailExists)
+                return BadRequest(new { message = "Email já registado." });
+
+            // 2Criar utilizador
+            var user = new Utilizador
+            {
+                Email = dto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Nome = dto.Nome,
+                Nif = dto.Nif,
+                Telefone = dto.Telefone,
+                DataNascimento = dto.DataNascimento,
+                Sexo = dto.Sexo,
+                Morada = dto.Morada,
+                StatusAtivacao = true
+            };
+
+            _context.Utilizadores.Add(user);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetUtilizador), new { id = user.IdUtilizador }, new
+            {
+                user.IdUtilizador,
+                user.Email,
+                user.Nome
+            });
+        }
+
+
 
         // POST: api/Utilizadores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -195,12 +232,16 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         [HttpGet("check-email")]
-        [AllowAnonymous]
-        public async Task<IActionResult> CheckEmail(string email)
+        public async Task<IActionResult> CheckEmail([FromQuery] string email)
         {
-            var existe = await _context.Utilizadores.AnyAsync(u => u.Email == email);
+            var emailNormalizado = email.Trim().ToLower();
+
+            var existe = await _context.Utilizadores
+                .AnyAsync(u => u.Email.ToLower() == emailNormalizado);
+
             return Ok(new { existe });
         }
+
 
         [HttpGet("details-by-email")]
         public async Task<IActionResult> GetUserDetails(string email)
