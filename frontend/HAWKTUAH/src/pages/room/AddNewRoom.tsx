@@ -26,7 +26,7 @@ export default function AddNewRoom() {
     try {
       await postNewSala(formData);
       toast.success("Sala criada com sucesso!");
-      navigate(-1); // Volta para a listagem
+      navigate("/gerir-salas"); // Volta para a listagem
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.errors) {
@@ -45,7 +45,10 @@ export default function AddNewRoom() {
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Registar Nova Sala</h2>
-        <button className="btn btn-light border" onClick={() => navigate(-1)}>
+        <button
+          className="btn btn-light border"
+          onClick={() => navigate("/gerir-salas")}
+        >
           Voltar
         </button>
       </div>
@@ -107,7 +110,7 @@ export default function AddNewRoom() {
               <button
                 type="button"
                 className="btn btn-light px-4"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/gerir-salas")}
               >
                 Cancelar
               </button>

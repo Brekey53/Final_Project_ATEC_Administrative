@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export default function AddNewModule() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     nome: "",
     codigoIdentificacao: "",
@@ -16,9 +16,10 @@ export default function AddNewModule() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ 
-        ...formData, 
-        [name]: name === "horasTotais" || name === "creditos" ? Number(value) : value 
+    setFormData({
+      ...formData,
+      [name]:
+        name === "horasTotais" || name === "creditos" ? Number(value) : value,
     });
   };
 
@@ -33,7 +34,9 @@ export default function AddNewModule() {
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.errors) {
-        Object.values(errorData.errors).flat().forEach((msg: any) => toast.error(msg));
+        Object.values(errorData.errors)
+          .flat()
+          .forEach((msg: any) => toast.error(msg));
       } else {
         toast.error(errorData?.message || "Erro ao criar módulo.");
       }
@@ -46,7 +49,10 @@ export default function AddNewModule() {
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Registar Novo Módulo</h2>
-        <button className="btn btn-light border" onClick={() => navigate(-1)}>
+        <button
+          className="btn btn-light border"
+          onClick={() => navigate("/gerir-modulos")}
+        >
           Voltar
         </button>
       </div>
@@ -57,11 +63,12 @@ export default function AddNewModule() {
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light">
             <div className="display-1 text-primary mb-3">
               <i className="bi bi-book"></i>
-              UC/UFCD 📚 
+              UC/UFCD 📚
             </div>
             <h5>Informação do Módulo</h5>
             <p className="text-muted small">
-              Preencha os detalhes técnicos do módulo. O código de identificação deve ser único (Ex: UFCD-001).
+              Preencha os detalhes técnicos do módulo. O código de identificação
+              deve ser único (Ex: UFCD-001).
             </p>
           </div>
         </div>
@@ -70,7 +77,7 @@ export default function AddNewModule() {
         <div className="col-lg-8">
           <div className="card p-4 shadow-sm border-0 rounded-4">
             <h5 className="text-primary mb-4">Dados Técnicos</h5>
-            
+
             <div className="row">
               {/* NOME DO MÓDULO */}
               <div className="col-md-12 mb-3">
@@ -134,7 +141,7 @@ export default function AddNewModule() {
               <button
                 type="button"
                 className="btn btn-light px-4"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/gerir-modulos")}
               >
                 Cancelar
               </button>
