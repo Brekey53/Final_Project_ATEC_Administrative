@@ -32,7 +32,6 @@ import {
   CalendarClock,
 } from "lucide-react";
 
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     cursosDecorrer: 0,
@@ -206,7 +205,7 @@ export default function AdminDashboard() {
             <div className="col">
               <CardsDashboard
                 title="Formadores"
-                value={loading ? "..." : stats.formandosAtivos}
+                value={loading ? "..." : stats.formadores}
                 icon={<UserRound size={20} color="#fd7e14" />}
                 iconBgColor="#fff3e0"
                 detailsLink="/formadores"
