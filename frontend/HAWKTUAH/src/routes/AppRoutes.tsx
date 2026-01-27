@@ -42,6 +42,10 @@ import Chatbot from "../pages/chatbot/Chatbot";
 
 import Turmas from "../pages/turmas/Turmas";
 
+import ManageTurmas from "../pages/turmas/ManageTurmas";
+import EditTurma from "../pages/turmas/EditTurma";
+import AddNewTurma from "../pages/turmas/AddNewTurma";
+
 function AppRoutes() {
   return (
     <Routes>
@@ -138,8 +142,14 @@ function AppRoutes() {
           <Route path="/chatbot" element={<Chatbot />} />
 
 
-          {/*TURMAS*/}
+          {/*TURMAS - publico ??*/}
           <Route path="/turmas" element={<Turmas />} />
+
+          {/*TURMAS - admin*/}
+          <Route path="/gerir-turmas" element={<ManageTurmas />} />
+          <Route path="/gerir-turmas/adicionar-turma" element={<AddNewTurma />} />
+          <Route path="/gerir-turmas/edit-turma/:id" element={<EditTurma />} />
+
         </Route>
       </Route>
     </Routes>
