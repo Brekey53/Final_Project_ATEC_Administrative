@@ -62,6 +62,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .Include(h => h.IdSalaNavigation)
                 .Include(h => h.IdCursoModuloNavigation)
                     .ThenInclude(cm => cm.IdCursoNavigation)
+                .Include(h => h.IdCursoModuloNavigation)
+                    .ThenInclude(cm => cm.IdModuloNavigation)
                 .Select(h => new ScheduleCalendarDTO
                 {
                     IdHorario = h.IdHorario,
@@ -69,7 +71,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                     HoraInicio = h.HoraInicio,
                     HoraFim = h.HoraFim,
                     NomeSala = h.IdSalaNavigation.Descricao,
-                    NomeCurso = h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                    NomeCurso = h.IdCursoModuloNavigation.IdCursoNavigation.Nome,
+                    //NomeModulo = h.IdCursoModuloNavigation.IdModuloNavigation.Nome // TODO:AQUI!
                 })
                 .OrderBy(h => h.Data)
                 .ThenBy(h => h.HoraInicio)
