@@ -10,7 +10,9 @@ export interface Turma {
 }
 
 export async function getTurmas() {
-  const res = await axios.get(`${API_BASE_URL}/turmas/proximasturmas`);
+  const res = await axios.get(`${API_BASE_URL}/turmas`);
 
   return res.data;
 }
+
+
