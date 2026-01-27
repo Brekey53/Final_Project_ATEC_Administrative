@@ -19,3 +19,10 @@ html, body, #root {
   flex: 1;
   display: block;
 }
+
+.img-edit-apagar {
+  max-width: 30px;
+}
+.img-edit-apagar:hover {
+  transform: translateY(-3px);
+}
