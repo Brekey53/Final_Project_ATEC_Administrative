@@ -14,9 +14,6 @@ export interface Utilizador {
   tipoUtilizador: string;
   fotografia: File | null;
   anexoFicheiro: File | null;
-
-  
-  
 }
 
 export async function getUtilizadores(): Promise<Utilizador[]> {
@@ -49,5 +46,10 @@ export async function checkEmail(email: string) {
     `${API_BASE_URL}/utilizadores/check-email?email=${email}`,
   );
 
-  return res;
+  return res.data;
+}
+
+export async function createUser(data: any) {
+  const res = await axios.post(`/utilizadores/new-user`, data);
+  return res.data;
 }
