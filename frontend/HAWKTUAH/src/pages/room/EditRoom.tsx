@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getSala, updateSala, type Salas } from "../../services/rooms/SalasService";
+import {
+  getSala,
+  updateSala,
+  type Salas,
+} from "../../services/rooms/SalasService";
 
 export default function EditRoom() {
   const { id } = useParams();
@@ -82,8 +86,8 @@ export default function EditRoom() {
           <p className="text-muted small mb-0">ID da Sala: {formData.idSala}</p>
         </div>
         <button
-          className="btn btn-light border rounded-pill px-4"
-          onClick={() => navigate(-1)}
+          className="btn btn-light border"
+          onClick={() => navigate("/gerir-salas")}
         >
           Voltar
         </button>
@@ -109,7 +113,10 @@ export default function EditRoom() {
               </div>
               <div className="d-flex justify-content-between">
                 <span className="text-muted small">Estado:</span>
-                <span className="text-success small fw-bold">Disponível</span> {/* TODO: Queres deixar isto aqui? */}
+                <span className="text-success small fw-bold">
+                  Disponível
+                </span>{" "}
+                {/* TODO: Queres deixar isto aqui? */}
               </div>
             </div>
           </div>
@@ -162,7 +169,7 @@ export default function EditRoom() {
               <button
                 type="button"
                 className="btn btn-light px-4 rounded-pill"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/gerir-salas")}
               >
                 Cancelar
               </button>

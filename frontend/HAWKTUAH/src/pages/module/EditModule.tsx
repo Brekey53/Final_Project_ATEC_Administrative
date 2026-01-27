@@ -81,7 +81,10 @@ export default function EditModule() {
           Editar Módulo:{" "}
           <span className="text-primary">{formData.codigoIdentificacao}</span>
         </h2>
-        <button className="btn btn-light border" onClick={() => navigate(-1)}>
+        <button
+          className="btn btn-light border"
+          onClick={() => navigate("/gerir-modulos")}
+        >
           Voltar
         </button>
       </div>
@@ -171,7 +174,7 @@ export default function EditModule() {
               <button
                 type="button"
                 className="btn btn-light px-4"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/gerir-modulos")}
               >
                 Cancelar
               </button>
