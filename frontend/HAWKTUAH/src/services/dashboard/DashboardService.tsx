@@ -36,7 +36,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   return res.data;
 }
 
-
 export async function getCursosADecorrer() {
   const res = await axios.get(`${API_BASE_URL}/dashboard/turmasDecorrer`);
   return res.data;
