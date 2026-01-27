@@ -43,6 +43,7 @@ import Chatbot from "../pages/chatbot/Chatbot";
 import Turmas from "../pages/turmas/ManageTurmas";
 import EditTurma from "../pages/turmas/EditTurma";
 import AddNewTurma from "../pages/turmas/AddNewTurma";
+import EditAvaliacoesFormador from "../pages/turmas/EditAvaliacoesFormador";
 
 function AppRoutes() {
   return (
@@ -142,6 +143,9 @@ function AppRoutes() {
 
           {/*TURMAS - publico ??*/}
           <Route path="/turmas" element={<Turmas />} />
+          
+          {/*TURMAS - Formador*/}
+          <Route path="/avaliar/:turmaId/:moduloId" element={<EditAvaliacoesFormador />} />
 
           {/*TURMAS - admin*/}
           <Route path="/gerir-turmas/adicionar-turma" element={<AddNewTurma />} />
