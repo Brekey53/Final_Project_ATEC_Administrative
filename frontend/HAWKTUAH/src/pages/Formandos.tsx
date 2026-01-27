@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   getFormandos,
   type Formando,
-} from "../services/students/formandoService"
+} from "../services/students/formandoService";
 import "../css/newStudent.css";
 import { toast } from "react-hot-toast";
 
@@ -11,6 +11,11 @@ export default function Formandos() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setError] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchFormandos() {
@@ -21,6 +26,24 @@ export default function Formandos() {
     fetchFormandos();
   }, []);
 
+    const filteredFormandos = formandos.filter((f) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      f.nome.toLowerCase().includes(term) || f.nif.toLowerCase().includes(term)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredFormandos.length / ITEMS_PER_PAGE);
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  const formandosPaginados = filteredFormandos.slice(startIndex, endIndex);
+
+  // Quando pesquisa muda → voltar à página 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -33,12 +56,15 @@ export default function Formandos() {
         </div>
       </div>
 
+      {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
           <input
             type="text"
             className="form-control form-control-lg"
-            placeholder="Pesquisar formandos..."
+            placeholder="Pesquisar Formandos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -50,7 +76,8 @@ export default function Formandos() {
             <div>Email</div>
             <div className="text-end">Telefone</div>
           </div>
-          {formandos.map((f) => (
+          {!loading && formandosPaginados.length > 0
+           ? formandosPaginados.map((f) => (
             <div
               key={f.idFormando}
               className="px-4 py-3 border-bottom tabela-alunos"
@@ -66,9 +93,41 @@ export default function Formandos() {
               </div>
               <div className="text-muted">{f.telefone || "-"}</div>{" "}
             </div>
-          ))}
+          ))
+          : !loading && (
+                <div className="p-5 text-center text-muted">
+                  Nenhum formando encontrado para "{searchTerm}"
+                </div>
+              )}
+      
         </div>
       </div>
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+      <p className="text-muted small text-center mt-5">
+        {filteredFormandos.length} formando(s) encontrado(s)
+      </p>
     </div>
   );
 }
