@@ -87,6 +87,19 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(resposta);
         }
 
+        // [HttpGet("/AindaMaisCompleto/{id}")]
+        // public async Task<ActionResult> GetFormandoPdf(int id)
+        // {
+        //     var formando = await _context.Formandos.FindAsync(id);
+
+        //     if (formando == null)
+        //     {
+        //         return NotFound();
+        //     }
+
+        //     return Ok(formando);
+        // }
+
         // POST: api/Formandos/completo
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost("completo")]
