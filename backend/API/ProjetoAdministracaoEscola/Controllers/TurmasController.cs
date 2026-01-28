@@ -35,7 +35,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                     DataInicio = t.DataInicio,
                     DataFim = t.DataFim,
                     IdCurso = t.IdCurso,
-                    NomeCurso = t.IdCursoNavigation.Nome
+                    NomeCurso = t.IdCursoNavigation.Nome,
+                    Estado = CalcularEstadoTurma(t.DataInicio, t.DataFim)
                 })
                 .ToListAsync();
         }
@@ -142,6 +143,20 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return NoContent();
         }
+
+        private static string CalcularEstadoTurma(DateOnly dataInicio, DateOnly dataFim)
+        {
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+            if (hoje < dataInicio)
+                return "Para começar";
+
+            if (hoje > dataFim)
+                return "Terminada";
+
+            return "A decorrer";
+        }
+
 
         private bool TurmaExists(int id)
         {
