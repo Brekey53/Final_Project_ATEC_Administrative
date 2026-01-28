@@ -10,7 +10,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="footer mt-5 py-5 bg-dark text-light">
+    <footer className="footer mt-4 py-5 bg-dark text-light">
       <div className="container">
         <div className="d-flex flex-wrap justify-content-around align-items-center text-center gap-4">
           {/* Branding */}
