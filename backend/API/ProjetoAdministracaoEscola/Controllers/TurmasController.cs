@@ -27,13 +27,15 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult<IEnumerable<TurmaDTO>>> GetTurmas()
         {
             return await _context.Turmas
+                .Include(t => t.IdCursoNavigation)
                 .Select(t => new TurmaDTO
                 {
                     IdTurma = t.IdTurma,
                     NomeTurma = t.NomeTurma,
                     DataInicio = t.DataInicio,
                     DataFim = t.DataFim,
-                    IdCurso = t.IdCurso
+                    IdCurso = t.IdCurso,
+                    NomeCurso = t.IdCursoNavigation.Nome
                 })
                 .ToListAsync();
         }
@@ -45,6 +47,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             var hoje = DateOnly.FromDateTime(DateTime.Now);
 
             return await _context.Turmas
+                //.Include(t => t.IdCursoNavigation.Nome)
                 .Where(t => t.DataInicio > hoje)
                 .OrderBy(t => t.DataInicio)
                 .Select(t => new TurmaDTO
@@ -53,7 +56,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                     NomeTurma = t.NomeTurma,
                     DataInicio = t.DataInicio,
                     DataFim = t.DataFim,
-                    IdCurso = t.IdCurso
+                    IdCurso = t.IdCurso,
+                    NomeCurso = t.IdCursoNavigation.Nome
                 })
                 .ToListAsync();
         }
@@ -76,43 +80,51 @@ namespace ProjetoAdministracaoEscola.Controllers
         // PUT: api/Turmas/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTurma(int id, Turma turma)
+        public async Task<IActionResult> PutTurma(int id, TurmaDTO turmadto)
         {
-            if (id != turma.IdTurma)
-            {
-                return BadRequest();
-            }
+            var turma = await _context.Turmas.FirstOrDefaultAsync(t => t.IdTurma == id);
 
-            _context.Entry(turma).State = EntityState.Modified;
-
-            try
+            if (turma == null)
             {
-                await _context.SaveChangesAsync();
+                return BadRequest(new { message = "Erro ao carregar a turma." });
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TurmaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            turma.IdTurma = turmadto.IdTurma;
+            turma.NomeTurma = turmadto.NomeTurma;
+            turma.DataInicio = turmadto.DataInicio;
+            turma.DataFim = turmadto.DataFim;
+            turma.IdCurso = turmadto.IdCurso; 
 
-            return NoContent();
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Dados atualizados com sucesso!" });
         }
 
         // POST: api/Turmas
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Turma>> PostTurma(Turma turma)
+        public async Task<IActionResult> PostTurma([FromForm] int id, TurmaDTO turmadto)
         {
-            _context.Turmas.Add(turma);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTurma", new { id = turma.IdTurma }, turma);
+            //var turma = await _context.Turmas.FirstOrDefaultAsync(t => t.IdTurma == id);
+
+            //if (turma == null)
+            //{
+            //    return BadRequest(new { message = "Erro ao carregar a turma." });
+            //}
+
+            //var updateTurma = new Turma
+            //{
+            //    IdTurma = turmadto.IdTurma,
+            //    NomeTurma = turmadto.NomeTurma,
+            //    DataInicio = turmadto.DataInicio,
+            //    DataFim = turmadto.DataFim,
+            //    IdCurso = turmadto.IdCurso
+            //};
+
+
+            //await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Dados atualizados com sucesso!" });
         }
 
         // DELETE: api/Turmas/5
