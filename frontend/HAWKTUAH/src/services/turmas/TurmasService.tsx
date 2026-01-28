@@ -8,6 +8,7 @@ export interface Turma {
   dataInicio: string;
   dataFim: string;
   nomeCurso: string;
+  estado: "Para começar" | "A decorrer" | "Terminado";
 }
 
 export async function getTurmas() {
@@ -40,15 +41,16 @@ export async function getCursos() {
   return res.data;
 }
 
-export interface TurmaFormadorDTO {
+export type TurmaFormadorDTO = {
   idTurma: number;
   idModulo: number;
   nomeTurma: string;
+  nomeCurso: string;
   nomeModulo: string;
-  dataInicio: string;
-  dataFim: string;
-  idCurso: number;
-}
+  horasDadas: number;
+  horasTotaisModulo: number;
+};
+
 
 export async function getTurmasFormador() {
   const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador`);
