@@ -45,6 +45,8 @@ public partial class SistemaGestaoContext : DbContext
 
     public virtual DbSet<TipoUtilizadore> TipoUtilizadores { get; set; }
 
+    public virtual DbSet<TipoSala> TipoSala { get; set; }
+
     public virtual DbSet<Turma> Turmas { get; set; }
 
     public virtual DbSet<TurmaAlocaco> TurmaAlocacoes { get; set; }
@@ -377,11 +379,26 @@ public partial class SistemaGestaoContext : DbContext
 
             entity.ToTable("salas");
 
-            entity.Property(e => e.IdSala).HasColumnName("id_sala");
+            entity.Property(e => e.IdSala)
+                .HasColumnName("id_sala");
+
             entity.Property(e => e.Descricao)
                 .HasMaxLength(50)
                 .HasColumnName("descricao");
-            entity.Property(e => e.NumMaxAlunos).HasColumnName("num_max_alunos");
+
+            entity.Property(e => e.NumMaxAlunos)
+                .HasColumnName("num_max_alunos");
+
+            entity.Property(e => e.IdTipoSala)
+                .HasColumnName("id_tipo_sala");
+
+            entity.HasIndex(e => e.IdTipoSala, "idx_sala_tipo_sala");
+
+            entity.HasOne(s => s.IdTipoSalaNavigation)
+                .WithMany(ts => ts.Salas)
+                .HasForeignKey(s => s.IdTipoSala)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("salas_ibfk_tipo_sala");
         });
 
         modelBuilder.Entity<TipoUtilizadore>(entity =>
@@ -394,6 +411,21 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.TipoUtilizador)
                 .HasMaxLength(50)
                 .HasColumnName("tipo_utilizador");
+        });
+
+        modelBuilder.Entity<TipoSala>(entity =>
+        {
+            entity.ToTable("tipo_salas");
+
+            entity.HasKey(e => e.IdTipoSala).HasName("PRIMARY");
+
+            entity.Property(e => e.IdTipoSala)
+                .HasColumnName("id_tipo_sala");
+
+            entity.Property(e => e.Nome)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("nome");
         });
 
         modelBuilder.Entity<Turma>(entity =>
