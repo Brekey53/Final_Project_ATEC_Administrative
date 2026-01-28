@@ -9,6 +9,11 @@ CREATE TABLE areas (
     nome VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE tipo_salas (
+    id_tipo_sala INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL
+);
+
 CREATE TABLE tipo_utilizadores (
     id_tipo_utilizador INT AUTO_INCREMENT PRIMARY KEY,
     tipo_utilizador VARCHAR(50) NOT NULL
@@ -52,8 +57,11 @@ CREATE TABLE modulos (
 CREATE TABLE salas (
     id_sala INT AUTO_INCREMENT PRIMARY KEY,
     descricao VARCHAR(50) NOT NULL,
-    num_max_alunos INT NOT NULL CHECK(num_max_alunos >= 5)
+    num_max_alunos INT NOT NULL CHECK(num_max_alunos >= 5),
+    id_tipo_sala INT NOT NULL,
+    FOREIGN KEY (id_tipo_sala) REFERENCES tipo_salas(id_tipo_sala)
 );
+
 
 -- CURSOS E MATRIZ
 CREATE TABLE cursos (
@@ -178,6 +186,19 @@ CREATE TABLE horarios (
 -- ÁREAS
 INSERT INTO areas (nome) VALUES ('Informática'), ('Mecânica'), ('Eletrónica'), ('Gestão'), ('Automação');
 
+-- Tipos de Salas
+INSERT INTO tipo_salas (nome) VALUES
+('Laboratório Informática'),
+('Laboratório Técnico'),
+('Sala Teórica'),
+('Oficina'),
+('Auditório'),
+('Sala Polivalente'),
+('Biblioteca'),
+('Sala Reuniões'),
+('Ginásio');
+
+
 -- TIPOS DE UTILIZADOR
 INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES ('admin'), ('formador'), ('formando'), ('administrativo'), ('geral');
 
@@ -250,7 +271,13 @@ INSERT INTO utilizadores (nome, nif, data_nascimento, morada, email, password_ha
 ('Zacarias Vaz', '700000052', '2002-04-22', 'Barreiro', 'zacarias.52@student.pt', 'hash123', 3, 1),
 ('Alice Reis', '700000053', '2001-05-23', 'Almada', 'alice.53@student.pt', 'hash123', 3, 1),
 ('Bruno Sá', '700000054', '2000-06-24', 'Seixal', 'bruno.54@student.pt', 'hash123', 3, 1),
-('Catarina Cruz', '700000055', '2002-07-25', 'Setúbal', 'catarina.55@student.pt', 'hash123', 3, 1);
+('Catarina Cruz', '700000055', '2002-07-25', 'Setúbal', 'catarina.55@student.pt', 'hash123', 3, 1),
+('Rui Matos', '666777888', '1976-04-12', 'Lisboa', 'rui.matos@atec.pt', 'hash123', 2, 1),
+('Sofia Pacheco', '777888999', '1984-09-18', 'Setúbal', 'sofia.pacheco@atec.pt', 'hash123', 2, 1),
+('Miguel Correia', '888999000', '1979-06-25', 'Almada', 'miguel.correia@atec.pt', 'hash123', 2, 1),
+('Patrícia Lopes', '999000111', '1987-02-14', 'Barreiro', 'patricia.lopes@atec.pt', 'hash123', 2, 1),
+('João Neves', '111000222', '1974-12-03', 'Montijo', 'joao.neves@atec.pt', 'hash123', 2, 1);
+
 
 -- FORMADORES (Ligar aos primeiros 7 utilizadores)
 INSERT INTO formadores (id_utilizador, iban, qualificacoes) VALUES 
@@ -260,7 +287,12 @@ INSERT INTO formadores (id_utilizador, iban, qualificacoes) VALUES
 (4, 'PT500004', 'Doutorada em IA'),
 (5, 'PT500005', 'Certificação Cisco'),
 (6, 'PT500006', 'Licenciado em Informática'),
-(7, 'PT500007', 'Especialista em Bases de Dados');
+(7, 'PT500007', 'Especialista em Bases de Dados'),
+(56, 'PT600001', 'Especialista DevOps'),
+(57, 'PT600002', 'UX/UI Designer'),
+(58, 'PT600003', 'Engenheiro de Software'),
+(59, 'PT600004', 'Especialista Cibersegurança'),
+(60, 'PT600005', 'Administrador de Sistemas');
 
 -- FORMANDOS (Ligar aos restantes 5 utilizadores)
 INSERT INTO formandos (id_utilizador, id_escolaridade) VALUES 
@@ -506,37 +538,55 @@ INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim) VALUES
 (4, 'ELET-01', '2025-10-01', '2026-05-30');
 
 -- SALAS
-INSERT INTO salas (descricao, num_max_alunos) VALUES 
-('Lab Informática 01', 20),
-('Lab Informática 02', 20),
-('Lab Informática 03', 18),
-('Lab Informática 04', 22),
-('Lab Redes e Sistemas', 16),
-('Lab Hardware', 15),
-('Lab Eletrónica', 12),
-('Lab Robótica', 14),
-('Lab Automação', 12),
-('Oficina Soldadura', 10),
-('Oficina Mecânica', 12),
-('Lab Química', 16),
-('Lab Física', 18),
-('Atelier Design', 15),
-('Estúdio Multimédia', 14),
-('Sala Teórica 01', 30),
-('Sala Teórica 02', 30),
-('Sala Teórica 03', 28),
-('Sala Teórica 04', 25),
-('Sala Teórica 05', 25),
-('Sala Teórica 06', 32),
-('Sala Teórica 07', 28),
-('Sala Teórica 08', 30),
-('Auditório', 50),
-('Sala Polivalente', 35),
-('Sala Reuniões', 12),
-('Biblioteca', 40),
-('Sala Estudo', 20),
-('Sala Tutoria', 8),
-('Ginásio', 25);
+INSERT INTO salas (descricao, num_max_alunos, id_tipo_sala) VALUES 
+-- Laboratórios Informática
+('Lab Informática 01', 20, 1),
+('Lab Informática 02', 20, 1),
+('Lab Informática 03', 18, 1),
+('Lab Informática 04', 22, 1),
+
+-- Laboratórios Técnicos
+('Lab Redes e Sistemas', 16, 2),
+('Lab Hardware', 15, 2),
+('Lab Eletrónica', 12, 2),
+('Lab Robótica', 14, 2),
+('Lab Automação', 12, 2),
+
+-- Oficinas
+('Oficina Soldadura', 10, 4),
+('Oficina Mecânica', 12, 4),
+
+-- Outros Laboratórios
+('Lab Química', 16, 2),
+('Lab Física', 18, 2),
+
+-- Salas criativas
+('Atelier Design', 15, 2),
+('Estúdio Multimédia', 14, 2),
+
+-- Salas Teóricas
+('Sala Teórica 01', 30, 3),
+('Sala Teórica 02', 30, 3),
+('Sala Teórica 03', 28, 3),
+('Sala Teórica 04', 25, 3),
+('Sala Teórica 05', 25, 3),
+('Sala Teórica 06', 32, 3),
+('Sala Teórica 07', 28, 3),
+('Sala Teórica 08', 30, 3),
+
+-- Espaços grandes
+('Auditório', 50, 5),
+('Sala Polivalente', 35, 6),
+
+-- Apoio
+('Sala Reuniões', 12, 8),
+('Biblioteca', 40, 7),
+('Sala Estudo', 20, 7),
+('Sala Tutoria', 8, 8),
+
+-- Outros
+('Ginásio', 25, 9);
+
 
 -- ALOCAÇÕES (Quem dá o quê em cada turma)
 INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES 
@@ -570,7 +620,21 @@ INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES
 (5, 3, 2), (5, 4, 4), (5, 5, 5), (5, 12, 1), (5, 38, 3),
 (5, 39, 4), (5, 40, 6), (5, 41, 7), (5, 42, 1), (5, 50, 2),
 (5, 51, 3), (5, 60, 4), (5, 95, 5), (5, 96, 6), (5, 97, 7),
-(5, 83, 1), (5, 84, 2), (5, 85, 3), (5, 87, 4), (5, 89, 5);
+(5, 83, 1), (5, 84, 2), (5, 85, 3), (5, 87, 4), (5, 89, 5),
+
+(1, 23, 8),  -- Testes de Software
+(1, 24, 9),  -- Qualidade de Software
+(1, 25, 10), -- Criptografia
+
+-- TPSI-PAL-0626 (Turma 2)
+(2, 26, 11), -- Análise de Sistemas
+(2, 27, 12), -- Programação Python
+(2, 28, 8),  -- Programação Java
+
+-- CIBER-2025 (Turma 3)
+(3, 41, 9),  -- Administração de Redes
+(3, 42, 10), -- Firewall e VPN
+(3, 43, 11); -- Ethical Hacking
 
 -- INSCRIÇÕES
 INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES 
@@ -662,6 +726,25 @@ INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hor
 INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
 (5, 83, 7, 20, '2026-01-26', '09:00:00', '13:00:00'),
 (5, 84, 5, 21, '2026-01-26', '14:00:00', '18:00:00');
+
+INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES
+-- TPSI-PAL-0525
+(1, 23, 8, 1, '2026-02-16', '09:00:00', '13:00:00'),
+(1, 23, 8, 1, '2026-02-17', '09:00:00', '13:00:00'),
+
+(1, 24, 9, 2, '2026-02-18', '14:00:00', '18:00:00'),
+(1, 24, 9, 2, '2026-02-19', '14:00:00', '18:00:00'),
+
+-- TPSI-PAL-0626
+(2, 26, 11, 3, '2026-02-16', '09:00:00', '13:00:00'),
+(2, 26, 11, 3, '2026-02-17', '09:00:00', '13:00:00'),
+
+(2, 27, 12, 4, '2026-02-18', '14:00:00', '18:00:00'),
+
+-- CIBER-2025
+(3, 41, 9, 5, '2026-02-16', '09:00:00', '13:00:00'),
+(3, 42, 10, 6, '2026-02-17', '14:00:00', '18:00:00'),
+(3, 43, 11, 7, '2026-02-18', '09:00:00', '13:00:00');
 
 -- AVALIAÇÕES
 INSERT INTO avaliacoes (`id_avaliacao`, `id_inscricao`, `id_modulo`, `nota`, `data_avaliacao`) VALUES 
