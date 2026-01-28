@@ -5,6 +5,8 @@ export interface Salas {
   idSala: number;
   descricao: string;
   numMaxAlunos: number;
+  idTipoSala: number;
+  tipoSala: string;
 }
 
 export async function getSalas(): Promise<Salas[]> {
@@ -16,6 +18,16 @@ export async function getSalas(): Promise<Salas[]> {
 export async function getSala(idSala: string) {
   const res = await axios.get(`${API_BASE_URL}/salas/${idSala}`);
 
+  return res.data;
+}
+
+export interface TipoSala {
+  idTipoSala: number;
+  nome: string;
+}
+
+export async function getTipoSalas(): Promise<TipoSala[]> {
+  const res = await axios.get(`${API_BASE_URL}/tiposalas`);
   return res.data;
 }
 

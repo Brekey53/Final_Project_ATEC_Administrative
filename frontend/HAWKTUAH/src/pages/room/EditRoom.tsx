@@ -5,6 +5,8 @@ import {
   getSala,
   updateSala,
   type Salas,
+  getTipoSalas,
+  type TipoSala,
 } from "../../services/rooms/SalasService";
 
 export default function EditRoom() {
@@ -14,20 +16,24 @@ export default function EditRoom() {
     idSala: 0,
     descricao: "",
     numMaxAlunos: 0,
+    idTipoSala: 0,
+    tipoSala: "",
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [tiposSala, setTiposSala] = useState<TipoSala[]>([]);
 
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
       try {
-        const res = await getSala(id);
+        const [sala, tipos] = await Promise.all([getSala(id), getTipoSalas()]);
 
-        setFormData(res);
-      } catch (err) {
-        toast.error("Erro ao carregar dados da Sala.");
+        setFormData(sala);
+        setTiposSala(tipos);
+      } catch {
+        toast.error("Erro ao carregar dados da sala.");
         navigate("/gerir-salas");
       } finally {
         setFetching(false);
@@ -37,11 +43,13 @@ export default function EditRoom() {
     fetchData();
   }, [id, navigate]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
 
-    // Converter para número
-    const val = name === "numMaxAlunos" ? Number(value) : value;
+    const val =
+      name === "numMaxAlunos" || name === "idTipoSala" ? Number(value) : value;
 
     setFormData((prev) => ({
       ...prev,
@@ -162,6 +170,24 @@ export default function EditRoom() {
                   Capacidade total de alunos.
                 </div>
               </div>
+            </div>
+            {/* Tipo de Sala */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label fw-semibold">Tipo de Sala</label>
+              <select
+                name="idTipoSala"
+                className="form-select form-select-lg"
+                value={formData.idTipoSala}
+                onChange={handleChange}
+                required
+              >
+                <option value={0}>Selecionar tipo de sala</option>
+                {tiposSala.map((tipo) => (
+                  <option key={tipo.idTipoSala} value={tipo.idTipoSala}>
+                    {tipo.nome}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Ações */}
