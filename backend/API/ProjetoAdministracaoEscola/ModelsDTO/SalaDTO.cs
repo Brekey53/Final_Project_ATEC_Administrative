@@ -12,5 +12,8 @@ namespace ProjetoAdministracaoEscola.ModelsDTO
 
         [Range(1, 200, ErrorMessage = "A lotação deve estar entre 1 e 200 alunos.")]
         public int NumMaxAlunos { get; set; }
+
+        public int IdTipoSala { get; set; }
+        public string? TipoSala { get; set; }
     }
 }
