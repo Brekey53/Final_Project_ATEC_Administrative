@@ -144,8 +144,8 @@ function AppRoutes() {
           <Route path="/turmas" element={<Turmas />} />
 
           {/*TURMAS - admin*/}
-          <Route path="/gerir-turmas/adicionar-turma" element={<AddNewTurma />} />
-          <Route path="/gerir-turmas/edit-turma/:id" element={<EditTurma />} />
+          <Route path="/turmas/adicionar-turma" element={<AddNewTurma />} />
+          <Route path="/turmas/edit-turma/:id" element={<EditTurma />} />
 
         </Route>
       </Route>
