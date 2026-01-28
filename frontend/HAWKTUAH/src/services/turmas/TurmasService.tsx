@@ -10,7 +10,6 @@ export interface Turma {
   nomeCurso: string;
 }
 
-
 export async function getTurmas() {
   const res = await axios.get(`${API_BASE_URL}/turmas`);
 
@@ -31,23 +30,30 @@ export async function postNewTurma(data: any) {
   return axios.post(`${API_BASE_URL}/turmas`, data);
 }
 
-export async function updateTurma(idSala: string, data: any){
+export async function updateTurma(idSala: string, data: any) {
   const res = await axios.put(`${API_BASE_URL}/turmas/${idSala}`, data);
   return res.data;
 }
 
-export async function getCursos(){
+export async function getCursos() {
   const res = await axios.get(`${API_BASE_URL}/cursos`);
   return res.data;
 }
 
+export interface TurmaFormadorDTO {
+  idTurma: number;
+  idModulo: number;
+  nomeTurma: string;
+  nomeModulo: string;
+  dataInicio: string;
+  dataFim: string;
+  idCurso: number;
+}
+
 export async function getTurmasFormador() {
-
-    const res= await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador`);
-    return res.data;
-
-};
-
+  const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador`);
+  return res.data;
+}
 
 type AvaliacaoAlunoDTO = {
   idInscricao: number;
@@ -58,14 +64,13 @@ type AvaliacaoAlunoDTO = {
 
 export async function getTurmaAvaliacao(
   turmaId: number,
-  moduloId: number
+  moduloId: number,
 ): Promise<AvaliacaoAlunoDTO[]> {
   const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/avaliacoes`, {
-    params: { turmaId, moduloId }
+    params: { turmaId, moduloId },
   });
   return res.data;
 }
-
 
 type DarAvaliacaoDTO = {
   idInscricao: number;
@@ -73,12 +78,10 @@ type DarAvaliacaoDTO = {
   nota: number;
 };
 
-export async function postTurmaAvaliacao(
-  avaliacoes: DarAvaliacaoDTO[]
-) {
+export async function postTurmaAvaliacao(avaliacoes: DarAvaliacaoDTO[]) {
   const res = await axios.post(
     `${API_BASE_URL}/TurmaAlocacao/avaliacoes`,
-    avaliacoes
+    avaliacoes,
   );
   return res.data;
 }
