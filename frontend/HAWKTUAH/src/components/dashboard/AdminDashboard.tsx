@@ -74,7 +74,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <div className="main-layout mt-5">
+      <div className="main-layout mt-3">
         <div className="container">
           {/*  Titulo e Açoes rápidas*/}
           <div className="title-dashboard d-flex justify-content-between w-100">
