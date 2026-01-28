@@ -67,15 +67,18 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) return Unauthorized();
+            if (userIdClaim == null) 
+                return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
 
             // Procuramos o utilizador e incluímos os perfis específicos se existirem
             var user = await _context.Utilizadores
-                .Include(u => u.Formadores)
-                .Include(u => u.Formandos)
-                .FirstOrDefaultAsync(u => u.IdUtilizador == userId);
+            .Include(u => u.Formadores)
+            .Include(u => u.Formandos)
+                .ThenInclude(f => f.IdEscolaridadeNavigation)
+            .FirstOrDefaultAsync(u => u.IdUtilizador == userId);
+
 
             if (user == null) return NotFound("Utilizador não encontrado");
 
@@ -97,13 +100,25 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (user.IdTipoUtilizador == 3 && user.Formandos.Any())
             {
                 var f = user.Formandos.First();
-                return Ok(new { baseInfo = perfilBase, extra = new { f.IdFormando, f.IdEscolaridade } });
+                return Ok(new { 
+                    baseInfo = perfilBase, 
+                    extra = new { 
+                        f.IdFormando, 
+                        Escolaridade = f.IdEscolaridadeNavigation.Nivel 
+                    } 
+                });
             }
 
             if (user.IdTipoUtilizador == 2 && user.Formadores.Any())
             {
                 var f = user.Formadores.First();
-                return Ok(new { baseInfo = perfilBase, extra = new { f.IdFormador, f.Iban, f.Qualificacoes } });
+                return Ok(new { 
+                    baseInfo = perfilBase, 
+                    extra = new { 
+                        f.IdFormador, 
+                        f.Iban, 
+                        f.Qualificacoes 
+                    } });
             }
 
             return Ok(perfilBase);

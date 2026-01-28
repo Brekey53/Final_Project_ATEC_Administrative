@@ -201,6 +201,57 @@ export default function Perfil() {
                 </div>
               )}
             </div>
+            
+            {/* DADOS ESPECÍFICOS */}
+            {perfil.tipo === 2 && (
+              <>
+                <h5 className="text-primary mb-3">Dados de Formador</h5>
+
+                {perfil.iban && (
+                  <div className="mb-3">
+                    <label className="form-label">IBAN</label>
+                    <input
+                      className="form-control"
+                      value={perfil.iban}
+                      disabled
+                    />
+                  </div>
+                )}
+
+                {perfil.qualificacoes && (
+                  <div className="mb-3">
+                    <label className="form-label">Qualificações</label>
+                    <textarea
+                      className="form-control"
+                      value={perfil.qualificacoes}
+                      disabled
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {perfil.tipo === 3 && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label">ID do Formando</label>
+                  <input
+                    className="form-control"
+                    value={perfil.idFormando}
+                    disabled
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Escolaridade</label>
+                  <input
+                    className="form-control"
+                    value={perfil.escolaridade}
+                    disabled
+                  />
+                </div>
+              </>
+            )}
 
             <hr />
 

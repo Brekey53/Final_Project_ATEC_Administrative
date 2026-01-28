@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
 
-export interface Perfil {
+export interface PerfilBase {
   tipo: number;
   email: string;
   nome?: string;
@@ -10,7 +10,22 @@ export interface Perfil {
   dataNascimento?: string;
   sexo?: string;
   morada?: string;
+  statusAtivacao: number;
 }
+
+export interface PerfilFormando {
+  idFormando: number;
+  escolaridade: string;
+}
+
+export interface PerfilFormador {
+  idFormador: number;
+  iban?: string;
+  qualificacoes?: string;
+}
+
+export type Perfil = PerfilBase & Partial<PerfilFormando> & Partial<PerfilFormador>;
+
 
 export async function getMyPerfil(): Promise<Perfil> {
   const res = await axios.get(`${API_BASE_URL}/utilizadores/perfil`, {
@@ -19,8 +34,20 @@ export async function getMyPerfil(): Promise<Perfil> {
     },
   });
 
-  return res.data;
+  if (res.data.baseInfo) {
+    return {
+      tipo: res.data.baseInfo.idTipoUtilizador,
+      ...res.data.baseInfo,
+      ...res.data.extra,
+    };
+  }
+
+  return {
+    tipo: res.data.idTipoUtilizador,
+    ...res.data,
+  };
 }
+
 
 export async function getFotoPerfil(): Promise<string> {
   const res = await axios.get(
