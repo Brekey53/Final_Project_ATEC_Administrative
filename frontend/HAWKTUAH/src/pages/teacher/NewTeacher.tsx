@@ -14,12 +14,20 @@ export default function NewTeacher() {
   const [formadorSelecionado, setFormadorSelecionado] =
     useState<Formador | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchFormadores() {
-      const data = await getFormadores();
-      setFormadores(data);
-      setLoading(false);
+      try {
+        const data = await getFormadores();
+        setFormadores(data);
+      } catch {
+        toast.error("Erro ao carregar formadores");
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchFormadores();
@@ -28,9 +36,24 @@ export default function NewTeacher() {
   const filteredFormadores = formadores.filter((f) => {
     const term = searchTerm.toLowerCase();
     return (
-      f.nome.toLowerCase().includes(term) || f.nif.toLowerCase().includes(term)
+      f.nome.toLowerCase().includes(term) ||
+      f.nif.toLowerCase().includes(term)
     );
   });
+
+  // sempre que muda a pesquisa, voltar à página 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(filteredFormadores.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  const formadoresPaginados = filteredFormadores.slice(
+    startIndex,
+    endIndex,
+  );
 
   async function handleDeleteFormador() {
     if (!formadorSelecionado) return;
@@ -47,14 +70,15 @@ export default function NewTeacher() {
       toast.success("Formador eliminado com sucesso");
     } catch (err: any) {
       const errorData = err.response?.data;
-      if (errorData?.message) {
-        toast.error(errorData.message || "Erro ao eliminar formador");
-      }
+      toast.error(errorData?.message || "Erro ao eliminar formador");
     }
   }
 
+  if (loading) return <p className="p-5 text-center">A carregar…</p>;
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
+      {/* HEADER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Gestão de Formadores</h2>
@@ -62,6 +86,7 @@ export default function NewTeacher() {
             Inserir, alterar, eliminar e consultar formadores
           </p>
         </div>
+
         <Link to="/adicionar-formadores">
           <div className="btn btn-success px-4 py-2 rounded-pill">
             + Novo Formador
@@ -69,35 +94,35 @@ export default function NewTeacher() {
         </Link>
       </div>
 
+      {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
           <input
             type="text"
             className="form-control form-control-lg"
-            placeholder="Pesquisar Formadores..."
+            placeholder="Pesquisar por nome ou NIF…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
+      {/* TABELA */}
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-formadores">
-            {/* TODO: Criar css e alterar tabela-alunos ?? */}
             <div>Formador</div>
             <div>Email</div>
             <div>Qualificações</div>
-            <div>Nif</div>
+            <div>NIF</div>
             <div className="text-end">Ações</div>
           </div>
 
-          {/* Map de formandores filtrados */}
-          {filteredFormadores.length > 0 ? (
-            filteredFormadores.map((f) => (
+          {formadoresPaginados.length > 0 ? (
+            formadoresPaginados.map((f) => (
               <div
                 key={f.idFormador}
-                className="px-4 py-3 border-bottom tabela-formadores"
+                className="px-4 py-3 border-bottom tabela-formadores align-items-center"
               >
                 <div className="d-flex align-items-center gap-3">
                   <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
@@ -106,13 +131,8 @@ export default function NewTeacher() {
                   <span className="fw-medium text-truncate">{f.nome}</span>
                 </div>
 
-                <div className="d-flex align-items-center gap-2 text-muted">
-                  <span>{f.email || "-"}</span>
-                </div>
-                <div className="d-flex align-items-center gap-2 text-muted">
-                  <span>{f.qualificacoes || "-"}</span>
-                </div>
-
+                <div className="text-muted">{f.email || "-"}</div>
+                <div className="text-muted">{f.qualificacoes || "-"}</div>
                 <div className="text-muted">{f.nif || "-"}</div>
 
                 <div className="d-flex justify-content-end gap-2">
@@ -122,6 +142,7 @@ export default function NewTeacher() {
                   >
                     Editar
                   </Link>
+
                   <button
                     className="btn btn-sm btn-outline-danger rounded-pill px-3"
                     onClick={() => {
@@ -135,65 +156,93 @@ export default function NewTeacher() {
               </div>
             ))
           ) : (
-            // Mensagem caso não existam resultados
             <div className="p-5 text-center text-muted">
-              Nenhum formador encontrado para "{searchTerm}"
-            </div>
-          )}
-
-          {showDeleteModal && formadorSelecionado && (
-            <div
-              className="modal fade show d-block"
-              tabIndex={-1}
-              onClick={() => setShowDeleteModal(false)}
-              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-            >
-              <div
-                className="modal-dialog modal-dialog-centered"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="modal-content rounded-4 shadow">
-                  <div className="modal-header">
-                    <h5 className="modal-title">Confirmar eliminação</h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowDeleteModal(false)}
-                    />
-                  </div>
-
-                  <div className="modal-body">
-                    <p>
-                      Tem a certeza que pretende eliminar o formador{" "}
-                      <strong>{formadorSelecionado.nome} </strong> da
-                      plataforma?
-                    </p>
-                    <p className="text-muted mb-0">
-                      Esta ação não pode ser revertida.
-                    </p>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button
-                      className="btn btn-light"
-                      onClick={() => setShowDeleteModal(false)}
-                    >
-                      Cancelar
-                    </button>
-
-                    <button
-                      className="btn btn-danger"
-                      onClick={handleDeleteFormador}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </div>
-              </div>
+              Nenhum formador encontrado
             </div>
           )}
         </div>
       </div>
+
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-3 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+
+      <p className="text-muted small text-center mt-2">
+        {filteredFormadores.length} formador(es) encontrado(s)
+      </p>
+
+      {/* MODAL DELETE */}
+      {showDeleteModal && formadorSelecionado && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          onClick={() => setShowDeleteModal(false)}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content rounded-4 shadow">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirmar eliminação</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                />
+              </div>
+
+              <div className="modal-body">
+                <p>
+                  Tem a certeza que pretende eliminar o formador{" "}
+                  <strong>{formadorSelecionado.nome}</strong>?
+                </p>
+                <p className="text-muted mb-0">
+                  Esta ação não pode ser revertida.
+                </p>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  className="btn btn-light"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeleteFormador}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

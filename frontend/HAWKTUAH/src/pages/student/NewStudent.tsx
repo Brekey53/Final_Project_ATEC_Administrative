@@ -15,6 +15,9 @@ export default function NewStudent() {
   const [formandoSelecionado, setFormandoSelecionado] =
     useState<Formando | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchFormandos() {
@@ -34,6 +37,21 @@ export default function NewStudent() {
     (f) =>
       f.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (f.nif && f.nif.includes(searchTerm)),
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(
+    formandosFiltrados.length / ITEMS_PER_PAGE,
+  );
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  const formandosPaginados = formandosFiltrados.slice(
+    startIndex,
+    endIndex,
   );
 
   async function handleDeleteFormando() {
@@ -56,6 +74,7 @@ export default function NewStudent() {
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
+      {/* HEADER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Gestão de Formandos</h2>
@@ -70,32 +89,33 @@ export default function NewStudent() {
         </Link>
       </div>
 
-      {/* Barra de Pesquisa */}
+      {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
           <input
             type="text"
             className="form-control form-control-lg rounded-3"
-            placeholder="Pesquisar por nome ou NIF..."
+            placeholder="Pesquisar por nome ou NIF…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
+      {/* TABELA */}
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
             <div>Formando</div>
             <div>Email</div>
-            <div>Turma</div> {/* Alterado de Telefone para Turma */}
+            <div>Turma</div>
             <div className="text-end">Ações</div>
           </div>
 
           {loading ? (
-            <div className="text-center py-5">A carregar...</div>
-          ) : formandosFiltrados.length > 0 ? (
-            formandosFiltrados.map((f) => (
+            <div className="text-center py-5">A carregar…</div>
+          ) : formandosPaginados.length > 0 ? (
+            formandosPaginados.map((f) => (
               <div
                 key={f.idFormando}
                 className="px-4 py-3 border-bottom tabela-alunos align-items-center"
@@ -109,7 +129,11 @@ export default function NewStudent() {
                   </div>
                   <span className="fw-medium">{f.nome}</span>
                 </div>
-                <div className="text-muted text-truncate">{f.email || "-"}</div>
+
+                <div className="text-muted text-truncate">
+                  {f.email || "-"}
+                </div>
+
                 <div>
                   <span
                     className={`badge badge-turma-fixa ${
@@ -121,6 +145,7 @@ export default function NewStudent() {
                     {f.turma || "Sem Turma"}
                   </span>
                 </div>
+
                 <div className="d-flex justify-content-end gap-3">
                   <Link
                     to={`edit-formando/${f.idFormando}`}
@@ -148,7 +173,36 @@ export default function NewStudent() {
         </div>
       </div>
 
-      {/* Modal de Eliminação */}
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-3 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+
+      <p className="text-muted small text-center mt-2">
+        {formandosFiltrados.length} formando(s) encontrado(s)
+      </p>
+
+      {/* MODAL DELETE */}
       {showDeleteModal && formandoSelecionado && (
         <div
           className="modal fade show d-block"
@@ -158,13 +212,16 @@ export default function NewStudent() {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 shadow border-0">
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">Confirmar eliminação</h5>
+                <h5 className="modal-title fw-bold">
+                  Confirmar eliminação
+                </h5>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setShowDeleteModal(false)}
                 />
               </div>
+
               <div className="modal-body py-4">
                 <p>
                   Tem a certeza que pretende eliminar o formando{" "}
@@ -174,6 +231,7 @@ export default function NewStudent() {
                   Esta ação removerá o perfil e as inscrições associadas.
                 </p>
               </div>
+
               <div className="modal-footer border-0 pt-0">
                 <button
                   className="btn btn-light rounded-pill px-4"
