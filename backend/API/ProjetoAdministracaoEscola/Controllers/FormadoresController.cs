@@ -23,24 +23,25 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Formadores
         [HttpGet]
-        public async Task<ActionResult> GetFormadores()
+        public async Task<ActionResult<IEnumerable<FormadorDTO>>> GetFormadores()
         {
-            // Selecionamos apenas o necessário para a lista, evitando carregar BLOBs pesados
             var formadores = await _context.Formadores
                 .Include(f => f.IdUtilizadorNavigation)
-                .Select(f => new
+                .Select(f => new FormadorDTO
                 {
-                    f.IdFormador,
+                    IdFormador = f.IdFormador,
                     Nome = f.IdUtilizadorNavigation.Nome,
                     Email = f.IdUtilizadorNavigation.Email,
                     Nif = f.IdUtilizadorNavigation.Nif,
                     Telefone = f.IdUtilizadorNavigation.Telefone,
                     Qualificacoes = f.Qualificacoes
                 })
+                .OrderBy(f => f.Nome)
                 .ToListAsync();
 
             return Ok(formadores);
         }
+
 
         // GET: api/Formadores/5
         [HttpGet("{id}")]
