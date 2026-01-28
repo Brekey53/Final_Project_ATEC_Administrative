@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
@@ -93,7 +94,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             turma.NomeTurma = turmadto.NomeTurma;
             turma.DataInicio = turmadto.DataInicio;
             turma.DataFim = turmadto.DataFim;
-            turma.IdCurso = turmadto.IdCurso; 
+            turma.IdCurso = turmadto.IdCurso;            
 
             await _context.SaveChangesAsync();
 
@@ -103,29 +104,37 @@ namespace ProjetoAdministracaoEscola.Controllers
         // POST: api/Turmas
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<IActionResult> PostTurma([FromForm] int id, TurmaDTO turmadto)
+        public async Task<IActionResult> PostTurma([FromForm] TurmaDTO turmadto)
         {
+            var turmaExistente = await _context.Turmas.FirstOrDefaultAsync(t => t.NomeTurma == turmadto.NomeTurma);
+            
 
-            //var turma = await _context.Turmas.FirstOrDefaultAsync(t => t.IdTurma == id);
+            if (turmaExistente != null)
+            {
+                return BadRequest(new { message = "Já existe uma turma com esse nome!" });
+            }
+            try
+            {
+                var novaTurma = new Turma
+                {
+                    NomeTurma = turmadto.NomeTurma,
+                    DataInicio = turmadto.DataInicio,
+                    DataFim = turmadto.DataFim,
+                    IdCurso = turmadto.IdCurso,
+                    //NomeCurso = turmadto.NomeCurso
+                };
 
-            //if (turma == null)
-            //{
-            //    return BadRequest(new { message = "Erro ao carregar a turma." });
-            //}
+                _context.Turmas.Add(novaTurma);
+                await _context.SaveChangesAsync();
 
-            //var updateTurma = new Turma
-            //{
-            //    IdTurma = turmadto.IdTurma,
-            //    NomeTurma = turmadto.NomeTurma,
-            //    DataInicio = turmadto.DataInicio,
-            //    DataFim = turmadto.DataFim,
-            //    IdCurso = turmadto.IdCurso
-            //};
+                return Ok(new { message = "Turma registada com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Erro ao salvar na base de dados: " + ex.Message });
+            }
 
 
-            //await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Dados atualizados com sucesso!" });
         }
 
         // DELETE: api/Turmas/5

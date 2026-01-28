@@ -1,21 +1,33 @@
 import { authService } from "../../auth/AuthService";
 import { useEffect, useState } from "react";
-import { getHorariosFormador, getHorasFormadorMesAtual, getHorasFormadorMesAnterior } from "../../services/calendar/CalendarService";
+import {
+  getHorariosFormador,
+  getHorasFormadorMesAtual,
+  getHorasFormadorMesAnterior,
+} from "../../services/calendar/CalendarService";
+import { checkEmailGetName } from "../../services/users/UserService";
 import CalendarSchedule from "../CalendarSchedule";
 
 export default function FormadorDashboard() {
   const [events, setEvents] = useState<[]>([]);
   const [horasMesAtual, setHorasMesAtual] = useState();
   const [horasMesAnterior, setHorasMesAnterior] = useState<[]>([]);
+  const [nameUser, setNameUser] = useState("");
 
   const user = authService.decodeToken();
 
   useEffect(() => {
     async function fetchHorarios() {
       try {
-        const data = await getHorariosFormador();
+        if (!user) return null;
 
-        const events = data.map((h: any) => ({
+        const [resData, resNome] = await Promise.all([
+          getHorariosFormador(),
+          checkEmailGetName(user.email),
+        ]);
+        setNameUser(resNome.nome);
+
+        const events = resData.map((h: any) => ({
           id: h.idHorario,
           title: `${h.nomeCurso} - ${h.nomeSala}`,
           start: `${h.data}T${h.horaInicio}`,
@@ -36,7 +48,7 @@ export default function FormadorDashboard() {
       try {
         const dataAtual = await getHorasFormadorMesAtual();
         const dataAnterior = await getHorasFormadorMesAnterior();
-        
+
         setHorasMesAtual(dataAtual);
         setHorasMesAnterior(dataAnterior);
       } catch (error) {
@@ -55,7 +67,7 @@ export default function FormadorDashboard() {
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
           <h3 className="mb-1">
-            Bem-vindo, <strong>{user.email}</strong>
+            Bem-vindo(a), <strong>{nameUser}</strong>
           </h3>
           <small className="text-muted">
             Aqui está o resumo da tua atividade

@@ -714,8 +714,12 @@ INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hor
 
 -- TURMA 2: Sala 4, 5 | Formadores 3, 4
 INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
-(2, 23, 3, 4, '2026-01-26', '09:00:00', '13:00:00'),
-(2, 24, 4, 5, '2026-01-26', '14:00:00', '18:00:00');
+--(2, 23, 3, 4, '2026-01-26', '09:00:00', '13:00:00'),
+--(2, 23, 3, 4, '2026-01-27', '09:00:00', '13:00:00'),
+(2, 23, 3, 4, '2026-01-28', '09:00:00', '13:00:00'),
+(2, 23, 3, 4, '2026-01-29', '09:00:00', '13:00:00'),
+(2, 23, 3, 4, '2026-01-30', '09:00:00', '13:00:00'),
+(2, 24, 4, 5, '2026-02-02', '14:00:00', '18:00:00');
 
 -- TURMA 3: Sala 7, 8 | Formadores 2, 1
 INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 

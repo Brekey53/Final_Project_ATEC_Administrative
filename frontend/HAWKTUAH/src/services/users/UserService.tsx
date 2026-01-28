@@ -49,6 +49,14 @@ export async function checkEmail(email: string) {
   return res.data;
 }
 
+export async function checkEmailGetName(email: string) {
+  const res = await axios.get(
+    `${API_BASE_URL}/utilizadores/name-by-email?email=${email}`,
+  );
+
+  return res.data;
+}
+
 export async function createUser(data: any) {
   const res = await axios.post(`/utilizadores/new-user`, data);
   return res.data;

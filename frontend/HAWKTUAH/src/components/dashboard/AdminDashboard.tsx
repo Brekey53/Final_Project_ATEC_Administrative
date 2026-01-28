@@ -14,6 +14,8 @@ import {
   type CursosPorArea,
   type TurmaAIniciar,
 } from "../../services/dashboard/DashboardService";
+import { authService } from "../../auth/AuthService";
+import { checkEmailGetName } from "../../services/users/UserService";
 
 import {
   GraduationCap,
@@ -42,22 +44,29 @@ export default function AdminDashboard() {
     modulos: 0,
   });
 
+  const user = authService.decodeToken();
+
   const [loading, setLoading] = useState(true);
   const [cursosADecorrer, setCursosADecorrer] = useState<CursosADecorrer[]>([]);
   const [turmasAIniciar, setTurmasAIniciar] = useState<TurmaAIniciar[]>([]);
   const [cursosPorArea, setCursosPorArea] = useState<CursosPorArea[]>([]);
+  const [nameUser, setNameUser] = useState("");
 
   useEffect(() => {
     async function loadAll() {
       try {
-        const [statsData, cursosData, turmasData, areasData] =
+        if (!user) return null;
+
+        const [statsData, cursosData, turmasData, areasData, resNome] =
           await Promise.all([
             getDashboardStats(),
             getCursosADecorrer(),
             getTurmasAIniciar(),
             getCursosPorArea(),
+            checkEmailGetName(user.email),
           ]);
 
+        setNameUser(resNome.nome);
         setStats(statsData);
         setCursosADecorrer(cursosData);
         setTurmasAIniciar(turmasData);
@@ -79,10 +88,9 @@ export default function AdminDashboard() {
           {/*  Titulo e Açoes rápidas*/}
           <div className="title-dashboard d-flex justify-content-between w-100">
             <div className="title-dashboard-left ">
-              <h1>
-                Bem vindo
-                <br />
-              </h1>
+              <h3 className="mb-1">
+                Bem-vindo(a), <strong>{nameUser}</strong>
+              </h3>
               <span className="text-muted">
                 Informação Rápida sobre o Sistema
               </span>
