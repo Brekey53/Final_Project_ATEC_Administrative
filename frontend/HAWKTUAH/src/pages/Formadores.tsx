@@ -38,7 +38,7 @@ export default function Formadores() {
 
   const formadoresPaginados = filteredFormadores.slice(startIndex, endIndex);
 
-  // Quando pesquisa muda → voltar à página 1
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);

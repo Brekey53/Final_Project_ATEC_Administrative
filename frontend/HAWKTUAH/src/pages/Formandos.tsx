@@ -3,9 +3,8 @@ import { Link } from "react-router-dom";
 import {
   getFormandos,
   type Formando,
-} from "../services/students/formandoService";
+} from "../services/students/FormandoService";
 import "../css/newStudent.css";
-import { toast } from "react-hot-toast";
 
 export default function Formandos() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
@@ -40,7 +39,6 @@ export default function Formandos() {
 
   const formandosPaginados = filteredFormandos.slice(startIndex, endIndex);
 
-  // Quando pesquisa muda → voltar à página 1
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -71,16 +69,16 @@ export default function Formandos() {
 
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-formandos">
             <div>Formando</div>
             <div>Email</div>
-            <div className="text-end">Telefone</div>
+            <div >Telefone</div>
           </div>
           {!loading && formandosPaginados.length > 0
            ? formandosPaginados.map((f) => (
             <div
               key={f.idFormando}
-              className="px-4 py-3 border-bottom tabela-alunos"
+              className="px-4 py-3 border-bottom tabela-formandos"
             >
               <div className="d-flex align-items-center gap-3">
                 <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
