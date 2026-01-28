@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../../css/manageUsers.css";
@@ -18,13 +18,17 @@ export default function AdminTurmas() {
 
   useEffect(() => {
     async function fetchTurmas() {
-      const data = await getTurmas();
-      if (!data) return null;
+      try {
+        const data = await getTurmas();
+        if (!data) return null;
 
-      setTurmas(data);
+        setTurmas(data);
+      } catch (err: any) {
+        toast.error(err || "Erro ao carregar turmas.");
+      }
     }
     fetchTurmas();
-  });
+  }, []);
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -81,7 +85,7 @@ export default function AdminTurmas() {
 
               {/* COL 2 — Curso */}
               {/* TODO: ESTE ESTÁ MAL */}
-              <div className="text-muted">{t.nomeTurma || "-"}</div> 
+              <div className="text-muted">{t.nomeCurso || "-"}</div>
 
               {/* COL 3 — Data início */}
               <div className="text-muted">{t.dataInicio || "-"}</div>
