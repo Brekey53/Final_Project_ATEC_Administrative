@@ -87,3 +87,45 @@ export async function postTurmaAvaliacao(avaliacoes: DarAvaliacaoDTO[]) {
   );
   return res.data;
 }
+
+
+export interface Colega {
+  id: number;
+  nome: string;
+  email: string;
+}
+
+export interface Modulo {
+  idModulo: number;
+  nome: string;
+  horasTotais: number;
+}
+
+export interface Professor {
+  nome: string;
+  email: string;
+}
+
+export interface MinhaTurma {
+  nomeTurma: string;
+  nomeCurso: string;
+  dataInicio: string;
+  dataFim: string;
+  estado: string;
+  colegas: Colega[];
+  modulos: Modulo[];
+  professores: Professor[];
+}
+
+export async function getMinhaTurma(): Promise<MinhaTurma> {
+  const res = await axios.get(
+    `${API_BASE_URL}/turmas/minha-turma`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return res.data;
+}

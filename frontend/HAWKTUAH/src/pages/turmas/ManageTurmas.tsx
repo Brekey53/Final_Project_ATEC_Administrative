@@ -5,6 +5,7 @@ import { mapUserRole } from "../../auth/MapUserRole";
 import FormadorTurmas from "../../components/turmas/FormadorTurmas"
 import GeralTurmas from "../../components/turmas/GeralTurmas"
 import AdminTurmas from "../../components/turmas/AdminTurmas"
+import FormandoTurmas from "../../components/turmas/FormandoTurmas"
 
 export default function Turmas() {
   const user = authService.decodeToken();
@@ -18,5 +19,9 @@ export default function Turmas() {
     return <AdminTurmas />;
   }
 
-  return <GeralTurmas />;
+  if (role === "GERAL") {
+    return <GeralTurmas />;
+  }
+
+  return <FormandoTurmas />;
 }

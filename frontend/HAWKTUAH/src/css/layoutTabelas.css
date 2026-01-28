@@ -1,0 +1,6 @@
+.tabela-turmas {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr 100px;
+  align-items: center;
+  gap: 1rem;
+}
