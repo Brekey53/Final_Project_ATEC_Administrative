@@ -31,72 +31,56 @@ export default function CursoDetalhe() {
 
   return (
     <div className="container mt-5">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="text-primary mb-1">{curso.nome}</h2>
-          <small className="text-muted">
-            Total de módulos: <strong>{curso.modulos.length}</strong>
-          </small>
-        </div>
-
-        <button
-          className="btn btn-light border"
-          onClick={() => navigate(-1)}
-        >
-          Voltar
-        </button>
-      </div>
-
-      <div className="row g-4">
-        {/* Coluna lateral */}
-        <div className="col-lg-4">
-          <div className="card p-4 shadow-sm border-0 rounded-4 bg-light h-100">
-            <div className="fs-1 text-primary mb-2 text-center">📚</div>
-            <h5 className="text-center mb-2">Configuração Técnica</h5>
-            <p className="text-muted small text-center">
-              Informação geral do curso
+      {/* HEADER / DETALHES DO CURSO */}
+      <div className="card p-4 shadow-sm border-0 rounded-4 mb-4">
+        <div className="d-flex justify-content-between align-items-start">
+          <div>
+            <h2 className="text-primary mb-1">{curso.nome}</h2>
+            <p className="text-muted mb-1">
+              Total de módulos: <strong>{curso.modulos.length}</strong>
             </p>
-            <hr />
-            <p className="small mb-1">
+            <p className="small mb-0">
               <strong>ID Área:</strong> {curso.idArea}
             </p>
           </div>
+
+          <button className="btn btn-light border" onClick={() => navigate(-1)}>
+            Voltar
+          </button>
         </div>
+      </div>
 
-        {/* Módulos */}
-        <div className="col-lg-8">
-          <div className="card p-4 shadow-sm border-0 rounded-4">
-            <h5 className="text-primary mb-4">Módulos</h5>
+      {/* MÓDULOS */}
+      <div className="card p-4 shadow-sm border-0 rounded-4">
+        <h5 className="text-primary mb-4">Módulos</h5>
 
-            <div className="row g-3">
-              {curso.modulos.map((modulo) => (
-                <div
-                  key={modulo.idModulo}
-                  className="col-12 col-md-6 col-xl-4"
-                >
-                  <div className="card h-100 shadow-sm border-0 rounded-4">
-                    <div className="card-body">
-                      <h6 className="fw-semibold mb-2">
-                        {modulo.nome}
-                      </h6>
+        {curso.modulos.length === 0 ? (
+          <p className="text-muted">Este curso ainda não tem módulos.</p>
+        ) : (
+          <div className="row g-3">
+            {curso.modulos.map((modulo) => (
+              <div
+                key={modulo.idModulo}
+                className="col-12 col-md-6 col-lg-4 col-xl-3"
+              >
+                <div className="card h-100 shadow-sm border-0 rounded-4">
+                  <div className="card-body">
+                    <h6 className="fw-semibold mb-2">{modulo.nome}</h6>
 
-                      <div className="small text-muted">
-                        <div>
-                          <strong>Créditos:</strong> {modulo.creditos}
-                        </div>
-                        <div>
-                          <strong>Horas:</strong> {modulo.horasTotais}
-                        </div>
+                    <div className="small text-muted">
+                      <div>
+                        <strong>Créditos:</strong> {modulo.creditos}
+                      </div>
+                      <div>
+                        <strong>Horas:</strong> {modulo.horasTotais}
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
