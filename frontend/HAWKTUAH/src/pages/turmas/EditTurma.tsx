@@ -20,6 +20,7 @@ export default function EditTurma() {
     dataInicio: "",
     dataFim: "",
     nomeCurso: "",
+    estado: "A decorrer", // Valor ficticio pois é trarado no backend
   });
 
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -152,7 +153,7 @@ export default function EditTurma() {
 
             <div className="row">
               {/* Nome da Turma */}
-              <div className="col-md-12 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label fw-semibold">Nome da Turma</label>
                 <input
                   type="text"
@@ -165,7 +166,7 @@ export default function EditTurma() {
               </div>
 
               {/* Seleção de Curso */}
-              <div className="col-md-12 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label fw-semibold">
                   Curso Associado
                 </label>
