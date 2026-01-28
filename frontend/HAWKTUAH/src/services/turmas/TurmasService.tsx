@@ -10,6 +10,7 @@ export interface Turma {
   nomeCurso: string;
 }
 
+
 export async function getTurmas() {
   const res = await axios.get(`${API_BASE_URL}/turmas`);
 
@@ -40,4 +41,44 @@ export async function getCursos(){
   return res.data;
 }
 
+export async function getTurmasFormador() {
 
+    const res= await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador`);
+    return res.data;
+
+};
+
+
+type AvaliacaoAlunoDTO = {
+  idInscricao: number;
+  idFormando: number;
+  nomeFormando: string;
+  nota: number | null;
+};
+
+export async function getTurmaAvaliacao(
+  turmaId: number,
+  moduloId: number
+): Promise<AvaliacaoAlunoDTO[]> {
+  const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/avaliacoes`, {
+    params: { turmaId, moduloId }
+  });
+  return res.data;
+}
+
+
+type DarAvaliacaoDTO = {
+  idInscricao: number;
+  idModulo: number;
+  nota: number;
+};
+
+export async function postTurmaAvaliacao(
+  avaliacoes: DarAvaliacaoDTO[]
+) {
+  const res = await axios.post(
+    `${API_BASE_URL}/TurmaAlocacao/avaliacoes`,
+    avaliacoes
+  );
+  return res.data;
+}
