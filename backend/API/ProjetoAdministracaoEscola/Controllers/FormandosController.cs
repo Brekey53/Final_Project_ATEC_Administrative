@@ -41,6 +41,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                         .Select(i => i.IdTurmaNavigation.NomeTurma)
                         .FirstOrDefault() ?? "Sem Turma"
                 })
+                .OrderBy(f => f.Nome)
                 .ToListAsync();
 
             return Ok(formandos);
