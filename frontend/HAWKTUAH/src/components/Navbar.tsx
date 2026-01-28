@@ -33,10 +33,7 @@ export default function Navbar() {
     carregarFoto();
   }, []);
   const user = authService.decodeToken();
-  const role = user
-  ? mapUserRole(Number(user.tipoUtilizador))
-  : "GERAL";
-
+  const role = user ? mapUserRole(Number(user.tipoUtilizador)) : "GERAL";
 
   const allowedLinks = NAV_PERMISSIONS[role];
 
@@ -46,94 +43,82 @@ export default function Navbar() {
     { key: "cursos", label: "Cursos", to: "/cursos" },
     { key: "formandos", label: "Formandos", to: "/formandos" },
     { key: "formadores", label: "Formadores", to: "/formadores" },
-    { key: "turmas", label: "Turmas", to :"/turmas" },
+    { key: "turmas", label: "Turmas", to: "/turmas" },
     { key: "horarios", label: "Horários", to: "/horarios" },
     { key: "chatbot", label: "Assistente IA", to: "/chatbot" },
   ];
 
   return (
-    <>
-      <nav className="navbar navbar-light bg-light">
-        <div className="container">
-          <div className="d-flex align-items-center gap-3">
-            <span className="text-white h4 fw-bold">Hawk Portal</span>
-            <Link to="/dashboard">
-              <img src={foto} alt="" className="foto" />
-            </Link>
-            <button
-              className="navbar-toggler"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#mainNavbar"
-              onClick={toggleMenu}
-              aria-expanded={isNavExpanded}
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-          </div>
-          <div className="d-flex align-items-center gap-4">
-            <ul>
-              <li className="nav-item dropdown">
-                <a
-                  className="nav-link dropdown-toggle"
-                  href="#"
-                  id="navbarDropdown"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <img
-                    src={fotoPerfil}
-                    alt="Foto de perfil"
-                    className="profile-avatar"
-                  />
-                </a>
-                <div
-                  className="dropdown-menu dropdown-menu-end"
-                  aria-labelledby="navbarDropdown"
-                >
-                  <Link
-                    to="/perfil"
-                    className="dropdown-item"
-                    onClick={closeMenu}
-                  >
-                    Perfil
-                  </Link>
-                  <hr className="dropdown-divider" />
-                  <a
-                    className="dropdown-item text-danger"
-                    href="#"
-                    onClick={() => {
-                      authService.logout();
-                      closeMenu();
-                    }}
-                  >
-                    Logout
-                  </a>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div
-            className={`collapse navbar-collapse ${isNavExpanded ? "show" : ""}`}
-            id="mainNavbar"
+    <nav className="navbar navbar-expand-lg bg-light px-4">
+      <div className="container">
+        {/* ESQUERDA — Logo + Hamburger */}
+        <div className="d-flex align-items-center gap-3">
+          <Link
+            to="/dashboard"
+            className="d-flex align-items-center gap-2 text-decoration-none text-white"
           >
-            <div className="d-flex justify-content-around">
-              <div className="d-flex flex-row justify-content-between align-items-center gap-4">
-                <div className="nav-links d-flex flex-row gap-4 mt-3">
-                  {navLinks
-                    .filter((link) => allowedLinks.includes(link.key as any))
-                    .map((link) => (
-                      <Link key={link.key} to={link.to} onClick={closeMenu}>
-                        <p className="mb-0">{link.label}</p>
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            </div>
-          </div>
+            <img src={foto} alt="" className="foto" />
+            <span className="fw-bold h5 mb-0">Hawk Portal</span>
+          </Link>
+
+          <button
+            className="navbar-toggler"
+            type="button"
+            onClick={toggleMenu}
+            aria-expanded={isNavExpanded}
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
         </div>
-      </nav>
-    </>
+
+        {/* CENTRO — LINKS */}
+        <div
+          className={`collapse navbar-collapse justify-content-center ${
+            isNavExpanded ? "show" : ""
+          }`}
+        >
+          <ul className="navbar-nav gap-4">
+            {navLinks
+              .filter((link) => allowedLinks.includes(link.key as any))
+              .map((link) => (
+                <li key={link.key} className="nav-item">
+                  <Link className="nav-link" to={link.to} onClick={closeMenu}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+          </ul>
+        </div>
+
+        {/* DIREITA — PERFIL (sempre visível) */}
+        <div className="dropdown ms-auto">
+          <button
+            className="btn p-0 border-0 bg-transparent dropdown-toggle"
+            data-bs-toggle="dropdown"
+          >
+            <img src={fotoPerfil} alt="Perfil" className="profile-avatar" />
+          </button>
+
+          <ul className="dropdown-menu dropdown-menu-end">
+            <li>
+              <Link to="/perfil" className="dropdown-item " onClick={closeMenu}>
+                Perfil
+              </Link>
+            </li>
+            <li>
+              <hr className="dropdown-divider" />
+            </li>
+            <li>
+              <button
+                className="dropdown-item text-danger"
+                onClick={authService.logout}
+              >
+                Logout
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
   );
 }
