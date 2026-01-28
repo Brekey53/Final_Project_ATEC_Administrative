@@ -68,7 +68,7 @@ export default function Formadores() {
       {/* LISTA */}
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-formadores">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-formadores-publico">
             <div>Formador</div>
             <div>Email</div>
             <div>Qualificações</div>
@@ -79,7 +79,7 @@ export default function Formadores() {
             ? formadoresPaginados.map((f) => (
                 <div
                   key={f.idFormador}
-                  className="px-4 py-3 border-bottom tabela-formadores"
+                  className="px-4 py-3 border-bottom tabela-formadores-publico"
                 >
                   <div className="d-flex align-items-center gap-3">
                     <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">

@@ -36,3 +36,35 @@
 .page-header {
   margin-bottom: 1.5rem;
 }
+
+.tabela-cursos-header {
+  background-color: #f9fafb;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.tabela-cursos {
+  display: grid;
+  grid-template-columns: 3fr 1fr 2fr 0.8fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.curso-row {
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.curso-row:hover {
+  background-color: #f8fbff;
+  opacity: 1;
+}
+
+.tabela-cursos > div:last-child {
+  display: flex;
+  justify-content: center;
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getCursos, type Curso } from "../../services/cursos/CursosService";
 import { Link } from "react-router-dom";
 import "../../css/cursos.css";
+import verDetalhes from "../../img/verDetalhes.png"
 
 export default function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -68,18 +69,19 @@ export default function Cursos() {
 
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-cursos tabela-cursos-header">
             <div>Curso</div>
+            <div>Id Área</div>
             <div>Área</div>
-            <div> Ver detalhes????</div>
+            <div> Ações</div>
           </div>
           {cursosPaginados.map((c) => (
             <Link
               key={c.idCurso}
               to={`/cursos/${c.idCurso}`}
-              className="text-decoration-none text-reset"
+              className="text-decoration-none text-reset "
             >
-              <div className="px-4 py-3 border-bottom tabela-alunos curso-row">
+              <div className="px-4 py-3 border-bottom tabela-cursos curso-row">
                 <div className="d-flex align-items-center gap-3">
                   <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
                     {c.nome.charAt(0)}
@@ -91,7 +93,13 @@ export default function Cursos() {
                   <span>{c.idArea}</span>
                 </div>
 
-                <div className="text-primary fw-medium">Ver detalhes →</div>
+                <div className="d-flex align-items-center gap-2 text-muted">
+                  <span>{c.nomeArea}</span>
+                </div>
+
+                <div className="fw-medium">
+                  <img className="img-ver-detalhes" src={verDetalhes} alt="Ver detalhes" title="Ver Detalhes do Curso" />
+                </div>
               </div>
             </Link>
           ))}

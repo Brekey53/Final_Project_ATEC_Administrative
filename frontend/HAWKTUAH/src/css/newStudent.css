@@ -32,6 +32,13 @@
   gap: 1rem;
 }
 
+.tabela-formadores-publico {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
 .custom-modal-overlay {
   position: fixed;
   inset: 0;

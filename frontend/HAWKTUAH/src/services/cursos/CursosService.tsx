@@ -14,6 +14,7 @@ export type Curso = {
   nome: string;
   idArea: number;
   modulos: Modulo[];
+  nomeArea: string;
 };
 
 export async function getCursos(): Promise<Curso[]> {

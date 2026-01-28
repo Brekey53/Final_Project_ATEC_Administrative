@@ -24,9 +24,20 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Cursos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Curso>>> GetCursos()
+        public async Task<ActionResult<IEnumerable<CursoDTO>>> GetCursos()
         {
-            return await _context.Cursos.ToListAsync();
+            var cursos = await _context.Cursos.Include(c => c.IdAreaNavigation)
+                .Select(c => new CursoDTO
+                {
+                    IdCurso = c.IdCurso,
+                    IdArea = c.IdArea,
+                    Nome = c.Nome,
+                    NomeArea = c.IdAreaNavigation.Nome
+                })
+                .OrderBy(c => c.Nome)
+                .ToListAsync();
+
+            return Ok(cursos);
         }
 
         // GET: api/Cursos/5
@@ -40,6 +51,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     IdCurso = c.IdCurso,
                     IdArea = c.IdArea,
                     Nome = c.Nome,
+                    NomeArea = c.IdAreaNavigation.Nome,
                     Modulos = c.CursosModulos
                         .OrderBy(cm => cm.Prioridade)
                         .Select(cm => new ModuloDTO
