@@ -162,7 +162,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (emailExists)
                 return BadRequest(new { message = "Email já registado." });
 
-            // 2Criar utilizador
+            // Criar utilizador
             var user = new Utilizador
             {
                 Email = dto.Email,
