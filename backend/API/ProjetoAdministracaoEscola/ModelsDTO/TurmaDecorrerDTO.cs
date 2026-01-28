@@ -1,4 +1,4 @@
-﻿namespace ProjetoAdministracaoEscola.Models
+﻿namespace ProjetoAdministracaoEscola.ModelsDTO
 {
     public class TurmaDecorrerDTO
     {
