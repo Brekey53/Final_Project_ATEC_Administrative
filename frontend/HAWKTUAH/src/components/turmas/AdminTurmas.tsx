@@ -1,37 +1,52 @@
-import React from "react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../../css/manageUsers.css";
+import "../../css/turmas.css";
 import { toast } from "react-hot-toast";
 import editar from "../../img/edit.png";
 import apagar from "../../img/delete.png";
-import "../../css/turmas.css";
 import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
 
 export default function AdminTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  //   const [loading, setLoading] = useState(true);
-  //   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  //   const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchTurmas() {
       try {
         const data = await getTurmas();
-        if (!data) return null;
-
+        if (!data) return;
         setTurmas(data);
       } catch (err: any) {
         toast.error(err || "Erro ao carregar turmas.");
       }
     }
+
     fetchTurmas();
   }, []);
 
+  const turmasFiltradas = turmas.filter((t) =>
+    `${t.nomeTurma} ${t.nomeCurso}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()),
+  );
+
+  const totalPages = Math.ceil(turmasFiltradas.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const turmasPaginadas = turmasFiltradas.slice(startIndex, endIndex);
+
+  /* sempre que pesquisa muda → volta à página 1 */
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
+      {/* HEADER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Gestão de Turmas</h2>
@@ -46,22 +61,24 @@ export default function AdminTurmas() {
         </Link>
       </div>
 
+      {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
           <input
             type="text"
             className="form-control form-control-lg"
-            placeholder="Pesquisar Turmas (nome, curso)..."
+            placeholder="Pesquisar turmas (nome, curso)…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
+      {/* TABELA */}
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turmas">
-            <div>Nome Turma</div>
+            <div>Turma</div>
             <div>Curso</div>
             <div>Data Início</div>
             <div>Data Fim</div>
@@ -69,120 +86,78 @@ export default function AdminTurmas() {
             <div className="text-end">Ações</div>
           </div>
 
-          {/* LINHAS */}
-          {turmas.map((t) => (
-            <div
-              key={t.idTurma}
-              className="px-4 py-3 border-bottom tabela-turmas"
-            >
-              {/* COL 1 — Nome */}
-              <div className="d-flex align-items-center gap-3">
-                <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
-                  {t.nomeTurma.charAt(0)}
-                </div>
-                <span className="fw-medium">{t.nomeTurma}</span>
-              </div>
-
-              {/* COL 2 — Curso */}
-              {/* TODO: ESTE ESTÁ MAL */}
-              <div className="text-muted">{t.nomeCurso || "-"}</div>
-
-              {/* COL 3 — Data início */}
-              <div className="text-muted">{t.dataInicio || "-"}</div>
-
-              {/* COL 4 — Data fim */}
-              <div className="text-muted">{t.dataFim || "-"}</div>
-
-              {/* COL 5 — Estado */}
-              {/* TODO: ESTE ESTÁ MAL */}
-              <div className="text-muted">{t.dataFim || "-"}</div>
-
-              {/* COL 6 — Ações */}
-              <div className="d-flex justify-content-end gap-2">
-                <Link
-                  to={`edit-turma/${t.idTurma}`}
-                  className="btn rounded-pill px-1"
-                >
-                  <img
-                    src={editar}
-                    alt="editar"
-                    title="Editar"
-                    className="img-edit-apagar"
-                  />
-                </Link>
-
-                <button className="btn rounded-pill px-1">
-                  <img
-                    src={apagar}
-                    alt="apagar"
-                    title="Apagar"
-                    className="img-edit-apagar"
-                  />
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {/* Modal Delete
-
-          {showDeleteModal && utilizadorSelecionado && (
-            <div
-              className="modal fade show d-block"
-              tabIndex={-1}
-              onClick={() => setShowDeleteModal(false)}
-              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-            >
+          {turmasPaginadas.length > 0 ? (
+            turmasPaginadas.map((t) => (
               <div
-                className="modal-dialog modal-dialog-centered"
-                onClick={(e) => e.stopPropagation()}
+                key={t.idTurma}
+                className="px-4 py-3 border-bottom tabela-turmas align-items-center"
               >
-                <div className="modal-content rounded-4 shadow">
-                  <div className="modal-header">
-                    <h5 className="modal-title">Confirmar eliminação</h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowDeleteModal(false)}
+                {/* Turma */}
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                    {t.nomeTurma.charAt(0)}
+                  </div>
+                  <span className="fw-medium">{t.nomeTurma}</span>
+                </div>
+
+                {/* Curso */}
+                <div className="text-muted">{t.nomeCurso || "-"}</div>
+
+                {/* Datas */}
+                <div className="text-muted">{t.dataInicio || "-"}</div>
+                <div className="text-muted">{t.dataFim || "-"}</div>
+
+                {/* Estado */}
+                <div className="text-muted">
+                  <span
+                    className={`badge ${
+                      t.estado === "Para começar"
+                        ? "bg-secondary"
+                        : t.estado === "A decorrer"
+                          ? "bg-primary"
+                          : "bg-success"
+                    }`}
+                  >
+                    {t.estado}
+                  </span>
+                </div>
+
+                {/* Ações */}
+                <div className="d-flex justify-content-end ">
+                  <Link
+                    to={`edit-turma/${t.idTurma}`}
+                    className="btn rounded-pill px-1"
+                  >
+                    <img
+                      src={editar}
+                      alt="editar"
+                      title="Editar"
+                      className="img-edit-apagar"
                     />
-                  </div>
+                  </Link>
 
-                  <div className="modal-body">
-                    <p>
-                      Tem a certeza que pretende eliminar o utilizador{" "}
-                      <strong>
-                        {utilizadorSelecionado?.nome} -{" "}
-                        {utilizadorSelecionado?.email}{" "}
-                      </strong>{" "}
-                      da plataforma?
-                    </p>
-                    <p className="text-muted mb-0">
-                      Esta ação não pode ser revertida.
-                    </p>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button
-                      className="btn btn-light"
-                      onClick={() => setShowDeleteModal(false)}
-                    >
-                      Cancelar
-                    </button>
-
-                    <button
-                      className="btn btn-danger"
-                      onClick={handleDeleteUtilizador}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+                  <button className="btn rounded-pill px-1">
+                    <img
+                      src={apagar}
+                      alt="apagar"
+                      title="Apagar"
+                      className="img-edit-apagar"
+                    />
+                  </button>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="p-5 text-center text-muted">
+              Nenhuma turma encontrada
             </div>
-          )} */}
+          )}
         </div>
       </div>
-      {/* {totalPages > 1 && (
-        <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-3 py-4">
           <button
             className="btn btn-outline-secondary"
             disabled={currentPage === 1}
@@ -204,9 +179,10 @@ export default function AdminTurmas() {
           </button>
         </div>
       )}
-      <p className="text-muted small text-center mt-1">
-        {filteredUtilizadores.length} utilizador(es) encontrado(s)
-      </p> */}
+
+      <p className="text-muted small text-center mt-2">
+        {turmasFiltradas.length} turma(s) encontrada(s)
+      </p>
     </div>
   );
 }
