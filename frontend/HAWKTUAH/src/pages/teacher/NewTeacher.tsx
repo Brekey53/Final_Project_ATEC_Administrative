@@ -6,6 +6,7 @@ import {
 } from "../../services/formador/FormadorService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { Pencil, Trash } from "lucide-react";
 
 export default function NewTeacher() {
   const [formadores, setFormadores] = useState<Formador[]>([]);
@@ -36,12 +37,10 @@ export default function NewTeacher() {
   const filteredFormadores = formadores.filter((f) => {
     const term = searchTerm.toLowerCase();
     return (
-      f.nome.toLowerCase().includes(term) ||
-      f.nif.toLowerCase().includes(term)
+      f.nome.toLowerCase().includes(term) || f.nif.toLowerCase().includes(term)
     );
   });
 
-  // sempre que muda a pesquisa, voltar à página 1
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -50,10 +49,7 @@ export default function NewTeacher() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
-  const formadoresPaginados = filteredFormadores.slice(
-    startIndex,
-    endIndex,
-  );
+  const formadoresPaginados = filteredFormadores.slice(startIndex, endIndex);
 
   async function handleDeleteFormador() {
     if (!formadorSelecionado) return;
@@ -135,23 +131,23 @@ export default function NewTeacher() {
                 <div className="text-muted">{f.qualificacoes || "-"}</div>
                 <div className="text-muted">{f.nif || "-"}</div>
 
-                <div className="d-flex justify-content-end gap-2">
+                <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link
                     to={`edit-formador/${f.idFormador}`}
-                    className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                    className="action-icon"
                   >
-                    Editar
+                    <Pencil size={18} />
                   </Link>
 
-                  <button
-                    className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                  <span
+                    className="action-icon text-danger cursor-pointer"
                     onClick={() => {
                       setFormadorSelecionado(f);
                       setShowDeleteModal(true);
                     }}
                   >
-                    Apagar
-                  </button>
+                    <Trash size={18} />
+                  </span>
                 </div>
               </div>
             ))

@@ -5,10 +5,11 @@ import {
   deleteCurso,
   type Curso,
 } from "../../services/cursos/CursosService";
-import "../../css/cursos.css";
+import "../../css/layoutTabelas.css";
 import toast from "react-hot-toast";
-import editar from "../../img/edit.png"
-import apagar from "../../img/delete.png"
+import editar from "../../img/edit.png";
+import apagar from "../../img/delete.png";
+import { Pencil, Trash } from "lucide-react";
 
 export default function NewCourse() {
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -115,7 +116,7 @@ export default function NewCourse() {
 
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-alunos">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-cursos-admin">
             <div>Curso</div>
             <div>Id Área</div>
             <div className="text-end">Ações</div>
@@ -128,10 +129,10 @@ export default function NewCourse() {
           {cursosFiltrados.map((c) => (
             <div
               key={c.idCurso}
-              className="px-4 py-3 border-bottom tabela-alunos"
+              className="px-4 py-3 border-bottom tabela-cursos-admin"
             >
               <div className="d-flex align-items-center gap-3">
-                <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                <div className="avatar-circle bg-light border fw-semibold">
                   {c.nome.charAt(0)}
                 </div>
                 <span className="fw-medium">{c.nome}</span>
@@ -139,19 +140,20 @@ export default function NewCourse() {
               <div className="d-flex align-items-center gap-2 text-muted">
                 <span>{c.idArea}</span>
               </div>
-              <div className="d-flex justify-content-end gap-3">
-                <Link to={`/gerir-cursos/edit-curso/${c.idCurso}`}>
-                <img src={editar} alt="editar" title="Editar" className="img-edit-apagar"></img>
+              <div className="d-flex justify-content-end gap-3 align-items-center">
+                <Link to={`edit-curso/${c.idCurso}`} className="action-icon">
+                  <Pencil size={18} />
                 </Link>
-                <button
-                  className="btn btn-link text-danger p-0"
+
+                <span
+                  className="action-icon text-danger cursor-pointer"
                   onClick={() => {
                     setCursoSelecionado(c);
                     setShowDeleteModal(true);
                   }}
                 >
-                  <img src={apagar} alt="apagar" title="Apagar" className="img-edit-apagar"></img>
-                </button>
+                  <Trash size={18} />
+                </span>
               </div>
             </div>
           ))}

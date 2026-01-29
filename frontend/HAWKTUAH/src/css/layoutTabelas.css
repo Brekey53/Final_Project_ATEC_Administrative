@@ -40,7 +40,6 @@
 }
 
 @media (max-width: 767px) {
-
   /* ESCONDER HEADERS */
   .tabela-colegas.fw-semibold,
   .tabela-professores.fw-semibold,
@@ -93,4 +92,17 @@
     grid-column: 3;
     align-self: center;
   }
+}
+
+.tabela-turmas-admin {
+  display: grid;
+  grid-template-columns: 4fr 3fr 2fr 2fr 1.5fr 1fr;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.tabela-cursos-admin {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  align-items: center;
 }

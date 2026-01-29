@@ -8,12 +8,13 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import "../../css/addNewStudent.css";
+import { Pencil, Trash } from "lucide-react";
 
 export default function NewRoom() {
   const [salas, setSalas] = useState<Salas[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [salaSelecionado, setSalaSelecionado] = useState<Salas | null>(null);
+  const [salaSelecionado, setSalaSelecionada] = useState<Salas | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -59,8 +60,8 @@ export default function NewRoom() {
       );
 
       setShowDeleteModal(false);
-      setSalaSelecionado(null);
-      toast.success("Sala eliminado com sucesso");
+      setSalaSelecionada(null);
+      toast.success("Sala eliminada com sucesso");
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.message) {
@@ -134,22 +135,23 @@ export default function NewRoom() {
                   {s.numMaxAlunos || "-"}
                 </div>
 
-                <div className="d-flex justify-content-end gap-2">
+                <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link
                     to={`edit-sala/${s.idSala}`}
-                    className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                    className="action-icon"
                   >
-                    Editar
+                    <Pencil size={18} />
                   </Link>
-                  <button
-                    className="btn btn-sm btn-outline-danger rounded-pill px-3"
+
+                  <span
+                    className="action-icon text-danger cursor-pointer"
                     onClick={() => {
-                      setSalaSelecionado(s);
+                      setSalaSelecionada(s);
                       setShowDeleteModal(true);
                     }}
                   >
-                    Apagar
-                  </button>
+                    <Trash size={18} />
+                  </span>
                 </div>
               </div>
             ))
