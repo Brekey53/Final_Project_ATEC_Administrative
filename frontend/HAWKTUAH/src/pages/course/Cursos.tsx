@@ -83,7 +83,7 @@ export default function Cursos() {
             >
               <div className="px-4 py-3 border-bottom tabela-cursos curso-row">
                 <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                   <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
                     {c.nome.charAt(0)}
                   </div>
                   <span className="fw-medium">{c.nome}</span>
