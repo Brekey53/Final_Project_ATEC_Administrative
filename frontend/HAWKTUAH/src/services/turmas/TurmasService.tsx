@@ -95,15 +95,22 @@ export interface Colega {
   email: string;
 }
 
+export interface Avaliacao {
+  nota: number;
+  data: string;
+}
+
 export interface Modulo {
   idModulo: number;
   nome: string;
   horasTotais: number;
+  avaliacoes: Avaliacao[];
+  professores: Professor[];
 }
 
 export interface Professor {
   nome: string;
-  email: string;
+  email: string | null;
 }
 
 export interface MinhaTurma {
