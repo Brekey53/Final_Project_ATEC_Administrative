@@ -109,9 +109,6 @@ namespace ProjetoAdministracaoEscola.Controllers
             // 3️⃣ Horários
             var horarios = await _context.Horarios
                 .Where(h => turmasIds.Contains(h.IdTurma))
-                .Include(h => h.IdSalaNavigation)
-                .Include(h => h.IdCursoModuloNavigation)
-                    .ThenInclude(cm => cm.IdCursoNavigation)
                 .Select(h => new ScheduleCalendarDTO
                 {
                     IdHorario = h.IdHorario,
@@ -128,6 +125,29 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(horarios);
         }
 
+        [HttpGet("horario-get")]
+        public async Task<ActionResult<IEnumerable<HorarioGetDTO>>> GetHorariosTotal()
+        {
+
+            var horarios = await _context.Horarios
+                .Select(h => new HorarioGetDTO
+                {
+                    IdHorario = h.IdHorario,
+                    NomeTurma = h.IdTurmaNavigation.NomeTurma,
+                    NomeCurso = h.IdCursoModuloNavigation.IdCursoNavigation.Nome,
+                    NomeModulo = h.IdCursoModuloNavigation.IdModuloNavigation.Nome,
+                    NomeFormador = h.IdFormadorNavigation.IdUtilizadorNavigation.Nome,
+                    NomeSala = h.IdSalaNavigation.Descricao,
+                    Data = h.Data,
+                    HoraInicio = h.HoraInicio,
+                    HoraFim = h.HoraFim
+                })
+                .OrderBy(h => h.HoraInicio)
+                .ThenBy(h => h.NomeTurma)
+                .ToListAsync();
+
+            return Ok(horarios);
+        }
 
         // PUT: api/Horarios/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
