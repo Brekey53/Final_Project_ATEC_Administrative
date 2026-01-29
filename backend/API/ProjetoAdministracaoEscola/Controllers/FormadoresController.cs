@@ -21,6 +21,12 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os formadores registados,
+        /// </summary>
+        /// <returns>
+        /// Lista de formadores em formato DTO.
+        /// </returns>
         // GET: api/Formadores
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FormadorDTO>>> GetFormadores()
@@ -42,10 +48,17 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(formadores);
         }
 
-
+        /// <summary>
+        /// Obtém os dados completos de um formador específico,
+        /// incluindo informação pessoal, qualificações e ficheiros associados.
+        /// </summary>
+        /// <param name="id">Id do formador.</param>
+        /// <returns>
+        /// Dados do formador ou NotFound se não existir.
+        /// </returns>
         // GET: api/Formadores/5
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetFormadore(int id)
+        public async Task<ActionResult> GetFormador(int id) 
         {
             var formador = await _context.Formadores
                 .Include(f => f.IdUtilizadorNavigation)
@@ -77,6 +90,17 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(resposta);
         }
 
+        /// <summary>
+        /// Cria um novo perfil de formador.
+        /// Caso o utilizador ainda não exista, é criado automaticamente.
+        /// Suporta upload de fotografia e documento pdf.
+        /// </summary>
+        /// <param name="dto">
+        /// Dados necessários para criação do formador.
+        /// </param>
+        /// <returns>
+        /// Resultado da operação de criação.
+        /// </returns>
         // POST: api/Formadores
         [HttpPost]
         public async Task<IActionResult> CreateFormador([FromForm] FormadorCreateDTO dto)
@@ -179,9 +203,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        /// <summary>
+        /// Atualiza os dados de um formador existente,
+        /// incluindo informação pessoal, qualificações e ficheiros opcionais.
+        /// </summary>
+        /// <param name="id">Id do formador.</param>
+        /// <param name="dto">Dados atualizados do formador.</param>
+        /// <returns>
+        /// Resultado da operação de atualização.
+        /// </returns>
         // PUT: api/Formadores/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFormadore(int id, [FromForm] FormadorCreateDTO dto)
+        public async Task<IActionResult> PutFormador(int id, [FromForm] FormadorCreateDTO dto)
         {
             var formador = await _context.Formadores
                 .Include(f => f.IdUtilizadorNavigation)
@@ -236,6 +269,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        /// <summary>
+        /// Remove um formador do sistema.
+        /// A operação falha caso existam dados associados que impeçam a remoção.
+        /// </summary>
+        /// <param name="id">Id do formador a eliminar.</param>
+        /// <returns>
+        /// NoContent se for removido com sucesso.
+        /// </returns>
         // DELETE: api/Formadores/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFormadore(int id)
@@ -260,6 +301,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        /// <summary>
+        /// Obtém o total de horas lecionadas pelo formador
+        /// durante o mês atual.
+        /// </summary>
+        /// <returns>
+        /// Total de horas lecionadas no mês atual.
+        /// </returns>
         [HttpGet("mesatual")]
         public async Task<ActionResult<HorasFormadorDTO>> GetHorasMesAtual()
         {
@@ -284,6 +332,13 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
+        /// <summary>
+        /// Obtém o total de horas lecionadas pelo formador
+        /// durante o mês anterior.
+        /// </summary>
+        /// <returns>
+        /// Total de horas lecionadas no mês anterior.
+        /// </returns>
         // GET: api/formadores/mesanterior
         [HttpGet("mesanterior")]
         public async Task<ActionResult<HorasFormadorDTO>> GetHorasMesAnterior()
@@ -309,6 +364,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new HorasFormadorDTO { TotalHoras = totalHoras });
         }
 
+        /// <summary>
+        /// Obtém o id do formador com base no token JWT
+        /// do utilizador autenticado.
+        /// </summary>
+        /// <returns>
+        /// Id do formador ou null se não existir.
+        /// </returns>
         private async Task<int?> GetFormadorIdFromToken()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
