@@ -72,10 +72,8 @@ export default function Login() {
         setEmail(loginData.email);
         toast.success("Código de verificação enviado para o seu e-mail.");
       }
-      //navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      // TODO: Quando finalizado apagar o err.message
-      toast.error(err.message || "Email ou password inválidos");
+      toast.error("Email ou password inválidos");
     } finally {
       setLoading(false);
     }
@@ -98,7 +96,9 @@ export default function Login() {
         navigate("/dashboard", { replace: true });
       }
     } catch (err: any) {
-      toast.error("Código inválido ou expirado.");
+      toast.error("Código inválido ou expirado.", {
+        id: "2fa-error",
+      });
     } finally {
       setLoading(false);
     }
@@ -111,11 +111,11 @@ export default function Login() {
       });
 
       localStorage.setItem("token", response.data.token);
-      toast.success("Google login efetuado com sucesso!");
+      toast.success("Google login efetuado com sucesso!", { id: "google-success" });
 
       navigate("/dashboard", { replace: true });
     } catch (error) {
-      toast.error("Erro no login com Google");
+      toast.error("Erro no login com Google", { id: "google-error" });
     }
   }
 
