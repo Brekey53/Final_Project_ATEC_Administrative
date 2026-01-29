@@ -18,7 +18,7 @@ export const authService = {
       return res.data;
     } catch (error: any) {
       if (error.response) {
-        const message = error.response.data.message || error.response.data;
+        const message = "Erro ao ligar ao servidor";
         throw new Error(message);
       }
       throw new Error("Erro ao ligar ao servidor");
@@ -52,14 +52,5 @@ export const authService = {
     } catch {
       return null;
     }
-  },
-
-  isAdmin(): boolean {
-    const decoded = this.decodeToken();
-    if (!decoded) 
-      return false;
-
-    const tipo = Number(decoded.tipoUtilizador);
-    return tipo === 1 || tipo === 4;
   },
 };
