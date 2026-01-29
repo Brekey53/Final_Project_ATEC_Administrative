@@ -128,23 +128,30 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> GetFotoPerfil()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) return Unauthorized();
+            if (userIdClaim == null)
+                return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
 
-            var foto = await _context.Formandos
-                .Where(f => f.IdUtilizador == userId)
-                .Select(f => f.Fotografia)
-                .FirstOrDefaultAsync()
-                ?? await _context.Formadores
-                .Where(f => f.IdUtilizador == userId)
-                .Select(f => f.Fotografia)
-                .FirstOrDefaultAsync();
+            byte[]? foto =
+                await _context.Formandos
+                    .Where(f => f.IdUtilizador == userId)
+                    .Select(f => f.Fotografia)
+                    .FirstOrDefaultAsync()
+                ??
+                await _context.Formadores
+                    .Where(f => f.IdUtilizador == userId)
+                    .Select(f => f.Fotografia)
+                    .FirstOrDefaultAsync();
 
-            if (foto == null) return NotFound();
+            if (foto == null || foto.Length == 0)
+                return NoContent();
 
             return File(foto, "image/jpeg");
         }
+
+
+
 
 
         // PUT: api/Utilizadores/5

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
@@ -82,32 +82,31 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         [HttpGet("formando")]
-        public async Task<ActionResult<IEnumerable<ScheduleCalendarDTO>>> GetHorariosFormando()
+        public async Task<IActionResult> GetHorariosFormando()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) 
+            if (userIdClaim == null)
                 return Unauthorized();
 
-            int userId = int.Parse(userIdClaim);
+            var userId = int.Parse(userIdClaim);
 
-            // tirar o IdFormando a partir do utilizador
-            var formandoId = await _context.Formandos
-                .Where(f => f.IdUtilizador == userId)
-                .Select(f => f.IdFormando)
-                .FirstOrDefaultAsync();
+            // Verificar se é formando
+            var formando = await _context.Formandos
+                .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
 
-            if (formandoId == 0)
-                return Forbid("Utilizador n�o � formando");
+            if (formando == null)
+                return Ok(new List<ScheduleCalendarDTO>());
 
-            // obter as turmas onde o formando est� inscrito
+            // Turmas onde está inscrito
             var turmasIds = await _context.Inscricoes
-                .Where(i => i.IdFormando == formandoId)
+                .Where(i => i.IdFormando == formando.IdFormando)
                 .Select(i => i.IdTurma)
                 .ToListAsync();
 
             if (!turmasIds.Any())
                 return Ok(new List<ScheduleCalendarDTO>());
 
+            // 3️⃣ Horários
             var horarios = await _context.Horarios
                 .Where(h => turmasIds.Contains(h.IdTurma))
                 .Include(h => h.IdSalaNavigation)
@@ -128,6 +127,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(horarios);
         }
+
 
         // PUT: api/Horarios/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

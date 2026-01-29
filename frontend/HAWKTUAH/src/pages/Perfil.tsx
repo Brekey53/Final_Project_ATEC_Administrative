@@ -35,12 +35,8 @@ export default function Perfil() {
 
   useEffect(() => {
     async function loadFoto() {
-      try {
-        const url = await getFotoPerfil();
-        setFotoUrl(url);
-      } catch {
-        setFotoUrl(null);
-      }
+      const url = await getFotoPerfil();
+      setFotoUrl(url); // pode ser null
     }
 
     loadFoto();
@@ -105,6 +101,10 @@ export default function Perfil() {
               alt="Foto de perfil"
               className="img-fluid rounded mb-3"
               style={{ maxHeight: "300px", objectFit: "cover" }}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = FotoPlaceholder;
+              }}
             />
 
             <button className="btn btn-outline-secondary btn-sm" disabled>
@@ -201,7 +201,7 @@ export default function Perfil() {
                 </div>
               )}
             </div>
-            
+
             {/* DADOS ESPECÍFICOS */}
             {perfil.tipo === 2 && (
               <>

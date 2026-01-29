@@ -60,6 +60,10 @@ export async function getFotoPerfil(): Promise<string> {
     }
   );
 
+  if (!res.data || res.data.size === 0) {
+    return null;
+  }
+
   return URL.createObjectURL(res.data);
 }
 
