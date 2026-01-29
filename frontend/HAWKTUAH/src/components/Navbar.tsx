@@ -22,16 +22,13 @@ export default function Navbar() {
 
   useEffect(() => {
     async function carregarFoto() {
-      try {
-        const fotoUrl = await NavbarService.getFotoPerfil();
-        if (fotoUrl) setFotoPerfil(fotoUrl);
-      } catch {
-        setFotoPerfil(fotoDefault);
-      }
+      const fotoUrl = await NavbarService.getFotoPerfil();
+      setFotoPerfil(fotoUrl ?? fotoDefault);
     }
 
     carregarFoto();
   }, []);
+
   const user = authService.decodeToken();
   const role = user ? mapUserRole(Number(user.tipoUtilizador)) : "GERAL";
 
@@ -97,7 +94,15 @@ export default function Navbar() {
             className="btn p-0 border-0 bg-transparent dropdown-toggle"
             data-bs-toggle="dropdown"
           >
-            <img src={fotoPerfil} alt="Perfil" className="profile-avatar" />
+            <img
+              src={fotoPerfil}
+              alt="Perfil"
+              className="profile-avatar"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = fotoDefault;
+              }}
+            />
           </button>
 
           <ul className="dropdown-menu dropdown-menu-end">
