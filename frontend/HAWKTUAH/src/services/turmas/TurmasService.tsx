@@ -49,6 +49,7 @@ export type TurmaFormadorDTO = {
   nomeModulo: string;
   horasDadas: number;
   horasTotaisModulo: number;
+  estado: "Para começar" | "A decorrer" | "Terminado";
 };
 
 
