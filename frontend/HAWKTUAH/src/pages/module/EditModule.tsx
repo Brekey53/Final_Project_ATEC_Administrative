@@ -77,9 +77,8 @@ export default function EditModule() {
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-          Editar Módulo:{" "}
-          <span className="text-primary">{formData.codigoIdentificacao}</span>
+        <h2 className="fw-bold mb-1">Editar Módulo: {" "}
+          <span className="text-primary">{formData.nome}</span>
         </h2>
         <button
           className="btn btn-light border"

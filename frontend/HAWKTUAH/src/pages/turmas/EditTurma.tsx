@@ -98,12 +98,10 @@ export default function EditTurma() {
 
   return (
     <div className="container mt-5">
-      <Toaster />
-
       {/* Cabeçalho */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold mb-0 text-primary">Editar Turma</h2>
+          <h2 className="fw-bold mb-4 text-primary">Editar Turmas</h2>
           <p className="text-muted small mb-0">
             ID Interno: #{formData.idTurma}
           </p>

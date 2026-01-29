@@ -90,7 +90,7 @@ export default function EditRoom() {
       {/* Cabeçalho */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold mb-0">Editar Sala</h2>
+          <h2 className="fw-bold mb-1 text-primary">Editar Sala</h2>
           <p className="text-muted small mb-0">ID da Sala: {formData.idSala}</p>
         </div>
         <button

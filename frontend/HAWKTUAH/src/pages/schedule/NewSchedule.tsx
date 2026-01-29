@@ -60,8 +60,7 @@ export default function NewSchedule() {
         <div>
           <h2 className="fw-bold mb-1">Gestão de Horários</h2>
           <p className="text-muted mb-0">
-            Inserir, alterar, eliminar e consultar horários garantindo não
-            sobreposição.
+            Inserir, alterar, eliminar e consultar horários.
           </p>
         </div>
         <Link to="adicionar-horarios">

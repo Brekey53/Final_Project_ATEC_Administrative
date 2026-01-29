@@ -167,7 +167,7 @@ export default function EditTeacher() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Editar Formador</h2>
+      <h2 className="fw-bold mb-4 text-primary">Editar Formador</h2>
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}

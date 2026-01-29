@@ -63,33 +63,33 @@ export default function AddNewTurma() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!formData.idCurso || !formData.nomeTurma) {
-    toast.error("Preencha todos os campos obrigatórios.");
-    return; 
-  }
+    if (!formData.idCurso || !formData.nomeTurma) {
+      toast.error("Preencha todos os campos obrigatórios.");
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  const data = new FormData();
-  data.append("NomeTurma", formData.nomeTurma);
-  data.append("IdCurso", formData.idCurso.toString());
-  data.append("DataInicio", formData.dataInicio);
-  data.append("DataFim", formData.dataFim);
-  data.append("NomeCurso", formData.nomeCurso || "");
-  data.append("Estado", formData.estado || "A decorrer");
+    const data = new FormData();
+    data.append("NomeTurma", formData.nomeTurma);
+    data.append("IdCurso", formData.idCurso.toString());
+    data.append("DataInicio", formData.dataInicio);
+    data.append("DataFim", formData.dataFim);
+    data.append("NomeCurso", formData.nomeCurso || "");
+    data.append("Estado", formData.estado || "A decorrer");
 
-  try {
-    await postNewTurma(data); 
-    toast.success("Turma criada com sucesso!");
-    navigate("/turmas");
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || "Erro ao criar turma.");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      await postNewTurma(data);
+      toast.success("Turma criada com sucesso!");
+      navigate("/turmas");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao criar turma.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (fetching) {
   }
@@ -101,7 +101,8 @@ export default function AddNewTurma() {
       {/* Cabeçalho */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold mb-0 text-primary">Editar Turma</h2>
+          <h2 className="fw-bold mb-4 text-primary">Adicionar Nova Turma</h2>
+
           <p className="text-muted small mb-0">
             ID Interno: #{formData.idTurma}
           </p>

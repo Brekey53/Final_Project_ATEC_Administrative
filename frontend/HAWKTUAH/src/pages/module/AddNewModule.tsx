@@ -48,7 +48,7 @@ export default function AddNewModule() {
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Registar Novo Módulo</h2>
+        <h2 className="fw-bold mb-1 text-primary">Adicionar Novo Módulo</h2>
         <button
           className="btn btn-light border"
           onClick={() => navigate("/gerir-modulos")}

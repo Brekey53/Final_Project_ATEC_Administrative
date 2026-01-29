@@ -65,7 +65,7 @@ export default function AddNewRoom() {
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold">Registar Nova Sala</h2>
+        <h2 className="fw-bold mb-1 text-primary">Adicionar Nova Sala</h2>
         <button
           className="btn btn-light border"
           onClick={() => navigate("/gerir-salas")}

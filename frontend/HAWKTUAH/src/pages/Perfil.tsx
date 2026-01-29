@@ -68,7 +68,9 @@ export default function Perfil() {
         },
       );
 
-      toast.success("Password alterada com sucesso");
+      toast.success("Password alterada com sucesso", {
+        id: "changePassword",
+      });
       setShowPasswordModal(false);
       setCurrentPassword("");
       setNewPassword("");
@@ -90,7 +92,7 @@ export default function Perfil() {
 
   return (
     <div className="container my-5">
-      <h2 className="mb-4 fw-bold">O meu perfil</h2>
+      <h2 className="fw-bold mb-4 text-primary">O meu Perfil</h2>
 
       <div className="row">
         {/* FOTO */}

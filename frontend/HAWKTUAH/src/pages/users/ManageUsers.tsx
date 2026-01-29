@@ -7,8 +7,6 @@ import {
 } from "../../services/users/UserService";
 import "../../css/manageUsers.css";
 import { toast } from "react-hot-toast";
-import editar from "../../img/edit.png"
-import apagar from "../../img/delete.png"
 import { Pencil, Trash } from "lucide-react";
 
 export default function ManageUsers() {

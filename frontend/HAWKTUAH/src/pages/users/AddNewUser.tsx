@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import editar from "../../img/edit.png";
-import apagar from "../../img/delete.png";
 
 import { checkEmail, createUser } from "../../services/users/UserService";
 
@@ -83,7 +81,7 @@ export default function AddNewUser() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Criar Novo Utilizador</h2>
+      <h2 className="fw-bold mb-4 text-primary">Adicionar Novo Utilizador</h2>
 
       <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
         {/* EMAIL */}

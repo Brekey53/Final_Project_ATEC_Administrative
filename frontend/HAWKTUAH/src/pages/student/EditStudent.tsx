@@ -171,7 +171,7 @@ export default function EditFormando() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4 text-primary fw-bold">Editar Formando</h2>
+      <h2 className="fw-bold mb-4 text-primary">Editar Formando</h2>
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}

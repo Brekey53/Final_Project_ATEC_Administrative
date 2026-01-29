@@ -7,8 +7,6 @@ import {
 } from "../../services/cursos/CursosService";
 import "../../css/layoutTabelas.css";
 import toast from "react-hot-toast";
-import editar from "../../img/edit.png";
-import apagar from "../../img/delete.png";
 import { Pencil, Trash } from "lucide-react";
 
 export default function NewCourse() {

@@ -159,7 +159,7 @@ export default function AddNewStudent() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Registar Novo Formando</h2>
+     <h2 className="fw-bold mb-4 text-primary">Adicionar Novo Formando</h2>
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTOS */}
         <div className="col-lg-4 text-center">
