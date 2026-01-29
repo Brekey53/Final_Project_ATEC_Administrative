@@ -23,7 +23,6 @@ export default function NewRoom() {
   useEffect(() => {
     async function fetchSalas() {
       const data = await getSalas();
-      console.log(data);
       setSalas(data);
       setLoading(false);
     }
