@@ -12,10 +12,14 @@ class NavbarService {
           Authorization: `Bearer ${token}`,
         },
         responseType: "blob",
+        validateStatus: (status) => status === 200 || status === 204,
       }
     );
 
-    const blob = response.data;
+    const blob = response.data; 
+    if (!blob || blob.size === 0) {
+      return null;
+    }
     return URL.createObjectURL(blob);
   }
 }
