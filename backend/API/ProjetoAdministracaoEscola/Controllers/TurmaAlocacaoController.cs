@@ -99,6 +99,78 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(resultado);
         }
 
+        [HttpGet("turmas/formador/{idFormador}")]
+        public async Task<ActionResult<IEnumerable<TurmaFormadorDTO>>> GetTurmasDoFormador(int idFormador)
+        {
+
+            // Validar se o formador existe
+            var existeFormador = await _context.Formadores.AnyAsync(f => f.IdFormador == idFormador);
+            if (!existeFormador) return BadRequest(new { message = "Formador não encontrado" });
+
+            // Carregar Alocações e os Horários relacionados
+            var alocacoes = await _context.TurmaAlocacoes
+                    .Where(a => a.IdFormador == idFormador)
+                    .Include(a => a.IdTurmaNavigation)
+                        .ThenInclude(t => t.IdCursoNavigation)
+                    .Include(a => a.IdModuloNavigation)
+                    .ToListAsync();
+
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+            // Processamento em Memória (Muito mais rápido)
+            var resultado = new List<TurmaFormadorModuloCursoDTO>();
+
+            foreach (var a in alocacoes)
+            {
+                // A forma mais performante seria carregar todos os horários deste formador antes do loop,
+                // mas vamos manter simples corrigindo apenas o erro principal.
+                var horarios = await _context.Horarios
+                    .Where(h =>
+                        h.IdTurma == a.IdTurma &&
+                        h.IdCursoModuloNavigation.IdModulo == a.IdModulo &&
+                        h.IdFormador == idFormador &&
+                        h.Data <= hoje
+                    )
+                    .ToListAsync();
+
+                var horasDadas = CalcularHorasDadas(horarios);
+                var horasTotais = a.IdModuloNavigation.HorasTotais;
+
+                string estado;
+                if (horasDadas == 0) estado = "Para começar";
+                else if (horasDadas < horasTotais) estado = "A decorrer";
+                else estado = "Terminado";
+
+                var cursoModulo = await _context.CursosModulos
+                .FirstOrDefaultAsync(cm =>
+                    cm.IdCurso == a.IdTurmaNavigation.IdCurso &&
+                    cm.IdModulo == a.IdModulo
+                );
+
+                // Se por algum motivo a matriz do curso estiver mal configurada, ignoramos esta linha
+                if (cursoModulo == null) continue;
+
+                // Filtro opcional: Se quiseres mostrar APENAS o que ele pode agendar,
+                // podes descomentar a linha abaixo para esconder os módulos terminados:
+                if (estado == "Terminado") continue;
+
+                resultado.Add(new TurmaFormadorModuloCursoDTO
+                {
+                    IdTurma = a.IdTurma,
+                    IdModulo = a.IdModulo,
+                    IdCursoModulo = cursoModulo.IdCursoModulo,
+                    NomeTurma = a.IdTurmaNavigation.NomeTurma,
+                    NomeCurso = a.IdTurmaNavigation.IdCursoNavigation.Nome,
+                    NomeModulo = a.IdModuloNavigation.Nome,
+                    HorasDadas = horasDadas,
+                    HorasTotaisModulo = horasTotais,
+                    Estado = estado
+                });
+            }
+
+            return Ok(resultado.OrderBy(t => t.NomeTurma).ThenBy(t => t.NomeModulo));
+        }
+
 
         [HttpGet("avaliacoes")]
         public async Task<ActionResult<IEnumerable<AvaliacaoAlunoDTO>>> GetAvaliacoes(int turmaId, int moduloId)
