@@ -234,9 +234,10 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Cria um horário novo validando inputs
-        /// e disponibilidade de turma, formador e sala, caso algum esteja sobreposto
-        /// irá dar erro ao criar e enviar mensagem personalizada
+        /// Cria um horário novo validando inputs e disponibilidade de turma,
+        /// formador e sala, caso algum esteja sobreposto irá dar erro ao criar e enviar mensagem personalizada
+        /// Valida se a hora de início é anterior à hora de fim
+        /// Valida tamebm se a marcação ultrapassa o limite de horas do módulo
         /// </summary>
         /// <returns>
         /// Cria horário
@@ -269,6 +270,34 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "A hora de início deve ser anterior ao fim." });
 
             // Validação de conflitos de horário antes de criar o novo horário:
+
+            // Verificar se a marcação ultrapassa o limite de horas do módulo
+            var dadosModulo = await _context.CursosModulos
+                .Include(cm => cm.IdModuloNavigation)
+                .Where(cm => cm.IdCursoModulo == dto.IdCursoModulo)
+                .Select(cm => new { LimitHours = cm.IdModuloNavigation.HorasTotais, NomeModulo = cm.IdModuloNavigation.Nome })
+                .FirstOrDefaultAsync();
+
+            if (dadosModulo == null) return BadRequest(new { message = "Módulo não encontrado." });
+
+            double duracaoNovaAula = (horaFim - horaInicio).TotalHours;
+
+            var aulasExistentes = await _context.Horarios
+                .Where(h => h.IdTurma == dto.IdTurma && h.IdCursoModulo == dto.IdCursoModulo)
+                .Select(h => new { h.HoraInicio, h.HoraFim })
+                .ToListAsync();
+
+            double horasJaAgendadas = aulasExistentes.Sum(h => (h.HoraFim - h.HoraInicio).TotalHours);
+
+            // Verificar se ultrapassa
+            if (horasJaAgendadas + duracaoNovaAula > dadosModulo.LimitHours)
+            {
+                return Conflict(new
+                {
+                    message = $"Impossível agendar! O módulo '{dadosModulo.NomeModulo}' tem {dadosModulo.LimitHours}h totais. " +
+                              $"Já estão marcadas {horasJaAgendadas}h. Com esta aula passaria para {horasJaAgendadas + duracaoNovaAula}h."
+                });
+            }
 
             // Formador ocupado
             var formadorOcupado = await _context.Horarios.AnyAsync(h =>
