@@ -52,12 +52,20 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (horarioDto == null)
             {
-                return NotFound(new { message = "Hor?rio n?o encontrado." });
+                return NotFound(new { message = "Horário não encontrado." });
             }
 
             return Ok(horarioDto);
         }
 
+        /// <summary>
+        /// Obtém o horário associado ao formador autenticado,
+        /// incluindo o Data, Hora de fim e inicio de aula,
+        /// com o nome da sala e nome do curso que dará a aula
+        /// </summary>
+        /// <returns>
+        /// Horário do formador autenticado.
+        /// </returns>
         [HttpGet("formador")]
         public async Task<ActionResult<IEnumerable<ScheduleCalendarDTO>>> GetHorariosFormador()
         {
@@ -96,6 +104,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(horarios);
         }
 
+        /// <summary>
+        /// Obtém o horário da turma associada ao formando autenticado,
+        /// incluindo o Data, Hora de fim e inicio de aula,
+        /// com o nome da sala e nome do curso que dará a aula
+        /// </summary>
+        /// <returns>
+        /// Horário do formando autenticado.
+        /// </returns>
         [HttpGet("formando")]
         public async Task<IActionResult> GetHorariosFormando()
         {
@@ -109,10 +125,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             var formando = await _context.Formandos
                 .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
 
-            if (formandoId == 0)
-                return Forbid("Utilizador n?o ? formando");
-
-            // obter as turmas onde o formando est? inscrito
+            // obter as turmas onde o formando está inscrito
             if (formando == null)
                 return Ok(new List<ScheduleCalendarDTO>());
 
@@ -125,7 +138,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (!turmasIds.Any())
                 return Ok(new List<ScheduleCalendarDTO>());
 
-            // 3️⃣ Horários
+            // Horários
             var horarios = await _context.Horarios
                 .Where(h => turmasIds.Contains(h.IdTurma))
                 .Select(h => new ScheduleCalendarDTO
@@ -144,6 +157,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(horarios);
         }
 
+        /// <summary>
+        /// Obtém o horário geral para apresentar aos admin ou administrativos,
+        /// incluindo Nome da turma, curso, modulo, formador, sala e data do horario
+        /// </summary>
+        /// <returns>
+        /// Horário geral de tudo.
+        /// </returns>
         [HttpGet("horario-get")]
         public async Task<ActionResult<IEnumerable<HorarioGetDTO>>> GetHorariosTotal()
         {
@@ -169,22 +189,29 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(horarios);
         }
 
+        /// <summary>
+        /// Atualiza os dados do horário selecionado
+        /// incluindo hora de inicio e fim de aula, idFormador, idSala, idCursoModulo
+        /// </summary>
+        /// <returns>
+        /// Atualiza horário selecionado
+        /// </returns>
         // PUT: api/Horarios/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutHorario(int id, [FromForm] HorarioSaveDTO dto)
         {
-            if (id != dto.IdHorario) return BadRequest(new { message = "Os IDs n?o coincidem." });
+            if (id != dto.IdHorario) return BadRequest(new { message = "Os IDs não coincidem." });
 
             var horario = await _context.Horarios.FindAsync(id);
-            if (horario == null) return NotFound(new { message = "Hor?rio n?o encontrado." });
+            if (horario == null) return NotFound(new { message = "Horário não encontrado." });
 
             try
             {
                 horario.Data = dto.Data;
                 horario.HoraInicio = TimeOnly.Parse(dto.HoraInicio);
                 horario.HoraFim = TimeOnly.Parse(dto.HoraFim);
-                horario.IdFormador = dto.IdFormador;
+                horario.IdFormador = dto.IdFormador; // TODO: Dados que não se alteram tem de estar aqui??
                 horario.IdSala = dto.IdSala;
                 horario.IdCursoModulo = dto.IdCursoModulo;
 
@@ -193,7 +220,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (FormatException)
             {
-                return BadRequest(new { message = "Formato de hora inv?lido. Use HH:mm." });
+                return BadRequest(new { message = "Formato de hora inválido. Use HH:mm." });
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -206,6 +233,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        /// <summary>
+        /// Cria um horário novo validando inputs
+        /// e disponibilidade de turma, formador e sala, caso algum esteja sobreposto
+        /// irá dar erro ao criar e enviar mensagem personalizada
+        /// </summary>
+        /// <returns>
+        /// Cria horário
+        /// </returns>
         // POST: api/Horarios
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -217,7 +252,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "Dados incompletos. Verifique Turma, Formador e Sala." });
             }
 
-            // Converter strings para TimeOnly para fazer compara��es
+            // Converter strings para TimeOnly para fazer comparações
             TimeOnly horaInicio, horaFim;
             try
             {
@@ -226,14 +261,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch
             {
-                return BadRequest(new { message = "Formato de hora inv?lido." });
+                return BadRequest(new { message = "Formato de hora inválido." });
             }
 
-            // Validar se a hora de in�cio � anterior � hora de fim
+            // Validar se a hora de início é anterior à hora de fim
             if (horaInicio >= horaFim)
-                return BadRequest(new { message = "A hora de inicio deve ser anterior ao fim." });
+                return BadRequest(new { message = "A hora de início deve ser anterior ao fim." });
 
-            // Valida��o de conflitos de hor�rio antes de criar o novo hor�rio:
+            // Validação de conflitos de horário antes de criar o novo horário:
 
             // Formador ocupado
             var formadorOcupado = await _context.Horarios.AnyAsync(h =>
@@ -244,7 +279,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (formadorOcupado)
             {
-                return Conflict(new { message = "Esse Formador j? tem uma aula nesse hor?rio!" });
+                return Conflict(new { message = "Esse Formador já tem uma aula nesse horário!" });
             }
 
             // Turma ocupada
@@ -256,7 +291,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (turmaOcupada)
             {
-                return Conflict(new { message = "Essa Turma j? tem aula marcada nesse hor?rio!" });
+                return Conflict(new { message = "Essa Turma já tem aula marcada nesse horário!" });
             }
 
             // Sala ocupada
@@ -290,23 +325,23 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (DbUpdateException ex)
             {
-                // Verifica se � erro de chave duplicada (Sobreposi��o de hor�rio na BD)
-                // O c�digo do erro varia conforme o banco (MySQL: 1062, SQLServer: 2601/2627)
+                // Verifica se é erro de chave duplicada (Sobreposição de horário na BD)
+                // O código do erro varia conforme o banco (MySQL: 1062, SQLServer: 2601/2627)
                 if (ex.InnerException != null && ex.InnerException.Message.Contains("Duplicate entry")) // Para MySQL
                 {
-                    return Conflict(new { message = "Conflito de hor?rio! A sala ou o formador j? est?o ocupados nesta hora." });
+                    return Conflict(new { message = "Conflito de horário! A sala ou o formador já estão ocupados nesta hora." });
                 }
-                else if (ex.InnerException != null && ex.InnerException.Message.Contains("UNIQUE")) // Gen�rico
+                else if (ex.InnerException != null && ex.InnerException.Message.Contains("UNIQUE")) // Genérico
                 {
-                    return Conflict(new { message = "Sobreposi??o detetada. Verifique se a sala ou formador est?o livres." });
+                    return Conflict(new { message = "Sobreposição detetada. Verifique se a sala ou formador estão livres." });
                 }
 
-                // Se for outro erro de base de dados, lan�a o erro real para o log
+                // Se for outro erro de base de dados, lança o erro real para o log
                 throw;
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Erro ao criar hor?rio: " + ex.Message });
+                return BadRequest(new { message = "Erro ao criar horário: " + ex.Message });
             }
 
             // 5. Retornar sucesso 201 Created
