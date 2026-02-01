@@ -44,6 +44,104 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(salas);
         }
 
+        // GET: api/salas/disponiveis?data=2024-01-30&inicio=09:00&fim=13:00
+        [HttpGet("disponiveis")]
+        public async Task<ActionResult<IEnumerable<SalaGetDTO>>> GetSalasDisponiveis(
+            [FromQuery] string data,
+            [FromQuery] string inicio,
+            [FromQuery] string fim,
+            [FromQuery] int? idCursoModulo)
+        {
+            //Validação e Conversão de Inputs
+            if (!DateOnly.TryParse(data, out var dataDate))
+                return BadRequest(new { message = "Data inválida." });
+
+            if (!TimeOnly.TryParse(inicio, out var horaInicio))
+                return BadRequest(new { message = "Hora de início inválida." });
+
+            if (!TimeOnly.TryParse(fim, out var horaFim))
+                return BadRequest(new { message = "Hora de fim inválida." });
+
+            if (horaInicio >= horaFim)
+                return BadRequest(new { message = "A hora de início deve ser anterior à hora de fim." });
+
+            // Identificar Salas Ocupadas
+            var salasOcupadasIds = await _context.Horarios
+                    .Where(h => h.Data == dataDate && h.HoraInicio < horaFim && h.HoraFim > horaInicio)
+                    .Select(h => h.IdSala)
+                    .Distinct()
+                    .ToListAsync();
+
+            // DEFINIR FILTROS DE TIPO DE SALA
+            List<string> tiposPermitidos = new List<string>();
+            bool aplicarFiltroArea = false;
+
+            if (idCursoModulo.HasValue && idCursoModulo > 0)
+            {
+                // Vamos buscar o Nome da Área associada a este módulo
+                var infoCurso = await _context.CursosModulos
+                    .Include(cm => cm.IdCursoNavigation)
+                        .ThenInclude(c => c.IdAreaNavigation)
+                    .Where(cm => cm.IdCursoModulo == idCursoModulo)
+                    .Select(cm => cm.IdCursoNavigation.IdAreaNavigation.Nome)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrEmpty(infoCurso))
+                {
+                    aplicarFiltroArea = true;
+
+                    // Aqui é definido quem pode ir para onde
+                    // Os nomes aqui devem ser IGUAIS aos que estão na tabela 'tipo_salas'
+                    switch (infoCurso)
+                    {
+                        case "Informática":
+                            tiposPermitidos.AddRange(new[] { "Laboratório Informática", "Sala Teórica", "Auditório" });
+                            break;
+
+                        case "Mecânica":
+                        case "Automação":
+                            tiposPermitidos.AddRange(new[] { "Oficina", "Laboratório Técnico", "Sala Teórica" });
+                            break;
+
+                        case "Eletrónica":
+                            tiposPermitidos.AddRange(new[] { "Laboratório Técnico", "Sala Teórica" });
+                            break;
+
+                        case "Gestão":
+                            tiposPermitidos.AddRange(new[] { "Sala Teórica", "Sala Polivalente", "Sala Reuniões" });
+                            break;
+
+                        default:
+                            // Se a área não tiver regra, permitimos apenas salas teóricas
+                            tiposPermitidos.Add("Sala Teórica");
+                            break;
+                    }
+                }
+            }
+
+            var query = _context.Salas
+                .Include(s => s.IdTipoSalaNavigation)
+                .Where(s => !salasOcupadasIds.Contains(s.IdSala));
+
+            // Aplica o filtro se tivermos regras definidas
+            if (aplicarFiltroArea && tiposPermitidos.Any())
+            {
+                query = query.Where(s => tiposPermitidos.Contains(s.IdTipoSalaNavigation.Nome));
+            }
+
+            var salasFinais = await query
+                .Select(s => new SalaGetDTO
+                {
+                    IdSala = s.IdSala,
+                    NomeSala = s.Descricao,
+                    Tipo = s.IdTipoSalaNavigation.Nome,
+                    Capacidade = s.NumMaxAlunos
+                })
+                .ToListAsync();
+
+            return Ok(salasFinais);
+        }
+
         // GET: api/Salas/5
         [HttpGet("{id}")]
         public async Task<ActionResult<SalaDTO>> GetSala(int id)
