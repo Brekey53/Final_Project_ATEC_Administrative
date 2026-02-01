@@ -60,17 +60,18 @@
   flex-shrink: 0; /* Impede que o círculo esmague em ecrãs pequenos */
 }
 
-/* Classe personalizada para uniformizar as etiquetas */
+
 .badge-turma-fixa {
-  width: 120px; /* Ajusta este valor conforme o tamanho médio das tuas turmas */
+  width: 120px; 
   display: inline-block;
   text-align: center;
-  padding: 5px 0; /* Garante um respiro vertical por igual */
-  font-size: 0.75rem; /* Tamanho de letra consistente */
+  padding: 5px 0; 
+  font-size: 0.75rem; 
   white-space: nowrap; /* Impede que o texto quebre em duas linhas */
   overflow: hidden; /* Esconde texto se for maior que a largura */
   text-overflow: ellipsis; /* Adiciona "..." se o nome for gigante */
 }
+
 
 @media (max-width: 768px) {
   .tabela-modulos {
