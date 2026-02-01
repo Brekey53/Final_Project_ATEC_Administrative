@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { getModulos, deleteModulo, type Modulos } from "../../services/modules/ModuleService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { normalizarTexto } from "../../utils/stringUtils";
+
 
 
 export default function NewModule() {
@@ -25,10 +27,10 @@ export default function NewModule() {
   }, []);
 
   const filteredModulos = modulos.filter((m) => {
-    const term = searchTerm.toLowerCase();
+    const term = normalizarTexto(searchTerm);
     return (
-      m.nome.toLowerCase().includes(term) ||
-      m.codigoIdentificacao.toLowerCase().includes(term)
+      normalizarTexto(m.nome).includes(term) ||
+      normalizarTexto(m.codigoIdentificacao).includes(term)
     );
   });
 

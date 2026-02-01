@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import "../../css/addNewStudent.css";
+import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function NewRoom() {
   const [salas, setSalas] = useState<Salas[]>([]);
@@ -31,10 +32,10 @@ export default function NewRoom() {
   }, []);
 
   const filteredSalas = salas.filter((s) => {
-    const term = searchTerm.toLowerCase();
+    const term = normalizarTexto(searchTerm);
     return (
-      s.idSala.toLocaleString().includes(term) ||
-      s.descricao.toLowerCase().includes(term)
+      normalizarTexto(s.idSala.toLocaleString()).includes(term) ||
+      normalizarTexto(s.descricao).includes(term)
     );
   });
 

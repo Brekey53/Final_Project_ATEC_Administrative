@@ -7,6 +7,7 @@ import {
   getTurmasFormador,
   type TurmaFormadorDTO,
 } from "../../services/turmas/TurmasService";
+import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function FormadorTurmas() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,9 +36,8 @@ export default function FormadorTurmas() {
   }, []);
 
   const turmasFiltradas = turmas.filter((t) => {
-    const matchTexto = `${t.nomeTurma} ${t.nomeCurso} ${t.nomeModulo}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const matchTexto = `${normalizarTexto(t.nomeTurma)} ${normalizarTexto(t.nomeCurso)} ${normalizarTexto(t.nomeModulo)}`
+      .includes(normalizarTexto(searchTerm));
 
     const matchEstado =
       estadoFiltro === "Todos" || t.estado === estadoFiltro;

@@ -9,6 +9,8 @@ import "../../css/manageUsers.css";
 import { toast } from "react-hot-toast";
 import editar from "../../img/edit.png"
 import apagar from "../../img/delete.png"
+import {normalizarTexto} from "../../utils/stringUtils"
+
 
 export default function ManageUsers() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
@@ -33,12 +35,12 @@ export default function ManageUsers() {
   }, []);
 
   const filteredUtilizadores = utilizadores.filter((u) => {
-    const term = searchTerm.toLowerCase();
+    const term = normalizarTexto(searchTerm);
     return (
-      u.nome.toLowerCase().includes(term) ||
-      u.email.toLowerCase().includes(term) ||
-      u.tipoUtilizador.toLowerCase().includes(term) ||
-      u.telefone?.toLowerCase().includes(term)
+      normalizarTexto(u.nome).includes(term) ||
+      normalizarTexto(u.email).includes(term) ||
+      normalizarTexto(u.tipoUtilizador).includes(term) ||
+      normalizarTexto(u.telefone).includes(term)
     );
   });
 

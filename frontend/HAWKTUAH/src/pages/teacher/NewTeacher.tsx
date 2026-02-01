@@ -6,6 +6,7 @@ import {
 } from "../../services/formador/FormadorService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function NewTeacher() {
   const [formadores, setFormadores] = useState<Formador[]>([]);
@@ -34,10 +35,10 @@ export default function NewTeacher() {
   }, []);
 
   const filteredFormadores = formadores.filter((f) => {
-    const term = searchTerm.toLowerCase();
+    const term = normalizarTexto(searchTerm);
     return (
-      f.nome.toLowerCase().includes(term) ||
-      f.nif.toLowerCase().includes(term)
+      normalizarTexto(f.nome).includes(term) ||
+      normalizarTexto(f.nif).includes(term)
     );
   });
 

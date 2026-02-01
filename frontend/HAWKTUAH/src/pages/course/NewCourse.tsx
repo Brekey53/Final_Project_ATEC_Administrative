@@ -9,6 +9,7 @@ import "../../css/cursos.css";
 import toast from "react-hot-toast";
 import editar from "../../img/edit.png"
 import apagar from "../../img/delete.png"
+import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function NewCourse() {
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -56,11 +57,11 @@ export default function NewCourse() {
   const cursosFiltrados = loading
     ? []
     : cursos.filter((c) => {
-        const termo = search.toLowerCase();
+        const termo = normalizarTexto(search);
 
         const matchPesquisa =
-          c.nome.toLowerCase().includes(termo) ||
-          String(c.idCurso).includes(termo);
+          normalizarTexto(c.nome).includes(termo) ||
+          normalizarTexto(String(c.idCurso)).includes(termo);
 
         const matchArea =
           areaFiltro === "todas" || String(c.idArea) === areaFiltro;

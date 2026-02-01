@@ -7,6 +7,8 @@ import {
 } from "../../services/students/FormandoService";
 import "../../css/newStudent.css";
 import { toast } from "react-hot-toast";
+import { normalizarTexto } from "../../utils/stringUtils";
+
 
 export default function NewStudent() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
@@ -35,8 +37,9 @@ export default function NewStudent() {
 
   const formandosFiltrados = formandos.filter(
     (f) =>
-      f.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (f.nif && f.nif.includes(searchTerm)),
+      normalizarTexto(f.nome).includes(normalizarTexto(searchTerm)) ||
+      normalizarTexto(f.email).includes(normalizarTexto(searchTerm)) ||
+      normalizarTexto(f.nif).includes(normalizarTexto(searchTerm)),
   );
 
   useEffect(() => {

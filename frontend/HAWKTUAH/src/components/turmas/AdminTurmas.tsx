@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import editar from "../../img/edit.png";
 import apagar from "../../img/delete.png";
 import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
+import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function AdminTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -29,9 +30,8 @@ export default function AdminTurmas() {
   }, []);
 
   const turmasFiltradas = turmas.filter((t) =>
-    `${t.nomeTurma} ${t.nomeCurso}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()),
+    `${normalizarTexto(t.nomeTurma)} ${normalizarTexto(t.nomeCurso)}`
+      .includes(normalizarTexto(searchTerm)),
   );
 
   const totalPages = Math.ceil(turmasFiltradas.length / ITEMS_PER_PAGE);
