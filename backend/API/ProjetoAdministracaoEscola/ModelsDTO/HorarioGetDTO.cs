@@ -16,8 +16,8 @@
 
         public DateOnly Data { get; set; }
 
-        public TimeOnly HoraInicio { get; set; }
+        public string HoraInicio { get; set; }
 
-        public TimeOnly HoraFim { get; set; }
+        public string HoraFim { get; set; }
     }
 }
