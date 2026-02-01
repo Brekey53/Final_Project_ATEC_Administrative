@@ -49,11 +49,17 @@ export type TurmaFormadorDTO = {
   nomeModulo: string;
   horasDadas: number;
   horasTotaisModulo: number;
+  estado: string;
 };
 
 
 export async function getTurmasFormador() {
   const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador`);
+  return res.data;
+}
+
+export async function getTurmasFormadorHorario(idFormador: number) {
+  const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador/${idFormador}`);
   return res.data;
 }
 
