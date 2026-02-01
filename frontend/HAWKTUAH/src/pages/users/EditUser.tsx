@@ -166,87 +166,9 @@ export default function EditUser() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Editar Utilizador</h2>
+      <h2 className="fw-bold mb-4 text-primary">Editar Utilizador</h2>
 
       <form onSubmit={handleSubmit} className="row">
-        {/* COLUNA ESQUERDA: FOTO E DOCUMENTO
-        <div className="col-lg-4 text-center">
-          <div className="card p-3 shadow-sm mb-4">
-            <img
-              src={fotoPreview}
-              alt="Preview"
-              className="img-fluid rounded mb-3"
-              style={{ maxHeight: "350px", objectFit: "cover" }}
-            />
-            <label className="btn btn-outline-primary btn-sm">
-              Alterar Fotografia
-              <input
-                type="file"
-                name="fotografia"
-                hidden
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </label>
-          </div>
-
-          <div className="card p-3 shadow-sm">
-            <label className="form-label text-start d-block fw-bold">
-              Currículo / Documento
-            </label>
-            <input
-              type="file"
-              name="documento"
-              className="form-control mb-3"
-              accept=".pdf,.doc,.docx"
-              onChange={handleFileChange}
-            />
-
-            {documentPreview && (
-              <div className="mt-2 text-start">
-                {documentPreview.startsWith("data:application/pdf") ||
-                formData.documento?.type === "application/pdf" ? (
-                  <iframe
-                    src={documentPreview}
-                    style={{
-                      width: "100%",
-                      height: "250px",
-                      border: "1px solid #ddd",
-                    }}
-                    title="Preview PDF"
-                  ></iframe>
-                ) : (
-                  <div className="p-3 bg-light border rounded mb-2 text-center">
-                    <span className="text-primary fw-bold">
-                      Documento Carregado
-                    </span>
-                    <p className="small text-muted">
-                      A pré-visualização não está disponível para este formato.
-                    </p>
-                  </div>
-                )}
-
-                <div className="d-grid gap-2 mt-3">
-                  <button
-                    type="button"
-                    onClick={handleOpenDocument}
-                    className="btn btn-outline-primary btn-sm"
-                  >
-                    Abrir em Nova Aba ↗
-                  </button>
-                  <a
-                    href={documentPreview}
-                    download={`documento_${formData.nome || "formando"}.pdf`}
-                    className="btn btn-success btn-sm"
-                  >
-                    Descarregar Ficheiro
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-        </div> */}
-
         {/* COLUNA DIREITA: DADOS */}
         <div className="col-lg-12">
           <div className="card p-4 shadow-sm">

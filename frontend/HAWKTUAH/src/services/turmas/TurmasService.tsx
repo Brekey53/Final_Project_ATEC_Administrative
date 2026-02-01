@@ -49,7 +49,7 @@ export type TurmaFormadorDTO = {
   nomeModulo: string;
   horasDadas: number;
   horasTotaisModulo: number;
-  estado: string;
+  estado: "Para começar" | "A decorrer" | "Terminado";
 };
 
 
@@ -91,5 +91,54 @@ export async function postTurmaAvaliacao(avaliacoes: DarAvaliacaoDTO[]) {
     `${API_BASE_URL}/TurmaAlocacao/avaliacoes`,
     avaliacoes,
   );
+  return res.data;
+}
+
+
+export interface Colega {
+  id: number;
+  nome: string;
+  email: string;
+}
+
+export interface Avaliacao {
+  nota: number;
+  data: string;
+}
+
+export interface Modulo {
+  idModulo: number;
+  nome: string;
+  horasTotais: number;
+  avaliacoes: Avaliacao[];
+  professores: Professor[];
+}
+
+export interface Professor {
+  nome: string;
+  email: string | null;
+}
+
+export interface MinhaTurma {
+  nomeTurma: string;
+  nomeCurso: string;
+  dataInicio: string;
+  dataFim: string;
+  estado: string;
+  colegas: Colega[];
+  modulos: Modulo[];
+  professores: Professor[];
+}
+
+export async function getMinhaTurma(): Promise<MinhaTurma> {
+  const res = await axios.get(
+    `${API_BASE_URL}/turmas/minha-turma`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
   return res.data;
 }

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+ï»¿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -97,32 +97,35 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         [HttpGet("formando")]
-        public async Task<ActionResult<IEnumerable<ScheduleCalendarDTO>>> GetHorariosFormando()
+        public async Task<IActionResult> GetHorariosFormando()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) 
+            if (userIdClaim == null)
                 return Unauthorized();
 
-            int userId = int.Parse(userIdClaim);
+            var userId = int.Parse(userIdClaim);
 
-            // tirar o IdFormando a partir do utilizador
-            var formandoId = await _context.Formandos
-                .Where(f => f.IdUtilizador == userId)
-                .Select(f => f.IdFormando)
-                .FirstOrDefaultAsync();
+            // Verificar se Ã© formando
+            var formando = await _context.Formandos
+                .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
 
             if (formandoId == 0)
                 return Forbid("Utilizador n?o ? formando");
 
             // obter as turmas onde o formando est? inscrito
+            if (formando == null)
+                return Ok(new List<ScheduleCalendarDTO>());
+
+            // Turmas onde estÃ¡ inscrito
             var turmasIds = await _context.Inscricoes
-                .Where(i => i.IdFormando == formandoId)
+                .Where(i => i.IdFormando == formando.IdFormando)
                 .Select(i => i.IdTurma)
                 .ToListAsync();
 
             if (!turmasIds.Any())
                 return Ok(new List<ScheduleCalendarDTO>());
 
+            // 3ï¸âƒ£ HorÃ¡rios
             var horarios = await _context.Horarios
                 .Where(h => turmasIds.Contains(h.IdTurma))
                 .Select(h => new ScheduleCalendarDTO
@@ -214,7 +217,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "Dados incompletos. Verifique Turma, Formador e Sala." });
             }
 
-            // Converter strings para TimeOnly para fazer comparações
+            // Converter strings para TimeOnly para fazer comparaï¿½ï¿½es
             TimeOnly horaInicio, horaFim;
             try
             {
@@ -226,11 +229,11 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "Formato de hora inv?lido." });
             }
 
-            // Validar se a hora de início é anterior à hora de fim
+            // Validar se a hora de inï¿½cio ï¿½ anterior ï¿½ hora de fim
             if (horaInicio >= horaFim)
                 return BadRequest(new { message = "A hora de inicio deve ser anterior ao fim." });
 
-            // Validação de conflitos de horário antes de criar o novo horário:
+            // Validaï¿½ï¿½o de conflitos de horï¿½rio antes de criar o novo horï¿½rio:
 
             // Formador ocupado
             var formadorOcupado = await _context.Horarios.AnyAsync(h =>
@@ -287,18 +290,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (DbUpdateException ex)
             {
-                // Verifica se é erro de chave duplicada (Sobreposição de horário na BD)
-                // O código do erro varia conforme o banco (MySQL: 1062, SQLServer: 2601/2627)
+                // Verifica se ï¿½ erro de chave duplicada (Sobreposiï¿½ï¿½o de horï¿½rio na BD)
+                // O cï¿½digo do erro varia conforme o banco (MySQL: 1062, SQLServer: 2601/2627)
                 if (ex.InnerException != null && ex.InnerException.Message.Contains("Duplicate entry")) // Para MySQL
                 {
                     return Conflict(new { message = "Conflito de hor?rio! A sala ou o formador j? est?o ocupados nesta hora." });
                 }
-                else if (ex.InnerException != null && ex.InnerException.Message.Contains("UNIQUE")) // Genérico
+                else if (ex.InnerException != null && ex.InnerException.Message.Contains("UNIQUE")) // Genï¿½rico
                 {
                     return Conflict(new { message = "Sobreposi??o detetada. Verifique se a sala ou formador est?o livres." });
                 }
 
-                // Se for outro erro de base de dados, lança o erro real para o log
+                // Se for outro erro de base de dados, lanï¿½a o erro real para o log
                 throw;
             }
             catch (Exception ex)

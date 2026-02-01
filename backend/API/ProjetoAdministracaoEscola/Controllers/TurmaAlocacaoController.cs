@@ -21,6 +21,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de turmas e módulos associados ao formador autenticado,
+        /// incluindo o número de horas dadas, horas totais do módulo e o estado atual
+        /// (Para começar, A decorrer ou Terminado).
+        /// </summary>
+        /// <returns>
+        /// Lista de turmas e módulos atribuídos ao formador autenticado.
+        /// </returns>
         [HttpGet("turmas/formador")]
         public async Task<ActionResult<IEnumerable<TurmaFormadorDTO>>> GetTurmasDoFormador()
         {
@@ -99,6 +107,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(resultado);
         }
 
+        /// <summary>
+        /// Obtém a lista de turmas e módulos associados ao formador com Id inserido no parametro do metodo,
+        /// incluindo o número de horas dadas, horas totais do módulo e o estado atual
+        /// (Para começar, A decorrer ou Terminado).
+        /// </summary>
+        /// <returns>
+        /// Lista de turmas e módulos atribuídos ao formador.
+        /// </returns>
         [HttpGet("turmas/formador/{idFormador}")]
         public async Task<ActionResult<IEnumerable<TurmaFormadorDTO>>> GetTurmasDoFormador(int idFormador)
         {
@@ -172,6 +188,15 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
+        /// <summary>
+        /// Obtém as avaliações dos formandos de uma determinada turma e módulo.
+        /// Caso o formando ainda não tenha avaliação, a nota é devolvida como nula.
+        /// </summary>
+        /// <param name="turmaId">Id da turma.</param>
+        /// <param name="moduloId">Id do módulo.</param>
+        /// <returns>
+        /// Lista de formandos com a respetiva avaliação no módulo indicado.
+        /// </returns>
         [HttpGet("avaliacoes")]
         public async Task<ActionResult<IEnumerable<AvaliacaoAlunoDTO>>> GetAvaliacoes(int turmaId, int moduloId)
         {
@@ -192,6 +217,17 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(alunos);
         }
 
+        /// <summary>
+        /// Guarda ou atualiza as avaliações dos formandos para um determinado módulo.
+        /// Se a avaliação já existir, a nota é atualizada; caso contrário, é criada uma nova.
+        /// </summary>
+        /// <param name="avaliacoes">
+        /// Lista de avaliações a registar, contendo o identificador da inscrição,
+        /// do módulo e a respetiva nota.
+        /// </param>
+        /// <returns>
+        /// Resultado da operação de gravação das avaliações.
+        /// </returns>
         [HttpPost("avaliacoes")]
         public async Task<IActionResult> GuardarAvaliacoes(List<DarAvaliacaoDTO> avaliacoes)
         {
@@ -231,11 +267,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+
         /// <summary>
-        /// Calcular Número de Horas Dadas 
+        /// Calcula o número total de horas dadas com base numa lista de horários.
+        /// Apenas são consideradas as sessões em que a hora de fim é superior à hora de início.
         /// </summary>
-        /// <param name="horarios"></param>
-        /// <returns></returns>
+        /// <param name="horarios">Coleção de horários</param>
+        /// <returns>Total de horas dadas.</returns>
         public static double CalcularHorasDadas(IEnumerable<Horario> horarios)
         {
             return horarios.Sum(h =>

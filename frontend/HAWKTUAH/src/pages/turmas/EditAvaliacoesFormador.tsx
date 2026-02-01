@@ -65,9 +65,13 @@ export default function EditAvaliacoesFormador() {
 
     try {
       await postTurmaAvaliacao(payload);
-      toast.success("Avaliações guardadas com sucesso");
+      toast.success("Avaliações guardadas com sucesso", {
+        id: "save-avaliacoes",
+      });
     } catch {
-      toast.error("Erro ao guardar avaliações");
+      toast.error("Erro ao guardar avaliações", {
+        id: "error-saving-avaliacoes",
+      });
     } finally {
       setSaving(false);
       navigate(-1);

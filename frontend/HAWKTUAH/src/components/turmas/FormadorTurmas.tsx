@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../../css/manageUsers.css";
 import "../../css/turmas.css";
-import editar from "../../img/edit.png";
 import {
   getTurmasFormador,
   type TurmaFormadorDTO,
 } from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
+import { Pencil} from "lucide-react";
 
 export default function FormadorTurmas() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,12 +157,7 @@ export default function FormadorTurmas() {
                     to={`/avaliar/${t.idTurma}/${t.idModulo}`}
                     className="btn rounded-pill px-1"
                   >
-                    <img
-                      src={editar}
-                      alt="avaliar"
-                      title="Avaliar módulo"
-                      className="img-edit-apagar"
-                    />
+                    <Pencil size={18} />
                   </Link>
                 </div>
               </div>

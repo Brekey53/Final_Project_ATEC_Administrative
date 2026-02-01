@@ -34,6 +34,10 @@ import {
   CalendarClock,
 } from "lucide-react";
 
+import toast from "react-hot-toast";
+
+import HorizontalBarChart from "../../components/HorizontalBarChart";
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     cursosDecorrer: 0,
@@ -43,6 +47,21 @@ export default function AdminDashboard() {
     salas: 0,
     modulos: 0,
   });
+
+  const dataset = [
+    { formador: "António", horas: 40 },
+    { formador: "Bento", horas: 55 },
+    { formador: "Carla", horas: 30 },
+    { formador: "David", horas: 70 },
+    { formador: "Égua", horas: 15 },
+    { formador: "Feliz", horas: 80 },
+    { formador: "Gastroenterite", horas: 90 },
+    { formador: "Hugo", horas: 70 },
+    { formador: "Isabel", horas: 70 },
+    { formador: "Jakim", horas: 70 },
+  ];
+
+  const valueFormatter = (value: number | null) => (value ? `${value} mm` : "");
 
   const user = authService.decodeToken();
 
@@ -72,7 +91,7 @@ export default function AdminDashboard() {
         setTurmasAIniciar(turmasData);
         setCursosPorArea(areasData);
       } catch (e) {
-        console.error("Erro ao carregar dashboard", e);
+        toast.error("Erro ao carregar dashboard");
       } finally {
         setLoading(false);
       }
@@ -225,7 +244,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.salas}
                 icon={<LayoutGrid size={20} color="#20c997" />}
                 iconBgColor="#e0f2f1"
-                detailsLink="/salas"
+                detailsLink="/gerir-salas"
               />
             </div>
             <div className="col">
@@ -234,7 +253,7 @@ export default function AdminDashboard() {
                 value={loading ? "..." : stats.modulos}
                 icon={<Calendar size={20} color="#e83e8c" />}
                 iconBgColor="#fce4ec"
-                detailsLink="/modulos"
+                detailsLink="/gerir-modulos"
               />
             </div>
           </div>
@@ -339,7 +358,7 @@ export default function AdminDashboard() {
 
           <div className="mt-5">
             <div className="row g-4">
-              <div className="col">
+              <div className="col-6 mb-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
@@ -370,6 +389,16 @@ export default function AdminDashboard() {
                     </ul>
                   )}
                 </div>
+              </div>
+              <div className="col-6 mb-4">
+                  <HorizontalBarChart
+                    title="Top 10 Formadores com mais horas"
+                    dataset={dataset}
+                    categoryKey="formador"
+                    valueKey="horas"
+                    label="Horas"
+                    valueFormatter={valueFormatter}
+                  />
               </div>
             </div>
           </div>

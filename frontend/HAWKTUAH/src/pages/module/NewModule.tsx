@@ -1,10 +1,9 @@
-import React from 'react'
 import { Link } from 'react-router-dom';
 import { getModulos, deleteModulo, type Modulos } from "../../services/modules/ModuleService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-
+import { Pencil, Trash } from 'lucide-react';
 
 
 export default function NewModule() {
@@ -60,9 +59,9 @@ export default function NewModule() {
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
-          <h2 className="fw-bold mb-1">Gestão de Modulos</h2>
+          <h2 className="fw-bold mb-1">Gestão de Módulos</h2>
           <p className="text-muted mb-0">
-            Inserir, alterar, eliminar e consultar modulos
+            Inserir, alterar, eliminar e consultar módulos
           </p>
         </div>
         <Link to="/adicionar-modulos">
@@ -112,17 +111,23 @@ export default function NewModule() {
                 <div className="hide-mobile text-muted">{m.horasTotais || "-"}</div>
                 <div className="hide-mobile text-muted">{m.creditos || "-"}</div>
 
-                <div className="d-flex justify-content-end gap-2">
-                  <Link to={`edit-modulo/${m.idModulo}`} className='btn btn-sm btn-outline-primary rounded-pill px-3'>Editar</Link>
-                  <button
-                    className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                <div className="d-flex justify-content-end gap-3 align-items-center">
+                  <Link
+                    to={`edit-modulo/${m.idModulo}`}
+                    className="action-icon"
+                  >
+                    <Pencil size={18} />
+                  </Link>
+
+                  <span
+                    className="action-icon text-danger cursor-pointer"
                     onClick={() => {
                       setModuloSelecionado(m);
                       setShowDeleteModal(true);
                     }}
                   >
-                    Apagar
-                  </button>
+                    <Trash size={18} />
+                  </span>
                 </div>
               </div>
             ))

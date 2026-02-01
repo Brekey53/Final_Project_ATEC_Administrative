@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "../../css/manageUsers.css";
-import "../../css/turmas.css";
+import "../../css/layoutTabelas.css";
 import { toast } from "react-hot-toast";
-import editar from "../../img/edit.png";
-import apagar from "../../img/delete.png";
 import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
+import { Pencil, Trash } from "lucide-react";
 
 export default function AdminTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -77,7 +75,7 @@ export default function AdminTurmas() {
       {/* TABELA */}
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turmas">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turmas-admin">
             <div>Turma</div>
             <div>Curso</div>
             <div>Data Início</div>
@@ -90,11 +88,11 @@ export default function AdminTurmas() {
             turmasPaginadas.map((t) => (
               <div
                 key={t.idTurma}
-                className="px-4 py-3 border-bottom tabela-turmas align-items-center"
+                className="px-4 py-4 border-bottom tabela-turmas-admin align-items-center"
               >
                 {/* Turma */}
                 <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                  <div className="avatar-circle bg-light border fw-semibold">
                     {t.nomeTurma.charAt(0)}
                   </div>
                   <span className="fw-medium">{t.nomeTurma}</span>
@@ -123,27 +121,20 @@ export default function AdminTurmas() {
                 </div>
 
                 {/* Ações */}
-                <div className="d-flex justify-content-end ">
-                  <Link
-                    to={`edit-turma/${t.idTurma}`}
-                    className="btn rounded-pill px-1"
-                  >
-                    <img
-                      src={editar}
-                      alt="editar"
-                      title="Editar"
-                      className="img-edit-apagar"
-                    />
+                <div className="d-flex justify-content-end gap-3 align-items-center">
+                  <Link to={`edit-turma/${t.idTurma}`} className="action-icon">
+                    <Pencil size={18} />
                   </Link>
 
-                  <button className="btn rounded-pill px-1">
-                    <img
-                      src={apagar}
-                      alt="apagar"
-                      title="Apagar"
-                      className="img-edit-apagar"
-                    />
-                  </button>
+                  <span
+                    className="action-icon text-danger cursor-pointer"
+                    onClick={() => {
+                      // setTurmaSelecionada(t);
+                      // setShowDeleteModal(true);
+                    }}
+                  >
+                    <Trash size={18} />
+                  </span>
                 </div>
               </div>
             ))

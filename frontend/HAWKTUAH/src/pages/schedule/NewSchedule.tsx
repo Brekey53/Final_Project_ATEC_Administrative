@@ -372,7 +372,7 @@ export default function NewSchedule() {
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Gestão de Horários</h2>
-          <p className="text-muted mb-0">Gestão completa de aulas e salas.</p>
+          <p className="text-muted mb-0">Inserir, alterar, eliminar e consultar horários.</p>
         </div>
         <div
           className="btn btn-success px-4 py-2 rounded-pill shadow-sm"

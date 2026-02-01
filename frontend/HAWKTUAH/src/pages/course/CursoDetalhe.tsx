@@ -29,15 +29,20 @@ export default function CursoDetalhe() {
   if (loading) return <p className="text-center mt-5">A carregar...</p>;
   if (!curso) return <p className="text-center mt-5">Curso não encontrado</p>;
 
-  return (
-    <div className="container mt-5">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+ return (
+  <div className="container mt-5">
+
+    {/* HEADER / DETALHES DO CURSO */}
+    <div className="card p-4 shadow-sm border-0 rounded-4 mb-4">
+      <div className="d-flex justify-content-between align-items-start">
         <div>
           <h2 className="text-primary mb-1">{curso.nome}</h2>
-          <small className="text-muted">
+          <p className="text-muted mb-1">
             Total de módulos: <strong>{curso.modulos.length}</strong>
-          </small>
+          </p>
+          <p className="small mb-0">
+            <strong>ID Área:</strong> {curso.idArea}
+          </p>
         </div>
 
         <button
@@ -47,57 +52,44 @@ export default function CursoDetalhe() {
           Voltar
         </button>
       </div>
+    </div>
 
-      <div className="row g-4">
-        {/* Coluna lateral */}
-        <div className="col-lg-4">
-          <div className="card p-4 shadow-sm border-0 rounded-4 bg-light h-100">
-            <div className="fs-1 text-primary mb-2 text-center">📚</div>
-            <h5 className="text-center mb-2">Configuração Técnica</h5>
-            <p className="text-muted small text-center">
-              Informação geral do curso
-            </p>
-            <hr />
-            <p className="small mb-1">
-              <strong>ID Área:</strong> {curso.idArea}
-            </p>
-          </div>
-        </div>
+    {/* MÓDULOS */}
+    <div className="card p-4 shadow-sm border-0 rounded-4">
+      <h5 className="text-primary mb-4">Módulos</h5>
 
-        {/* Módulos */}
-        <div className="col-lg-8">
-          <div className="card p-4 shadow-sm border-0 rounded-4">
-            <h5 className="text-primary mb-4">Módulos</h5>
+      {curso.modulos.length === 0 ? (
+        <p className="text-muted">Este curso ainda não tem módulos.</p>
+      ) : (
+        <div className="row g-3">
+          {curso.modulos.map((modulo) => (
+            <div
+              key={modulo.idModulo}
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            >
+              <div className="card h-100 shadow-sm border-0 rounded-4">
+                <div className="card-body">
+                  <h6 className="fw-semibold mb-2">
+                    {modulo.nome}
+                  </h6>
 
-            <div className="row g-3">
-              {curso.modulos.map((modulo) => (
-                <div
-                  key={modulo.idModulo}
-                  className="col-12 col-md-6 col-xl-4"
-                >
-                  <div className="card h-100 shadow-sm border-0 rounded-4">
-                    <div className="card-body">
-                      <h6 className="fw-semibold mb-2">
-                        {modulo.nome}
-                      </h6>
-
-                      <div className="small text-muted">
-                        <div>
-                          <strong>Créditos:</strong> {modulo.creditos}
-                        </div>
-                        <div>
-                          <strong>Horas:</strong> {modulo.horasTotais}
-                        </div>
-                      </div>
+                  <div className="small text-muted">
+                    <div>
+                      <strong>Créditos:</strong> {modulo.creditos}
+                    </div>
+                    <div>
+                      <strong>Horas:</strong> {modulo.horasTotais}
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-
-          </div>
+          ))}
         </div>
-      </div>
+      )}
     </div>
-  );
+
+  </div>
+);
+
 }

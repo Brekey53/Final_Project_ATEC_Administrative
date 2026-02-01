@@ -7,17 +7,15 @@ import {
 } from "../../services/users/UserService";
 import "../../css/manageUsers.css";
 import { toast } from "react-hot-toast";
-import editar from "../../img/edit.png"
-import apagar from "../../img/delete.png"
 import {normalizarTexto} from "../../utils/stringUtils"
-
+import { Pencil, Trash } from "lucide-react";
 
 export default function ManageUsers() {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [utilizadorSelecionado, setUtilizadorelecionado] =
+  const [utilizadorSelecionado, setUtilizadorSelecionado] =
     useState<Utilizador | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -57,7 +55,7 @@ export default function ManageUsers() {
       );
 
       setShowDeleteModal(false);
-      setUtilizadorelecionado(null);
+      setUtilizadorSelecionado(null);
       toast.success("Utilizador eliminado com sucesso");
     } catch (err: any) {
       const errorData = err.response?.data;
@@ -136,22 +134,23 @@ export default function ManageUsers() {
                 </div>
                 <div className="text-muted">{u.telefone || "-"}</div>{" "}
                 <div className="text-muted">{u.tipoUtilizador || "-"}</div>{" "}
-                <div className="d-flex justify-content-end ">
+                <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link
                     to={`edit-utilizador/${u.idUtilizador}`}
-                    className="btn rounded-pill px-1"
+                    className="action-icon"
                   >
-                    <img src={editar} alt="editar" title="Editar" className="img-edit-apagar"></img>
+                    <Pencil size={18} />
                   </Link>
-                  <button
-                    className="btn rounded-pill px-1"
+
+                  <span
+                    className="action-icon text-danger cursor-pointer"
                     onClick={() => {
-                      setUtilizadorelecionado(u);
+                      setUtilizadorSelecionado(u);
                       setShowDeleteModal(true);
                     }}
                   >
-                    <img src={apagar} alt="apagar" title="Apagar" className="img-edit-apagar"></img>
-                  </button>
+                    <Trash size={18} />
+                  </span>
                 </div>
               </div>
             ))

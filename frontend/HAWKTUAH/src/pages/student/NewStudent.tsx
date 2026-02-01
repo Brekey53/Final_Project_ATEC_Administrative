@@ -8,7 +8,7 @@ import {
 import "../../css/newStudent.css";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-
+import { Pencil, Trash } from "lucide-react";
 
 export default function NewStudent() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
@@ -46,16 +46,11 @@ export default function NewStudent() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const totalPages = Math.ceil(
-    formandosFiltrados.length / ITEMS_PER_PAGE,
-  );
+  const totalPages = Math.ceil(formandosFiltrados.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
-  const formandosPaginados = formandosFiltrados.slice(
-    startIndex,
-    endIndex,
-  );
+  const formandosPaginados = formandosFiltrados.slice(startIndex, endIndex);
 
   async function handleDeleteFormando() {
     if (!formandoSelecionado) return;
@@ -133,9 +128,7 @@ export default function NewStudent() {
                   <span className="fw-medium">{f.nome}</span>
                 </div>
 
-                <div className="text-muted text-truncate">
-                  {f.email || "-"}
-                </div>
+                <div className="text-muted text-truncate">{f.email || "-"}</div>
 
                 <div>
                   <span
@@ -149,22 +142,23 @@ export default function NewStudent() {
                   </span>
                 </div>
 
-                <div className="d-flex justify-content-end gap-3">
+                <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link
                     to={`edit-formando/${f.idFormando}`}
-                    className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                    className="action-icon"
                   >
-                    Editar
+                    <Pencil size={18} />
                   </Link>
-                  <button
-                    className="btn btn-sm btn-outline-danger rounded-pill px-3"
+
+                  <span
+                    className="action-icon text-danger cursor-pointer"
                     onClick={() => {
                       setFormandoSelecionado(f);
                       setShowDeleteModal(true);
                     }}
                   >
-                    Apagar
-                  </button>
+                    <Trash size={18} />
+                  </span>
                 </div>
               </div>
             ))
@@ -215,9 +209,7 @@ export default function NewStudent() {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content rounded-4 shadow border-0">
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">
-                  Confirmar eliminação
-                </h5>
+                <h5 className="modal-title fw-bold">Confirmar eliminação</h5>
                 <button
                   type="button"
                   className="btn-close"
