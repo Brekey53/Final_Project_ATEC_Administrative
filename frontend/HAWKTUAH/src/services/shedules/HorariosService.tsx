@@ -28,3 +28,19 @@ export async function getHorariosTotal() {
 
   return res.data;
 }
+
+export async function getHorariosById(id: number){
+  const res = await axios.get(`${API_BASE_URL}/horarios/${id}`);
+
+  return res.data;
+}
+
+export async function updateHorario(id: string, data: FormData){
+  const res = await axios.put(`${API_BASE_URL}/horarios/${id}`, data);
+  return res.data;
+}
+
+export async function postHorario(data: FormData){
+  const res = await axios.post(`${API_BASE_URL}/horarios`, data);
+  return res.data;
+}
