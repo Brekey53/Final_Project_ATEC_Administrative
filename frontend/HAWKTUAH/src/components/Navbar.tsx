@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import NavbarService from "../services/navbar/NavbarService";
 import { mapUserRole } from "../auth/MapUserRole";
 import { NAV_PERMISSIONS } from "../auth/NavPermissions";
+import Dropdown from "bootstrap/js/dist/dropdown";
 
 export default function Navbar() {
   const [isNavExpanded, setIsNavExpanded] = useState(false);
@@ -45,6 +46,18 @@ export default function Navbar() {
     { key: "horarios", label: "Horários", to: "/horarios" },
     { key: "chatbot", label: "Assistente IA", to: "/chatbot" },
   ];
+
+
+  useEffect(() => {
+    const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
+    const dropdownList = Array.from(dropdownElementList).map(elemento => {
+      return new Dropdown(elemento);
+    });
+
+    return () => {
+      dropdownList.forEach(d => d.dispose());
+    };
+  }, [allowedLinks, fotoPerfil]); 
 
   return (
     <nav className="navbar navbar-expand-lg bg-light px-4">
@@ -88,7 +101,7 @@ export default function Navbar() {
           </ul>
         </div>
 
-        {/* DIREITA — PERFIL (sempre visível) */}
+        {/* DIREITA — PERFIL*/}
         <div className="dropdown ms-auto">
           <button
             className="btn p-0 border-0 bg-transparent dropdown-toggle"
