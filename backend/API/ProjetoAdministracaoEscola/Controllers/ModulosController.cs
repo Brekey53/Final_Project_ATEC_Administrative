@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO;
+using ProjetoAdministracaoEscola.ModelsDTO.Modulo;
 using System;
 using System.Collections.Generic;
 using System.Linq;

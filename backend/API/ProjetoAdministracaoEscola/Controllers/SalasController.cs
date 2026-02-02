@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO;
+using ProjetoAdministracaoEscola.ModelsDTO.Sala;
 using System;
 using System.Collections.Generic;
 using System.Linq;

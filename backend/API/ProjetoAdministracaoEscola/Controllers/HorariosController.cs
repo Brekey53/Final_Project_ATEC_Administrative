@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO;
+using ProjetoAdministracaoEscola.ModelsDTO.Horario;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -206,26 +206,36 @@ namespace ProjetoAdministracaoEscola.Controllers
             var horario = await _context.Horarios.FindAsync(id);
             if (horario == null) return NotFound(new { message = "Horário não encontrado." });
 
+            TimeOnly inicio, fim;
+            try
+            {
+                inicio = TimeOnly.Parse(dto.HoraInicio);
+                fim = TimeOnly.Parse(dto.HoraFim);
+            }
+            catch { return BadRequest(new { message = "Formato de hora inválido." }); }
+
+            if (inicio >= fim) return BadRequest(new { message = "Hora de início deve ser anterior ao fim." });
+
+            // Validar Limite de Horas
+            string? erroHoras = await ValidarLimiteHoras(dto.IdCursoModulo, dto.IdTurma, inicio, fim, id);
+            if (erroHoras != null) return Conflict(new { message = erroHoras });
+
+            // Validar Conflitos
+            string? erroConflito = await ValidarConflitos(dto, inicio, fim, id);
+            if (erroConflito != null) return Conflict(new { message = erroConflito });
+
+            // dto para entidade + atualizar
             try
             {
                 horario.Data = dto.Data;
-                horario.HoraInicio = TimeOnly.Parse(dto.HoraInicio);
-                horario.HoraFim = TimeOnly.Parse(dto.HoraFim);
-                horario.IdFormador = dto.IdFormador; // TODO: Dados que não se alteram tem de estar aqui??
+                horario.HoraInicio = inicio;
+                horario.HoraFim = fim;
+                horario.IdFormador = dto.IdFormador;
                 horario.IdSala = dto.IdSala;
                 horario.IdCursoModulo = dto.IdCursoModulo;
 
                 await _context.SaveChangesAsync();
-                return NoContent(); // 204 Success
-            }
-            catch (FormatException)
-            {
-                return BadRequest(new { message = "Formato de hora inválido. Use HH:mm." });
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!HorarioExists(id)) return NotFound();
-                else throw;
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -247,94 +257,30 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost]
         public async Task<ActionResult<Horario>> PostHorario([FromForm] HorarioSaveDTO dto)
         {
-            // Validar se os IDs vieram preenchidos (evita gravar 0)
-            if (dto.IdTurma == 0 || dto.IdFormador == 0 || dto.IdSala == 0 || dto.IdCursoModulo == 0)
-            {
-                return BadRequest(new { message = "Dados incompletos. Verifique Turma, Formador e Sala." });
-            }
 
-            // Converter strings para TimeOnly para fazer comparações
-            TimeOnly horaInicio, horaFim;
+            if (dto.IdTurma == 0 || dto.IdFormador == 0 || dto.IdSala == 0 || dto.IdCursoModulo == 0)
+                return BadRequest(new { message = "Dados incompletos." });
+
+            TimeOnly inicio, fim;
             try
             {
-                horaInicio = TimeOnly.Parse(dto.HoraInicio);
-                horaFim = TimeOnly.Parse(dto.HoraFim);
+                inicio = TimeOnly.Parse(dto.HoraInicio);
+                fim = TimeOnly.Parse(dto.HoraFim);
             }
-            catch
-            {
-                return BadRequest(new { message = "Formato de hora inválido." });
-            }
+            catch { return BadRequest(new { message = "Formato de hora inválido." }); }
 
-            // Validar se a hora de início é anterior à hora de fim
-            if (horaInicio >= horaFim)
-                return BadRequest(new { message = "A hora de início deve ser anterior ao fim." });
+            if (inicio >= fim) return BadRequest(new { message = "Hora de início deve ser anterior ao fim." });
 
-            // Validação de conflitos de horário antes de criar o novo horário:
 
-            // Verificar se a marcação ultrapassa o limite de horas do módulo
-            var dadosModulo = await _context.CursosModulos
-                .Include(cm => cm.IdModuloNavigation)
-                .Where(cm => cm.IdCursoModulo == dto.IdCursoModulo)
-                .Select(cm => new { LimitHours = cm.IdModuloNavigation.HorasTotais, NomeModulo = cm.IdModuloNavigation.Nome })
-                .FirstOrDefaultAsync();
+            // Validar Limite de Horas
+            string? erroHoras = await ValidarLimiteHoras(dto.IdCursoModulo, dto.IdTurma, inicio, fim, null);
+            if (erroHoras != null) return Conflict(new { message = erroHoras });
 
-            if (dadosModulo == null) return BadRequest(new { message = "Módulo não encontrado." });
+            // Validar Conflitos
+            string? erroConflito = await ValidarConflitos(dto, inicio, fim, null);
+            if (erroConflito != null) return Conflict(new { message = erroConflito });
 
-            double duracaoNovaAula = (horaFim - horaInicio).TotalHours;
-
-            var aulasExistentes = await _context.Horarios
-                .Where(h => h.IdTurma == dto.IdTurma && h.IdCursoModulo == dto.IdCursoModulo)
-                .Select(h => new { h.HoraInicio, h.HoraFim })
-                .ToListAsync();
-
-            double horasJaAgendadas = aulasExistentes.Sum(h => (h.HoraFim - h.HoraInicio).TotalHours);
-
-            // Verificar se ultrapassa
-            if (horasJaAgendadas + duracaoNovaAula > dadosModulo.LimitHours)
-            {
-                return Conflict(new
-                {
-                    message = $"Impossível agendar! O módulo '{dadosModulo.NomeModulo}' tem {dadosModulo.LimitHours}h totais. " +
-                              $"Já estão marcadas {horasJaAgendadas}h. Com esta aula passaria para {horasJaAgendadas + duracaoNovaAula}h."
-                });
-            }
-
-            // Formador ocupado
-            var formadorOcupado = await _context.Horarios.AnyAsync(h =>
-                h.IdFormador == dto.IdFormador &&
-                h.Data == dto.Data &&
-                h.HoraInicio < horaFim && h.HoraFim > horaInicio
-            );
-
-            if (formadorOcupado)
-            {
-                return Conflict(new { message = "Esse Formador já tem uma aula nesse horário!" });
-            }
-
-            // Turma ocupada
-            var turmaOcupada = await _context.Horarios.AnyAsync(h =>
-                h.IdTurma == dto.IdTurma &&
-                h.Data == dto.Data &&
-                h.HoraInicio < horaFim && h.HoraFim > horaInicio
-            );
-
-            if (turmaOcupada)
-            {
-                return Conflict(new { message = "Essa Turma já tem aula marcada nesse horário!" });
-            }
-
-            // Sala ocupada
-            var salaOcupada = await _context.Horarios.AnyAsync(h =>
-                h.IdSala == dto.IdSala &&
-                h.Data == dto.Data &&
-                h.HoraInicio < horaFim && h.HoraFim > horaInicio
-            );
-
-            if (salaOcupada)
-            {
-                return Conflict(new { message = "A Sala selecionada acabou de ser ocupada por outro utilizador." });
-            }
-
+            // dto para entidade + gravar
             var novoHorario = new Horario
             {
                 IdTurma = dto.IdTurma,
@@ -342,38 +288,20 @@ namespace ProjetoAdministracaoEscola.Controllers
                 IdSala = dto.IdSala,
                 IdCursoModulo = dto.IdCursoModulo,
                 Data = dto.Data,
-                HoraInicio = horaInicio,
-                HoraFim = horaFim
+                HoraInicio = inicio,
+                HoraFim = fim
             };
 
             try
             {
-                // Tentar Gravar na BD
                 _context.Horarios.Add(novoHorario);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException ex)
-            {
-                // Verifica se é erro de chave duplicada (Sobreposição de horário na BD)
-                // O código do erro varia conforme o banco (MySQL: 1062, SQLServer: 2601/2627)
-                if (ex.InnerException != null && ex.InnerException.Message.Contains("Duplicate entry")) // Para MySQL
-                {
-                    return Conflict(new { message = "Conflito de horário! A sala ou o formador já estão ocupados nesta hora." });
-                }
-                else if (ex.InnerException != null && ex.InnerException.Message.Contains("UNIQUE")) // Genérico
-                {
-                    return Conflict(new { message = "Sobreposição detetada. Verifique se a sala ou formador estão livres." });
-                }
-
-                // Se for outro erro de base de dados, lança o erro real para o log
-                throw;
-            }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Erro ao criar horário: " + ex.Message });
+                return BadRequest(new { message = "Erro ao gravar n BD: " + ex.Message });
             }
 
-            // 5. Retornar sucesso 201 Created
             return CreatedAtAction("GetHorario", new { id = novoHorario.IdHorario }, novoHorario);
         }
 
@@ -396,6 +324,94 @@ namespace ProjetoAdministracaoEscola.Controllers
         private bool HorarioExists(int id)
         {
             return _context.Horarios.Any(e => e.IdHorario == id);
+        }
+
+        /* 
+         * METODOS AUXILIARES DE VALIDAÇÃO:
+         */
+
+        /// <summary>
+        /// Verifica conflitos de Turma, Formador e Sala.
+        /// Aceita 'idIgnorar' para permitir atualizações (PUT) sem colidir com o próprio registo.
+        /// </summary>
+        private async Task<string?> ValidarConflitos(HorarioSaveDTO dto, TimeOnly inicio, TimeOnly fim, int? idIgnorar = null)
+        {
+
+            // Verificar Formador
+            var formadorOcupado = await _context.Horarios.AnyAsync(h =>
+                (idIgnorar == null || h.IdHorario != idIgnorar) && // Ignora o próprio (no caso de edit)
+                h.IdFormador == dto.IdFormador &&
+                // Comparação de Data (Ajusta conforme o tipo na tua BD)
+                h.Data == dto.Data &&
+                // Lógica de Sobreposição: (InicioA < FimB) E (FimA > InicioB)
+                h.HoraInicio < fim && h.HoraFim > inicio
+            );
+
+            if (formadorOcupado)
+                return "Conflito: Este Formador já tem uma aula nesse horário (sobreposição detetada).";
+
+            // Verificar Turma
+            var turmaOcupada = await _context.Horarios.AnyAsync(h =>
+                (idIgnorar == null || h.IdHorario != idIgnorar) &&
+                h.IdTurma == dto.IdTurma &&
+                h.Data == dto.Data &&
+                h.HoraInicio < fim && h.HoraFim > inicio
+            );
+
+            if (turmaOcupada)
+                return "Conflito: Esta Turma já tem outra aula marcada que coincide com este horário.";
+
+            // Verificar Sala
+            var salaOcupada = await _context.Horarios.AnyAsync(h =>
+                (idIgnorar == null || h.IdHorario != idIgnorar) &&
+                h.IdSala == dto.IdSala &&
+                h.Data == dto.Data &&
+                h.HoraInicio < fim && h.HoraFim > inicio
+            );
+
+            if (salaOcupada)
+                return "Conflito: A Sala selecionada já está ocupada neste intervalo.";
+
+            return null; // Nenhum conflito encontrado
+        }
+
+        /// <summary>
+        /// Verifica se a nova duração ultrapassa o limite de horas do módulo.
+        /// </summary>
+        private async Task<string?> ValidarLimiteHoras(int idCursoModulo, int idTurma, TimeOnly inicio, TimeOnly fim, int? idIgnorar = null)
+        {
+            // Obter dados do módulo
+            var dadosModulo = await _context.CursosModulos
+                .Include(cm => cm.IdModuloNavigation)
+                .Where(cm => cm.IdCursoModulo == idCursoModulo)
+                .Select(cm => new { LimitHours = cm.IdModuloNavigation.HorasTotais, NomeModulo = cm.IdModuloNavigation.Nome })
+                .FirstOrDefaultAsync();
+
+            if (dadosModulo == null) return "Módulo não encontrado.";
+
+            // Calcular duração da aula que estamos a tentar gravar
+            double duracaoNovaAula = (fim - inicio).TotalHours;
+
+            // Somar horas já agendadas na BD
+            var aulasExistentes = await _context.Horarios
+                .Where(h =>
+                    h.IdTurma == idTurma &&
+                    h.IdCursoModulo == idCursoModulo &&
+                    (idIgnorar == null || h.IdHorario != idIgnorar) // Garante funcionamento no PUT
+                )
+                .Select(h => new { h.HoraInicio, h.HoraFim })
+                .ToListAsync();
+
+            double horasJaAgendadas = aulasExistentes.Sum(h => (h.HoraFim - h.HoraInicio).TotalHours);
+
+            // Verificar limite
+            if (horasJaAgendadas + duracaoNovaAula > dadosModulo.LimitHours)
+            {
+                return $"Impossível agendar! O módulo '{dadosModulo.NomeModulo}' tem {dadosModulo.LimitHours}h totais. " +
+                       $"Já estão marcadas {horasJaAgendadas}h. Com esta alteração passaria para {horasJaAgendadas + duracaoNovaAula}h.";
+            }
+
+            return null; // Tudo OK
         }
     }
 }

@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO;
+using ProjetoAdministracaoEscola.ModelsDTO.Formador;
+using ProjetoAdministracaoEscola.ModelsDTO.Horario;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
