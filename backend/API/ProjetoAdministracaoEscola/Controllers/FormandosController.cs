@@ -1,9 +1,16 @@
+using iText.IO.Image;
+using iText.Kernel.Colors;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Borders;
+using iText.Layout.Element;
+using iText.Layout.Properties; 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO;
+using ProjetoAdministracaoEscola.ModelsDTO.Formando;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -88,18 +95,137 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(resposta);
         }
 
-        // [HttpGet("/AindaMaisCompleto/{id}")]
-        // public async Task<ActionResult> GetFormandoPdf(int id)
-        // {
-        //     var formando = await _context.Formandos.FindAsync(id);
+        // GET: api/Formandos/5{id}/download-ficha
+        [HttpGet("{id}/download-ficha")]
+        public async Task<IActionResult> DownloadFicha(int id)
+        {
+            // Procura o formando e os seus dados
+            var formando = await _context.Formandos
+                .Include(f => f.IdUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdFormando == id);
 
-        //     if (formando == null)
-        //     {
-        //         return NotFound();
-        //     }
+            if (formando == null) return NotFound(new { message = "Formando não encontrado." });
 
-        //     return Ok(formando);
-        // }
+            // Histórico de avaliações
+            var avaliacoes = await _context.Avaliacoes
+                .Include(a => a.IdModuloNavigation)
+                .Include(a => a.IdInscricaoNavigation)
+                    .ThenInclude(i => i.IdTurmaNavigation)
+                        .ThenInclude(t => t.IdCursoNavigation)
+                .Where(a => a.IdInscricaoNavigation.IdFormando == id)
+                .ToListAsync();
+
+            // Calcular media geral
+            double mediaGeral = avaliacoes.Any() ? (double)avaliacoes.Average(a => a.Nota ?? 0) : 0;
+
+            using (var ms = new MemoryStream())
+            {
+                var writer = new PdfWriter(ms);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf);
+
+                // --- CONTEÚDO DO PDF ---
+
+                // Cabeçalho:
+
+                Table headerTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 2, 1 })).UseAllAvailableWidth();
+                headerTable.SetMarginBottom(20);
+
+                // LADO ESQUERDO: Logo
+                string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo_hawk.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    Image logo = new Image(ImageDataFactory.Create(logoPath)).SetWidth(50);
+                    headerTable.AddCell(new Cell().Add(logo).SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.MIDDLE));
+                }
+                else { headerTable.AddCell(new Cell().SetBorder(Border.NO_BORDER)); }
+
+                // CENTRO: Nome do Projeto
+                headerTable.AddCell(new Cell().Add(new Paragraph("HAWK PORTAL")
+                    .SetFontSize(18).SetBold().SetFontColor(new DeviceRgb(0, 80, 80)))
+                    .SetBorder(Border.NO_BORDER).SetTextAlignment(TextAlignment.CENTER).SetVerticalAlignment(VerticalAlignment.MIDDLE));
+
+                // LADO DIREITO: Data de Emissão
+                headerTable.AddCell(new Cell().Add(new Paragraph($"Emitido em:\n{DateTime.Now:dd/MM/yyyy HH:mm}")
+                    .SetFontSize(8).SetItalic().SetTextAlignment(TextAlignment.RIGHT))
+                    .SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.BOTTOM));
+
+                document.Add(headerTable);
+
+                // Tabela de 2 colunas para o perfil do formando
+                // Coluna 1: Dados | Coluna 2: Foto
+                Table perfilTable = new Table(UnitValue.CreatePercentArray(new float[] { 70, 30 })).UseAllAvailableWidth();
+                perfilTable.SetBorder(Border.NO_BORDER).SetMarginBottom(20);
+
+                // --- COLUNA DA ESQUERDA: DADOS ---
+                Cell dadosCell = new Cell().SetBorder(Border.NO_BORDER);
+                dadosCell.Add(new Paragraph("FICHA DE REGISTO").SetFontSize(16).SetBold().SetUnderline());
+                dadosCell.Add(new Paragraph($"\nNome: {formando.IdUtilizadorNavigation.Nome}"));
+                dadosCell.Add(new Paragraph($"E-mail: {formando.IdUtilizadorNavigation.Email}"));
+                dadosCell.Add(new Paragraph($"NIF: {formando.IdUtilizadorNavigation.Nif}"));
+                perfilTable.AddCell(dadosCell);
+
+                // --- COLUNA DA DIREITA: FOTO ---
+                Cell fotoCell = new Cell().SetBorder(Border.NO_BORDER).SetHorizontalAlignment(HorizontalAlignment.RIGHT);
+                if (formando.Fotografia != null && formando.Fotografia.Length > 0)
+                {
+                    Image img = new Image(ImageDataFactory.Create(formando.Fotografia)).SetMaxHeight(100).SetHorizontalAlignment(HorizontalAlignment.RIGHT);
+
+                    fotoCell.Add(img);
+                }
+                else
+                {
+                    fotoCell.Add(new Paragraph("[Sem Foto]").SetItalic().SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT));
+                }
+                perfilTable.AddCell(fotoCell);
+
+                // Adicionar a tabela de perfil ao documento
+                document.Add(perfilTable);
+
+                // Espaçamento antes da tabela de notas
+                document.Add(new Paragraph("\n"));
+
+                // --- Tabela de Notas ---
+                document.Add(new Paragraph("PERCURSO FORMATIVO").SetBold().SetMarginBottom(5));
+
+                Table table = new Table(UnitValue.CreatePercentArray(new float[] { 5, 2, 2 })).UseAllAvailableWidth();
+
+                // Cabeçalhos com cor de fundo
+                Cell header1 = new Cell().Add(new Paragraph("Curso / Módulo").SetBold().SetFontColor(DeviceRgb.WHITE));
+                Cell header2 = new Cell().Add(new Paragraph("Data").SetBold().SetFontColor(DeviceRgb.WHITE));
+                Cell header3 = new Cell().Add(new Paragraph("Nota").SetBold().SetFontColor(DeviceRgb.WHITE));
+
+                header1.SetBackgroundColor(new DeviceRgb(0, 80, 80));
+                header2.SetBackgroundColor(new DeviceRgb(0, 80, 80));
+                header3.SetBackgroundColor(new DeviceRgb(0, 80, 80));
+
+                table.AddHeaderCell(header1);
+                table.AddHeaderCell(header2);
+                table.AddHeaderCell(header3);
+
+                foreach (var av in avaliacoes)
+                {
+                    table.AddCell($"{av.IdInscricaoNavigation.IdTurmaNavigation.IdCursoNavigation.Nome} - {av.IdModuloNavigation.Nome}");
+                    table.AddCell(av.DataAvaliacao?.ToString("dd/MM/yyyy") ?? "-");
+                    table.AddCell(av.Nota?.ToString("0.00") ?? "N/A");
+                }
+
+                document.Add(table);
+
+                // --- Media Geral ---
+                document.Add(new Paragraph($"\nMÉDIA GERAL DO CURSO: {mediaGeral:F2}")
+                    .SetFontSize(14)
+                    .SetBold()
+                    .SetTextAlignment(TextAlignment.RIGHT)
+                    .SetFontColor(mediaGeral >= 9.5 ? new DeviceRgb(0, 100, 0) : new DeviceRgb(150, 0, 0)));
+
+                document.Close();
+
+                // --- retorno do ficheiro ---
+                byte[] fileBytes = ms.ToArray();
+                return File(fileBytes, "application/pdf", $"Ficha_{formando.IdUtilizadorNavigation.Nome}.pdf");
+            }
+        }
 
         // POST: api/Formandos/completo
         [Authorize(Policy = "AdminOrAdministrativo")]
