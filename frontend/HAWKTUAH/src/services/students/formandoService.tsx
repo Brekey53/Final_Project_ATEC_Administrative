@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
+import { toast } from "react-hot-toast";
 
 // Interface atualizada para refletir os novos dados do Backend
 export interface Formando {
@@ -65,4 +66,33 @@ export async function checkEmail(email: string) {
   );
 
   return res.data;
+}
+
+export async function downloadFicheiroPDF(
+  idFormando: number,
+  nomeFormando: string,
+) {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/formandos/${idFormando}/download-ficha`,
+      {
+        responseType: "blob", // ESSENCIAL: diz ao axios para tratar a resposta como ficheiro
+      },
+    );
+
+    // Criar um link invisível para forçar o download no browser
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Ficha_${nomeFormando}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+
+    // Limpeza
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Erro ao descarregar PDF", error);
+    toast.error("Não foi possível gerar o PDF.");
+  }
 }
