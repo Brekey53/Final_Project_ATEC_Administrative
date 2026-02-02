@@ -7,7 +7,8 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Trash, Download } from "lucide-react";
+import { Tooltip } from 'bootstrap';
 
 export default function NewTeacher() {
   const [formadores, setFormadores] = useState<Formador[]>([]);
@@ -52,6 +53,21 @@ export default function NewTeacher() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
   const formadoresPaginados = filteredFormadores.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    // 1. Procurar os elementos
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    
+    // 2. Inicializar
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el)
+    );
+  
+    // 3. Limpeza
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [formadoresPaginados, loading]); // Re-executa quando a lista carrega
 
   async function handleDeleteFormador() {
     if (!formadorSelecionado) return;
@@ -134,15 +150,29 @@ export default function NewTeacher() {
                 <div className="text-muted">{f.nif || "-"}</div>
 
                 <div className="d-flex justify-content-end gap-3 align-items-center">
+                  <span
+                    className="action-icon text-success cursor-pointer"
+                    title="Descarregar informações Formador"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                  >
+                    <Download />
+                  </span>
                   <Link
                     to={`edit-formador/${f.idFormador}`}
                     className="action-icon"
+                    title="Editar informações Formador"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                   >
                     <Pencil size={18} />
                   </Link>
 
                   <span
                     className="action-icon text-danger cursor-pointer"
+                    title="Eliminar Formador"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                     onClick={() => {
                       setFormadorSelecionado(f);
                       setShowDeleteModal(true);

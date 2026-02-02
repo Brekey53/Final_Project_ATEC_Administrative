@@ -9,6 +9,7 @@ import "../../css/layoutTabelas.css";
 import toast from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Trash } from "lucide-react";
+import { Tooltip } from "bootstrap";
 
 export default function NewCourse() {
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -17,6 +18,9 @@ export default function NewCourse() {
   const [cursoSelecionado, setCursoSelecionado] = useState<Curso | null>(null);
   const [search, setSearch] = useState("");
   const [areaFiltro, setAreaFiltro] = useState("todas");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchCursos() {
@@ -67,6 +71,34 @@ export default function NewCourse() {
 
         return matchPesquisa && matchArea;
       });
+
+  const totalPages = Math.ceil(cursosFiltrados.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  const cursosPaginados = cursosFiltrados.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    // 1. Procurar os elementos
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]',
+    );
+
+    // 2. Inicializar
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el),
+    );
+
+    // 3. Limpeza
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [cursosPaginados, loading]); // Re-executa quando a lista carrega
+
+  // Quando pesquisa muda → voltar à página 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -125,7 +157,7 @@ export default function NewCourse() {
               Nenhum curso encontrado com os filtros atuais.
             </div>
           )}
-          {cursosFiltrados.map((c) => (
+          {cursosPaginados.map((c) => (
             <div
               key={c.idCurso}
               className="px-4 py-3 border-bottom tabela-cursos-admin"
@@ -140,12 +172,21 @@ export default function NewCourse() {
                 <span>{c.idArea}</span>
               </div>
               <div className="d-flex justify-content-end gap-3 align-items-center">
-                <Link to={`edit-curso/${c.idCurso}`} className="action-icon">
+                <Link
+                  to={`edit-curso/${c.idCurso}`}
+                  className="action-icon"
+                  title="Editar informações Curso"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                >
                   <Pencil size={18} />
                 </Link>
 
                 <span
                   className="action-icon text-danger cursor-pointer"
+                  title="Eliminar Curso"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
                   onClick={() => {
                     setCursoSelecionado(c);
                     setShowDeleteModal(true);
@@ -208,6 +249,35 @@ export default function NewCourse() {
           )}
         </div>
       </div>
+
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-3 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+
+      <p className="text-muted small text-center mt-2">
+        {cursosFiltrados.length} curso(s) encontrado(s)
+      </p>
     </div>
   );
 }

@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import {
   getFormandos,
   deleteFormando,
+  downloadFicheiroPDF,
   type Formando,
 } from "../../services/students/FormandoService";
 import "../../css/newStudent.css";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Trash, Download } from "lucide-react";
+import { Tooltip } from "bootstrap";
 
 export default function NewStudent() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
@@ -42,15 +44,28 @@ export default function NewStudent() {
       normalizarTexto(f.nif).includes(normalizarTexto(searchTerm)),
   );
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
   const totalPages = Math.ceil(formandosFiltrados.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
   const formandosPaginados = formandosFiltrados.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    // 1. Procurar os elementos
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]',
+    );
+
+    // 2. Inicializar
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el),
+    );
+
+    // 3. Limpeza
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [formandosPaginados, loading]); // Re-executa quando a lista carrega
 
   async function handleDeleteFormando() {
     if (!formandoSelecionado) return;
@@ -69,6 +84,11 @@ export default function NewStudent() {
       toast.error("Erro ao eliminar formando");
     }
   }
+
+  // Quando pesquisa muda → voltar à página 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -143,8 +163,20 @@ export default function NewStudent() {
                 </div>
 
                 <div className="d-flex justify-content-end gap-3 align-items-center">
+                  <span
+                    className="action-icon text-success cursor-pointer"
+                    title="Descarregar informações Formando"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    onClick={() => downloadFicheiroPDF(f.idFormando, f.nome)}
+                  >
+                    <Download />
+                  </span>
                   <Link
                     to={`edit-formando/${f.idFormando}`}
+                    title="Editar informações Formando"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                     className="action-icon"
                   >
                     <Pencil size={18} />
@@ -152,6 +184,9 @@ export default function NewStudent() {
 
                   <span
                     className="action-icon text-danger cursor-pointer"
+                    title="Eliminar Formando"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                     onClick={() => {
                       setFormandoSelecionado(f);
                       setShowDeleteModal(true);

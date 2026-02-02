@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import "../../css/addNewStudent.css";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Trash } from "lucide-react";
+import { Tooltip } from "bootstrap";
 
 export default function NewRoom() {
   const [salas, setSalas] = useState<Salas[]>([]);
@@ -39,15 +40,29 @@ export default function NewRoom() {
     );
   });
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
 
   const totalPages = Math.ceil(filteredSalas.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
   const salasPaginadas = filteredSalas.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    // 1. Procurar os elementos
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]',
+    );
+
+    // 2. Inicializar
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el),
+    );
+
+    // 3. Limpeza
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [salasPaginadas, loading]); // Re-executa quando a lista carrega
 
   async function handleDeleteSala() {
     if (!salaSelecionado) return;
@@ -70,6 +85,10 @@ export default function NewRoom() {
     }
   }
 
+  // Quando pesquisa muda → voltar à página 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
@@ -138,6 +157,9 @@ export default function NewRoom() {
                 <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link
                     to={`edit-sala/${s.idSala}`}
+                    title="Editar informações Sala"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                     className="action-icon"
                   >
                     <Pencil size={18} />
@@ -145,6 +167,9 @@ export default function NewRoom() {
 
                   <span
                     className="action-icon text-danger cursor-pointer"
+                    title="Eliminar Sala"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                     onClick={() => {
                       setSalaSelecionada(s);
                       setShowDeleteModal(true);
@@ -218,36 +243,37 @@ export default function NewRoom() {
               </div>
             </div>
           )}
-          {/* PAGINAÇÃO */}
-          {totalPages > 1 && (
-            <div className="d-flex justify-content-center align-items-center gap-3 py-4">
-              <button
-                className="btn btn-outline-secondary"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-              >
-                Anterior
-              </button>
-
-              <span className="text-muted">
-                Página {currentPage} de {totalPages}
-              </span>
-
-              <button
-                className="btn btn-outline-secondary"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-              >
-                Seguinte
-              </button>
-            </div>
-          )}
-
-          <p className="text-muted small text-center mt-2">
-            {filteredSalas.length} sala(s) encontrada(s)
-          </p>
         </div>
       </div>
+
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-3 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+
+      <p className="text-muted small text-center mt-2">
+        {filteredSalas.length} sala(s) encontrada(s)
+      </p>
     </div>
   );
 }

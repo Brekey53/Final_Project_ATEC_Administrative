@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Trash } from "lucide-react";
+import { Tooltip } from "bootstrap";
 
 export default function AdminTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -36,6 +37,23 @@ export default function AdminTurmas() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const turmasPaginadas = turmasFiltradas.slice(startIndex, endIndex);
+
+    useEffect(() => {
+      // 1. Procurar os elementos
+      const tooltipTriggerList = document.querySelectorAll(
+        '[data-bs-toggle="tooltip"]',
+      );
+  
+      // 2. Inicializar
+      const tooltipList = Array.from(tooltipTriggerList).map(
+        (el) => new Tooltip(el),
+      );
+  
+      // 3. Limpeza
+      return () => {
+        tooltipList.forEach((t) => t.dispose());
+      };
+    }, [turmasPaginadas]); // Re-executa quando a lista carrega
 
   /* sempre que pesquisa muda → volta à página 1 */
   useEffect(() => {
@@ -122,12 +140,18 @@ export default function AdminTurmas() {
 
                 {/* Ações */}
                 <div className="d-flex justify-content-end gap-3 align-items-center">
-                  <Link to={`edit-turma/${t.idTurma}`} className="action-icon">
+                  <Link to={`edit-turma/${t.idTurma}`} className="action-icon"
+                                      title="Editar informações Turma"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top">
                     <Pencil size={18} />
                   </Link>
 
                   <span
                     className="action-icon text-danger cursor-pointer"
+                                        title="Eliminar Turma"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                     onClick={() => {
                       // setTurmaSelecionada(t);
                       // setShowDeleteModal(true);
