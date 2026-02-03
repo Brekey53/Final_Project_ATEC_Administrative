@@ -1,0 +1,66 @@
+/* HEADER DA TABELA */
+.avaliacao-header {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  padding: 14px 24px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* LINHA */
+.avaliacao-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.15s ease;
+}
+
+.avaliacao-row:hover {
+  background-color: #f8fafc;
+}
+
+/* FORMANDO */
+.avaliacao-aluno {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.avaliacao-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* INPUT DA NOTA */
+.avaliacao-input {
+  width: 80px;
+  text-align: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-weight: 500;
+  justify-self: center;
+}
+
+.avaliacao-input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
+}

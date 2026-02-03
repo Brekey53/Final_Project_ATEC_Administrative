@@ -1,12 +1,17 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./App.css";
+import "./config.constants"
 
-import Login from "./components/Login";
+
+import AppRoutes from "./routes/AppRoutes";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
     <>
-      <Login></Login>
+      <Toaster position="top-center" reverseOrder={false} />
+      <AppRoutes></AppRoutes>
     </>
   );
 }

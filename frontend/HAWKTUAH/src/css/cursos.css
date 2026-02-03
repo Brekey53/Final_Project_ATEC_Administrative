@@ -1,0 +1,70 @@
+.curso-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid #eef1f4;
+  background-color: #ffffff;
+  color: #212529;
+  text-decoration: none;
+  transition: 
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.curso-list-item:hover {
+  background-color: #f8fbff;
+  border-color: var(--bs-primary);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.curso-list-item svg {
+  color: #adb5bd;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.curso-list-item:hover svg {
+  color: var(--bs-primary);
+  transform: translateX(2px);
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.tabela-cursos-header {
+  background-color: #f9fafb;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.tabela-cursos {
+  display: grid;
+  grid-template-columns: 3fr 1fr 2fr 0.8fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.curso-row {
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.curso-row:hover {
+  background-color: #f8fbff;
+  opacity: 1;
+}
+
+.tabela-cursos > div:last-child {
+  display: flex;
+  justify-content: center;
+}

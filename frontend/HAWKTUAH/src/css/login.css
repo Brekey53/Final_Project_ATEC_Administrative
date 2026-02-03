@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
 * {
   margin: 0;
   padding: 0;
@@ -5,54 +7,81 @@
 }
 
 .credentials-login {
-  background-color: #e5f0f0;
-}
-
-.title-login {
-  position: absolute;
-  color: #ffffff;
-  top: 30vh;
-}
-
-.banner-login {
-  position: relative;
-  height: 100vh;
-  background: #014d4e;
-  overflow: hidden;
-  padding: 50px;
+  flex: 1;
   display: flex;
+  justify-content: center;
   align-items: center;
 }
 
+.banner-login {
+  min-height: 100vh;
+  background: #014d4e;
+  padding: 2.5rem 1.5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  overflow: hidden;
+}
+
 .eyebrow-login {
-  position: absolute;
+  display: inline-block;
   padding: 15px 35px;
-  border: solid 1px black;
+  border: solid 1px rgb(255, 255, 255);
   border-radius: 999px;
-  top: 25vh;
-  color: #ffffff;
   font-weight: bold;
 }
 
+.description-login {
+  max-width: 500px;
+  font-size: 1.4rem;
+}
+
+.title-login {
+  font-weight: 900;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+}
+
+.title-login,
+.eyebrow-login,
+.description-login,
 .cards-login {
-  position: absolute;
-  top: 60vh;
+  position: static;
+  color: #ffffff;
+  font-family: "Roboto", sans-serif;
 }
 
 .card-login {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 110px;
   color: #ffffff;
-  border: 1px solid black;
-  padding: 5px;
+  border: 1px solid rgb(255, 255, 255);
+  max-width: 225px;
+  padding: 20px 25px 20px 15px;
+  border-radius: 1.45rem;
+  margin-bottom: 2vh;
+  font-size: 1.2rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-/* base das bolas */
+p {
+  white-space: normal;
+}
+
+/* base of balls */
 .ball {
   position: absolute;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
 }
 
-/* bola superior direita */
+/* bola direita */
 .ball-1 {
   width: 28vw;
   height: 28vw;
@@ -60,11 +89,140 @@
   right: -10vw;
 }
 
-/* bola inferior esquerda */
+/* bola esquerda */
+
 .ball-2 {
-  width: 55vw;
-  height: 55vw;
-  bottom: -30vw;
-  left: -25vw;
-  background: rgba(0, 0, 0, 0.12);
+  width: 35vw;
+  height: 35vw;
+  bottom: -25vw;
+  left: -15vw;
+}
+
+.icon {
+  color: #ffffff;
+}
+
+.modal-login,
+.modal-forgot-password {
+  max-width: 420px;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.socials-login img {
+  max-width: 2.5em;
+}
+
+.create-account-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  height: 44px;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #9d9e9f;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-account-btn a {
+  margin-left: 6px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.create-account-btn:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(60,64,67,0.3);
+}
+
+
+.divisor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem 0;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.divisor::before,
+.divisor::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.password-reset-text {
+  display: flex;
+  justify-content: end;
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.password-reset-text:hover {
+  text-decoration: underline;
+}
+
+.criar-conta-link {
+  text-decoration: none;
+  color: black;
+  text-align: center;
+}
+
+.criar-conta-span {
+  color: #014d4e;
+  font-weight: 800;
+  text-decoration: underline 2px;
+}
+
+.required-star {
+  color: red;
+}
+
+@media (max-width: 768px) {
+  .banner-login {
+    display: none;
+  }
+
+  .credentials-login {
+    min-height: 100vh;
+  }
+  p {
+    white-space: normal;
+    font-size: 0.5rem;
+  }
+}
+@media (max-width: 1470px) {
+  .banner-login {
+    padding: 2.4rem 1.5rem;
+  }
+
+  p {
+    white-space: normal;
+    font-size: 1.2rem;
+  }
+}
+
+/* PARA LAPTOP */
+
+@media (max-height: 1024px) {
+  .title-login {
+    font-size: 2.8rem;
+  }
+}
+
+@media (min-width: 2500px) {
+  .container-login {
+    margin-left: 3em;
+  }
 }

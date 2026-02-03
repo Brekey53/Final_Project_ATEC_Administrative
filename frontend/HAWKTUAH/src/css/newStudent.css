@@ -1,0 +1,82 @@
+.tabela-alunos {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr;
+  align-items: center;
+}
+
+.tabela-modulos {
+  display: grid;
+  grid-template-columns: 3fr 1.5fr 1fr 1fr 120px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-formadores {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr 130px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-formandos {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-salas {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-formadores-publico {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-modal-overlay .modal-dialog {
+  z-index: 1060;
+}
+
+.avatar-circle {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0; /* Impede que o círculo esmague em ecrãs pequenos */
+}
+
+
+.badge-turma-fixa {
+  width: 120px; 
+  display: inline-block;
+  text-align: center;
+  padding: 5px 0; 
+  font-size: 0.75rem; 
+  white-space: nowrap; /* Impede que o texto quebre em duas linhas */
+  overflow: hidden; /* Esconde texto se for maior que a largura */
+  text-overflow: ellipsis; /* Adiciona "..." se o nome for gigante */
+}
+
+@media (max-width: 768px) {
+  .tabela-modulos {
+    grid-template-columns: 2fr 1fr 100px; /* Esconde horas e créditos em mobile */
+  }
+  .hide-mobile {
+    display: none;
+  }
+}

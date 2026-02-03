@@ -1,0 +1,93 @@
+/* NAVBAR BASE */
+.navbar {
+  background-color: #014d4e !important;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* LOGO */
+.foto {
+  max-width: 3.5rem;
+}
+
+/* LINKS */
+.navbar .nav-link,
+.navbar .nav-links a {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-links a:hover {
+  color: #9fffe0; /* verde claro */
+}
+
+/* LINK ATIVO */
+.navbar .nav-links a.active {
+  font-weight: 600;
+  border-bottom: 2px solid #9fffe0;
+}
+
+/* CONTA */
+.navbar .dropdown-toggle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* DROPDOWN */
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.dropdown-item {
+  color: #0f172a;
+}
+
+.dropdown-item:hover {
+  background-color: #ecfdf5;
+  color: #0d9488;
+}
+
+/* HAMBURGER */
+.navbar-toggler {
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 8px;
+}
+
+.navbar-toggler-icon {
+  filter: invert(1);
+}
+
+/* REMOVE * da lista "Conta" */
+.navbar .navbar-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+
+.navbar-toggler:focus{
+  box-shadow: 0 0px 10px rgba(204, 250, 0, 0.3);
+}
+
+.navbar-toggler:active,
+.navbar-toggler:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #e5e7eb;
+}
+
+.profile-avatar:hover {
+  opacity: 0.85;
+}

@@ -1,0 +1,108 @@
+:root {
+  --avatar-col: 56px;
+}
+
+.tabela-turmas {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr 100px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-colegas {
+  display: grid;
+  grid-template-columns: var(--avatar-col) 2fr 3fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-professores {
+  display: grid;
+  grid-template-columns: var(--avatar-col) 2fr 3fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-modulos-avaliacoes {
+  display: grid;
+  grid-template-columns: var(--avatar-col) 2.5fr 1fr 2fr 100px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar-circle {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  /* ESCONDER HEADERS */
+  .tabela-colegas.fw-semibold,
+  .tabela-professores.fw-semibold,
+  .tabela-modulos-avaliacoes.fw-semibold {
+    display: none;
+  }
+
+  /* COLEGAS & PROFESSORES */
+  .tabela-colegas,
+  .tabela-professores {
+    grid-template-columns: 64px 1fr;
+    gap: 0.75rem;
+  }
+
+  .tabela-colegas > div:nth-child(3),
+  .tabela-professores > div:nth-child(3) {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  /* MÓDULOS */
+  .tabela-modulos-avaliacoes {
+    grid-template-columns: 64px 1fr auto;
+    row-gap: 0.25rem;
+  }
+
+  /* Nome do módulo */
+  .tabela-modulos-avaliacoes > div:nth-child(2) {
+    grid-column: 2 / -1;
+    font-weight: 600;
+  }
+
+  /* Horas */
+  .tabela-modulos-avaliacoes > div:nth-child(3) {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  /* Professor */
+  .tabela-modulos-avaliacoes > div:nth-child(4) {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  /* Nota */
+  .tabela-modulos-avaliacoes > div:nth-child(5) {
+    grid-column: 3;
+    align-self: center;
+  }
+}
+
+.tabela-turmas-admin {
+  display: grid;
+  grid-template-columns: 4fr 3fr 2fr 2fr 1.5fr 1fr;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.tabela-cursos-admin {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  align-items: center;
+}
