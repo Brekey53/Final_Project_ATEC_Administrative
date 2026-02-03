@@ -1,7 +1,7 @@
-DROP DATABASE sistema_gestao_atec;
--- Criar a Base de Dados
-CREATE DATABASE sistema_gestao_atec;
-USE sistema_gestao_atec;
+DROP DATABASE sistema_gestao_hawk_portal;
+
+CREATE DATABASE sistema_gestao_hawk_portal;
+USE sistema_gestao_hawk_portal;
 
 -- ESTRUTURA DE APOIO
 CREATE TABLE areas (
@@ -19,13 +19,18 @@ CREATE TABLE tipo_utilizadores (
     tipo_utilizador VARCHAR(50) NOT NULL
 );
 
--- escolaridades
 CREATE TABLE escolaridades (
     id_escolaridade INT AUTO_INCREMENT PRIMARY KEY,
     nivel VARCHAR(100) NOT NULL
 );
 
--- UTILIZADORES (Centralização de Auth e Perfil Básico)
+-- TIPO DE MATÉRIAS
+CREATE TABLE tipo_materias (
+    id_tipo_materia INT AUTO_INCREMENT PRIMARY KEY,
+    tipo VARCHAR(100) NOT NULL
+);
+
+-- UTILIZADORES (SOFT DELETE)
 CREATE TABLE utilizadores (
     id_utilizador INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -41,34 +46,41 @@ CREATE TABLE utilizadores (
     id_tipo_utilizador INT NOT NULL DEFAULT 5,
     status_ativacao BOOLEAN DEFAULT FALSE,
     token_ativacao VARCHAR(255),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_desativacao DATETIME NULL,
     FOREIGN KEY (id_tipo_utilizador) REFERENCES tipo_utilizadores(id_tipo_utilizador)
 );
 
--- MÓDULOS (UFCD/UC)
+-- MÓDULOS (SOFT DELETE)
 CREATE TABLE modulos (
     id_modulo INT AUTO_INCREMENT PRIMARY KEY,
     codigo_identificacao VARCHAR(20) UNIQUE,
     nome VARCHAR(100) NOT NULL,
     horas_totais INT NOT NULL,
-    creditos DECIMAL(4,2) NOT NULL
+    creditos DECIMAL(4,2) NOT NULL,
+    id_tipo_materia INT NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_desativacao DATETIME NULL,
+    FOREIGN KEY (id_tipo_materia) REFERENCES tipo_materias(id_tipo_materia)
 );
 
 -- SALAS
 CREATE TABLE salas (
     id_sala INT AUTO_INCREMENT PRIMARY KEY,
     descricao VARCHAR(50) NOT NULL,
-    num_max_alunos INT NOT NULL CHECK(num_max_alunos >= 5),
+    num_max_alunos INT NOT NULL CHECK (num_max_alunos >= 5),
     id_tipo_sala INT NOT NULL,
     FOREIGN KEY (id_tipo_sala) REFERENCES tipo_salas(id_tipo_sala)
 );
 
-
--- CURSOS E MATRIZ
+-- CURSOS (SOFT DELETE)
 CREATE TABLE cursos (
     id_curso INT AUTO_INCREMENT PRIMARY KEY,
     id_area INT NOT NULL,
     nome VARCHAR(100) NOT NULL,
     descricao VARCHAR(255),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_desativacao DATETIME NULL,
     FOREIGN KEY (id_area) REFERENCES areas(id_area)
 );
 
@@ -76,22 +88,24 @@ CREATE TABLE cursos_modulos (
     id_curso_modulo INT AUTO_INCREMENT PRIMARY KEY,
     id_curso INT NOT NULL,
     id_modulo INT NOT NULL,
-    prioridade INT NOT NULL, 
+    prioridade INT NOT NULL,
     FOREIGN KEY (id_curso) REFERENCES cursos(id_curso),
     FOREIGN KEY (id_modulo) REFERENCES modulos(id_modulo)
 );
 
--- TURMAS
+-- TURMAS (SOFT DELETE)
 CREATE TABLE turmas (
     id_turma INT AUTO_INCREMENT PRIMARY KEY,
     id_curso INT NOT NULL,
     nome_turma VARCHAR(50) NOT NULL,
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_desativacao DATETIME NULL,
     FOREIGN KEY (id_curso) REFERENCES cursos(id_curso)
 );
 
--- PERFIS ESPECÍFICOS
+-- FORMADORES (SOFT DELETE)
 CREATE TABLE formadores (
     id_formador INT AUTO_INCREMENT PRIMARY KEY,
     id_utilizador INT NOT NULL,
@@ -99,20 +113,34 @@ CREATE TABLE formadores (
     qualificacoes VARCHAR(255),
     fotografia MEDIUMBLOB,
     anexo_ficheiro MEDIUMBLOB,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_desativacao DATETIME NULL,
     FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador)
 );
 
+-- N:N FORMADORES <-> TIPO_MATÉRIAS
+CREATE TABLE formadores_tipo_materias (
+    id_formador INT NOT NULL,
+    id_tipo_materia INT NOT NULL,
+    PRIMARY KEY (id_formador, id_tipo_materia),
+    FOREIGN KEY (id_formador) REFERENCES formadores(id_formador),
+    FOREIGN KEY (id_tipo_materia) REFERENCES tipo_materias(id_tipo_materia)
+);
+
+-- FORMANDOS (SOFT DELETE)
 CREATE TABLE formandos (
     id_formando INT AUTO_INCREMENT PRIMARY KEY,
     id_utilizador INT NOT NULL,
     id_escolaridade INT,
     fotografia MEDIUMBLOB,
     anexo_ficheiro MEDIUMBLOB,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_desativacao DATETIME NULL,
     FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador),
     FOREIGN KEY (id_escolaridade) REFERENCES escolaridades(id_escolaridade)
 );
 
--- PLANEAMENTO E INSCRIÇÕES
+-- PLANEAMENTO
 CREATE TABLE turma_alocacoes (
     id_alocacao INT AUTO_INCREMENT PRIMARY KEY,
     id_turma INT NOT NULL,
@@ -145,7 +173,7 @@ CREATE TABLE avaliacoes (
     FOREIGN KEY (id_modulo) REFERENCES modulos(id_modulo)
 );
 
--- DISPONIBILIDADES 
+-- DISPONIBILIDADE DE FORMADORES
 CREATE TABLE disponibilidade_formadores (
     id_disp_formador INT AUTO_INCREMENT PRIMARY KEY,
     id_formador INT NOT NULL,
@@ -153,15 +181,6 @@ CREATE TABLE disponibilidade_formadores (
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
     FOREIGN KEY (id_formador) REFERENCES formadores(id_formador)
-);
-
-CREATE TABLE disponibilidade_salas (
-    id_disp_sala INT AUTO_INCREMENT PRIMARY KEY,
-    id_sala INT NOT NULL,
-    data_disponivel DATE NOT NULL,
-    hora_inicio TIME NOT NULL,
-    hora_fim TIME NOT NULL,
-    FOREIGN KEY (id_sala) REFERENCES salas(id_sala)
 );
 
 -- HORÁRIOS
@@ -174,8 +193,7 @@ CREATE TABLE horarios (
     data DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
-    -- Garante que a sala ou formador não têm duas marcações à mesma hora/dia
-    UNIQUE (id_sala, data, hora_inicio), 
+    UNIQUE (id_sala, data, hora_inicio),
     UNIQUE (id_formador, data, hora_inicio),
     FOREIGN KEY (id_turma) REFERENCES turmas(id_turma),
     FOREIGN KEY (id_curso_modulo) REFERENCES cursos_modulos(id_curso_modulo),
@@ -183,8 +201,16 @@ CREATE TABLE horarios (
     FOREIGN KEY (id_sala) REFERENCES salas(id_sala)
 );
 
+
+
 -- ÁREAS
-INSERT INTO areas (nome) VALUES ('Informática'), ('Mecânica'), ('Eletrónica'), ('Gestão'), ('Automação');
+INSERT INTO areas (nome) VALUES
+('Informática'),
+('Mecânica'),
+('Eletrónica'),
+('Gestão'),
+('Automação');
+
 
 -- Tipos de Salas
 INSERT INTO tipo_salas (nome) VALUES
@@ -200,10 +226,35 @@ INSERT INTO tipo_salas (nome) VALUES
 
 
 -- TIPOS DE UTILIZADOR
-INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES ('admin'), ('formador'), ('formando'), ('administrativo'), ('geral');
+INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES
+('admin'),
+('formador'),
+('formando'),
+('administrativo'),
+('geral');
 
 -- ESCOLARIDADES
-INSERT INTO escolaridades (nivel) VALUES ('9º Ano'), ('12º Ano'), ('CTeSP'), ('Licenciatura'), ('Mestrado');
+INSERT INTO escolaridades (nivel) VALUES
+('9º Ano'),
+('12º Ano'),
+('CTeSP'),
+('Licenciatura'),
+('Mestrado');
+
+-- TIPO DE MATÉRIAS
+INSERT INTO tipo_materias (tipo) VALUES
+('Programação'),
+('Redes'),
+('Sistemas'),
+('Bases de Dados'),
+('Segurança'),
+('Gestão'),
+('Cloud & DevOps'),
+('IA & Data Science'),
+('Design & Multimédia'),
+('Governança & Qualidade');
+
+
 
 -- UTILIZADORES (5 para Formadores, 5 para Formandos)
 INSERT INTO utilizadores (nome, nif, data_nascimento, morada, email, password_hash, id_tipo_utilizador, status_ativacao) VALUES 
@@ -310,112 +361,109 @@ INSERT INTO formandos (id_utilizador, id_escolaridade) VALUES
 (63, 2), (64, 4), (65, 2);
 
 -- MÓDULOS (UFCDs comuns)
-INSERT INTO modulos (codigo_identificacao, nome, horas_totais, creditos) VALUES 
-('UFCD0778', 'Algoritmos', 50, 4.5),
-('UFCD0782', 'SQL', 50, 4.5),
-('UFCD5412', 'Sistemas Operativos', 25, 2.5),
-('UFCD0804', 'Algoritmos Avançados', 50, 4.5),
-('UFCD0123', 'Ética Profissional', 25, 2.0),
-('UFCD0785', 'Programação Orientada a Objetos', 50, 4.5),
-('UFCD0786', 'Estruturas de Dados', 50, 4.5),
-('UFCD0787', 'Redes de Computadores', 50, 4.5),
-('UFCD0788', 'Segurança Informática', 50, 4.5),
-('UFCD0789', 'Desenvolvimento Web', 50, 4.5),
-('UFCD0790', 'Bases de Dados', 50, 4.5),
-('UFCD0791', 'Arquitetura de Computadores', 50, 4.5),
-('UFCD0792', 'Sistemas Distribuídos', 50, 4.5),
-('UFCD0793', 'Inteligência Artificial', 50, 4.5),
-('UFCD0794', 'Engenharia de Software', 50, 4.5),
-('UFCD0795', 'Gestão de Projetos', 25, 2.5),
-('UFCD0796', 'Cloud Computing', 50, 4.5),
-('UFCD0797', 'DevOps', 50, 4.5),
-('UFCD0798', 'Machine Learning', 50, 4.5),
-('UFCD0799', 'Big Data', 50, 4.5),
-('UFCD0800', 'Mobile Development', 50, 4.5),
-('UFCD0801', 'Interface Design', 25, 2.5),
-('UFCD0802', 'Testes de Software', 25, 2.5),
-('UFCD0803', 'Qualidade de Software', 25, 2.5),
-('UFCD0805', 'Criptografia', 25, 2.5),
-('UFCD0806', 'Análise de Sistemas', 50, 4.5),
-('UFCD0807', 'Programação Python', 50, 4.5),
-('UFCD0808', 'Programação Java', 50, 4.5),
-('UFCD0809', 'Programação C#', 50, 4.5),
-('UFCD0810', 'JavaScript Avançado', 50, 4.5),
-('UFCD0811', 'Frameworks Frontend', 50, 4.5),
-('UFCD0812', 'Frameworks Backend', 50, 4.5),
-('UFCD0813', 'API REST', 25, 2.5),
-('UFCD0814', 'Microserviços', 50, 4.5),
-('UFCD0815', 'Docker e Containers', 25, 2.5),
-('UFCD0816', 'Kubernetes', 25, 2.5),
-('UFCD0817', 'Git e Controlo de Versões', 25, 2.5),
-('UFCD0818', 'Linux Avançado', 50, 4.5),
-('UFCD0819', 'Windows Server', 50, 4.5),
-('UFCD0820', 'Virtualização', 25, 2.5),
-('UFCD0821', 'Administração de Redes', 50, 4.5),
-('UFCD0822', 'Firewall e VPN', 25, 2.5),
-('UFCD0823', 'Ethical Hacking', 50, 4.5),
-('UFCD0824', 'Forense Digital', 25, 2.5),
-('UFCD0825', 'GDPR e Proteção de Dados', 25, 2.0),
-('UFCD0826', 'Análise de Dados', 50, 4.5),
-('UFCD0827', 'Data Mining', 50, 4.5),
-('UFCD0828', 'Business Intelligence', 50, 4.5),
-('UFCD0829', 'Visualização de Dados', 25, 2.5),
-('UFCD0830', 'Estatística Aplicada', 50, 4.5),
-('UFCD0831', 'Modelação de Dados', 25, 2.5),
-('UFCD0832', 'Data Warehousing', 50, 4.5),
-('UFCD0833', 'ETL Processes', 25, 2.5),
-('UFCD0834', 'NoSQL Databases', 50, 4.5),
-('UFCD0835', 'MongoDB', 25, 2.5),
-('UFCD0836', 'Redis', 25, 2.5),
-('UFCD0837', 'Elasticsearch', 25, 2.5),
-('UFCD0838', 'GraphQL', 25, 2.5),
-('UFCD0839', 'Blockchain', 50, 4.5),
-('UFCD0840', 'IoT - Internet das Coisas', 50, 4.5),
-('UFCD0841', 'Robótica', 50, 4.5),
-('UFCD0842', 'Visão Computacional', 50, 4.5),
-('UFCD0843', 'Processamento de Linguagem Natural', 50, 4.5),
-('UFCD0844', 'Deep Learning', 50, 4.5),
-('UFCD0845', 'Redes Neurais', 50, 4.5),
-('UFCD0846', 'Computação Quântica', 25, 2.5),
-('UFCD0847', 'Realidade Virtual', 50, 4.5),
-('UFCD0848', 'Realidade Aumentada', 50, 4.5),
-('UFCD0849', 'Game Development', 50, 4.5),
-('UFCD0850', 'Unity 3D', 50, 4.5),
-('UFCD0851', 'Unreal Engine', 50, 4.5),
-('UFCD0852', 'Design de Jogos', 25, 2.5),
-('UFCD0853', 'Animação 3D', 50, 4.5),
-('UFCD0854', 'Modelação 3D', 50, 4.5),
-('UFCD0855', 'Motion Graphics', 25, 2.5),
-('UFCD0856', 'Edição de Vídeo', 25, 2.5),
-('UFCD0857', 'Fotografia Digital', 25, 2.5),
-('UFCD0858', 'Adobe Photoshop', 25, 2.5),
-('UFCD0859', 'Adobe Illustrator', 25, 2.5),
-('UFCD0860', 'Adobe Premiere', 25, 2.5),
-('UFCD0861', 'Figma', 25, 2.5),
-('UFCD0862', 'UX/UI Design', 50, 4.5),
-('UFCD0863', 'Design Thinking', 25, 2.5),
-('UFCD0864', 'Prototipagem', 25, 2.5),
-('UFCD0865', 'Marketing Digital', 50, 4.5),
-('UFCD0866', 'SEO e SEM', 25, 2.5),
-('UFCD0867', 'Google Analytics', 25, 2.5),
-('UFCD0868', 'Social Media Marketing', 25, 2.5),
-('UFCD0869', 'E-commerce', 50, 4.5),
-('UFCD0870', 'CRM Systems', 25, 2.5),
-('UFCD0871', 'ERP Systems', 50, 4.5),
-('UFCD0872', 'SAP', 50, 4.5),
-('UFCD0873', 'Salesforce', 25, 2.5),
-('UFCD0874', 'Scrum', 25, 2.5),
-('UFCD0875', 'Agile', 25, 2.5),
-('UFCD0876', 'Kanban', 25, 2.0),
-('UFCD0877', 'ITIL', 25, 2.5),
-('UFCD0878', 'COBIT', 25, 2.5),
-('UFCD0879', 'ISO 27001', 25, 2.0),
-('UFCD0880', 'Auditoria de Sistemas', 50, 4.5),
-('UFCD0881', 'Compliance', 25, 2.0),
-('UFCD0882', 'Governança de TI', 25, 2.5),
-('UFCD0883', 'Business Continuity', 25, 2.5),
-('UFCD0884', 'Disaster Recovery', 25, 2.5),
-('UFCD0885', 'Gestão de Incidentes', 25, 2.5);
+INSERT INTO modulos (codigo_identificacao, nome, horas_totais, creditos, id_tipo_materia) VALUES
+-- Programação
+('UFCD0778','Algoritmos',50,4.5,1),
+('UFCD0804','Algoritmos Avançados',50,4.5,1),
+('UFCD0785','Programação Orientada a Objetos',50,4.5,1),
+('UFCD0786','Estruturas de Dados',50,4.5,1),
+('UFCD0789','Desenvolvimento Web',50,4.5,1),
+('UFCD0807','Programação Python',50,4.5,1),
+('UFCD0808','Programação Java',50,4.5,1),
+('UFCD0809','Programação C#',50,4.5,1),
+('UFCD0810','JavaScript Avançado',50,4.5,1),
+('UFCD0813','API REST',25,2.5,1),
+
+-- Bases de Dados
+('UFCD0782','SQL',50,4.5,4),
+('UFCD0790','Bases de Dados',50,4.5,4),
+('UFCD0831','Modelação de Dados',25,2.5,4),
+('UFCD0832','Data Warehousing',50,4.5,4),
+('UFCD0833','ETL Processes',25,2.5,4),
+('UFCD0834','NoSQL Databases',50,4.5,4),
+('UFCD0835','MongoDB',25,2.5,4),
+('UFCD0836','Redis',25,2.5,4),
+
+-- Sistemas
+('UFCD5412','Sistemas Operativos',25,2.5,3),
+('UFCD0818','Linux Avançado',50,4.5,3),
+('UFCD0819','Windows Server',50,4.5,3),
+('UFCD0820','Virtualização',25,2.5,3),
+
+-- Redes
+('UFCD0787','Redes de Computadores',50,4.5,2),
+('UFCD0821','Administração de Redes',50,4.5,2),
+('UFCD0822','Firewall e VPN',25,2.5,2),
+
+-- Segurança
+('UFCD0788','Segurança Informática',50,4.5,5),
+('UFCD0823','Ethical Hacking',50,4.5,5),
+('UFCD0824','Forense Digital',25,2.5,5),
+('UFCD0825','GDPR e Proteção de Dados',25,2.0,5),
+('UFCD0879','ISO 27001',25,2.0,5),
+
+-- Cloud & DevOps
+('UFCD0796','Cloud Computing',50,4.5,7),
+('UFCD0797','DevOps',50,4.5,7),
+('UFCD0815','Docker e Containers',25,2.5,7),
+('UFCD0816','Kubernetes',25,2.5,7),
+
+-- IA & Data
+('UFCD0798','Machine Learning',50,4.5,8),
+('UFCD0799','Big Data',50,4.5,8),
+('UFCD0826','Análise de Dados',50,4.5,8),
+('UFCD0827','Data Mining',50,4.5,8),
+('UFCD0828','Business Intelligence',50,4.5,8),
+('UFCD0844','Deep Learning',50,4.5,8),
+
+-- Design & Multimédia
+('UFCD0801','Interface Design',25,2.5,9),
+('UFCD0857','Fotografia Digital',25,2.5,9),
+('UFCD0858','Adobe Photoshop',25,2.5,9),
+('UFCD0859','Adobe Illustrator',25,2.5,9),
+('UFCD0862','UX/UI Design',50,4.5,9),
+
+-- Gestão & Governança
+('UFCD0123','Ética Profissional',25,2.0,6),
+('UFCD0795','Gestão de Projetos',25,2.5,6),
+('UFCD0874','Scrum',25,2.5,6),
+('UFCD0875','Agile',25,2.5,6),
+('UFCD0876','Kanban',25,2.0,6),
+('UFCD0877','ITIL',25,2.5,10),
+('UFCD0878','COBIT',25,2.5,10),
+('UFCD0880','Auditoria de Sistemas',50,4.5,10),
+('UFCD0881','Compliance',25,2.0,10),
+('UFCD0882','Governança de TI',25,2.5,10);
+
+
+-- N:N FORMANDOS <-> TIPO_MATÉRIAS
+INSERT INTO formadores_tipo_materias (id_formador, id_tipo_materia) VALUES
+-- Carlos Professor
+(1,1),(1,4),
+
+-- Ana Docente
+(2,1),(2,2),
+
+-- Leonor Joaquim
+(3,2),(3,3),
+
+-- Daniela Instrutora
+(4,1),(4,8),
+
+-- Eduardo Formador
+(5,5),(5,3),
+
+-- Formador 6
+(6,7),(6,1),
+
+-- Formador 7
+(7,4),(7,6),
+
+-- Formadores extra
+(8,7),(8,1),
+(9,9),
+(10,5),
+(11,8);
 
 -- CURSOS
 INSERT INTO cursos (id_area, nome, descricao) VALUES 
@@ -424,112 +472,75 @@ INSERT INTO cursos (id_area, nome, descricao) VALUES
 
 -- MATRIZ DE CURSOS
 INSERT INTO cursos_modulos (id_curso, id_modulo, prioridade) VALUES 
--- CURSO 1: TPSI - Programação (22 módulos)
-(1, 1, 1),   -- Algoritmos
-(1, 2, 2),   -- SQL
-(1, 3, 3),   -- Sistemas Operativos
-(1, 4, 4),   -- Algoritmos Avançados
-(1, 5, 5),   -- Ética Profissional
-(1, 6, 6),   -- Programação Orientada a Objetos
-(1, 7, 7),   -- Estruturas de Dados
-(1, 8, 8),   -- Redes de Computadores
-(1, 9, 9),   -- Segurança Informática
-(1, 10, 10), -- Desenvolvimento Web
-(1, 11, 11), -- Bases de Dados
-(1, 12, 12), -- Arquitetura de Computadores
-(1, 13, 13), -- Sistemas Distribuídos
-(1, 14, 14), -- Inteligência Artificial
-(1, 15, 15), -- Engenharia de Software
-(1, 16, 16), -- Gestão de Projetos
-(1, 17, 17), -- Cloud Computing
-(1, 18, 18), -- DevOps
-(1, 19, 19), -- Machine Learning
-(1, 20, 20), -- Big Data
-(1, 21, 21), -- Mobile Development
-(1, 22, 22), -- Interface Design
+-- CURSO 1: TPSI - Programação
+(1, 1, 1),
+(1, 2, 1),
+(1, 3, 2),
+(1, 4, 1),
+(1, 5, 4),
+(1, 6, 2),
+(1, 7, 2),
+(1, 8, 3),
+(1, 9, 5),
+(1, 10, 1),
+(1, 11, 1),
+(1, 12, 2),
+(1, 13, 2),
+(1, 14, 3),
+(1, 15, 2),
+(1, 16, 3),
+(1, 17, 2),
+(1, 18, 2),
+(1, 19, 3),
+(1, 20, 3),
+(1, 21, 2),
+(1, 22, 2),
 
--- CURSO 2: Cibersegurança (20 módulos)
-(2, 2, 1),   -- SQL
-(2, 8, 2),   -- Redes de Computadores
-(2, 9, 3),   -- Segurança Informática
-(2, 22, 4),  -- Interface Design
-(2, 23, 5),  -- Testes de Software
-(2, 24, 6),  -- Qualidade de Software
-(2, 25, 7),  -- Criptografia
-(2, 42, 8),  -- Firewall e VPN
-(2, 43, 9),  -- Ethical Hacking
-(2, 44, 10), -- Forense Digital
-(2, 45, 11), -- GDPR e Proteção de Dados
-(2, 79, 12), -- ISO 27001
-(2, 81, 13), -- Compliance
-(2, 82, 14), -- Governança de TI
-(2, 97, 15), -- Agile
-(2, 98, 16), -- Kanban
-(2, 99, 17), -- ITIL
-(2, 100, 18), -- COBIT
-(2, 79, 19), -- ISO 27001
-(2, 80, 20), -- Auditoria de Sistemas
+-- CURSO 2: Cibersegurança
+(2, 2, 1),
+(2, 8, 2),
+(2, 9, 3),
+(2, 22, 4),
+(2, 23, 5),
+(2, 24, 6),
+(2, 25, 7),
+(2, 26, 8),
+(2, 27, 9),
+(2, 28, 10),
+(2, 29, 11),
+(2, 30, 12),
 
--- CURSO 3: Mecânica Industrial (20 módulos)
-(3, 3, 1),   -- Sistemas Operativos
-(3, 5, 2),   -- Ética Profissional
-(3, 12, 3),  -- Arquitetura de Computadores
-(3, 40, 4),  -- Virtualização
-(3, 41, 5),  -- Administração de Redes
-(3, 50, 6),  -- Estatística Aplicada
-(3, 60, 7),  -- Robótica
-(3, 61, 8),  -- Visão Computacional
-(3, 62, 9),  -- Processamento de Linguagem Natural
-(3, 69, 10), -- Game Development
-(3, 70, 11), -- Unity 3D
-(3, 71, 12), -- Unreal Engine
-(3, 72, 13), -- Design de Jogos
-(3, 73, 14), -- Animação 3D
-(3, 95, 15), -- Gestão de Projetos
-(3, 96, 16), -- Cloud Computing
-(3, 83, 17), -- Business Continuity
-(3, 84, 18), -- Disaster Recovery
-(3, 85, 19), -- Gestão de Incidentes
-(3, 95, 20), -- Gestão de Incidentes (repetido - ajustar se necessário)
+-- CURSO 3: Mecânica Industrial
+(3, 3, 1),
+(3, 5, 2),
+(3, 12, 3),
+(3, 40, 4),
+(3, 41, 5),
+(3, 42, 6),
+(3, 43, 7),
+(3, 44, 8),
+(3, 45, 9),
 
--- CURSO 4: Eletrónica Aplicada (20 módulos)
-(4, 3, 1),   -- Sistemas Operativos
-(4, 4, 2),   -- Algoritmos Avançados
-(4, 5, 3),   -- Ética Profissional
-(4, 12, 4),  -- Arquitetura de Computadores
-(4, 38, 5),  -- Linux Avançado
-(4, 39, 6),  -- Windows Server
-(4, 40, 7),  -- Virtualização
-(4, 41, 8),  -- Administração de Redes
-(4, 42, 9),  -- Firewall e VPN
-(4, 50, 10), -- Estatística Aplicada
-(4, 51, 11), -- Modelação de Dados
-(4, 60, 12), -- Robótica
-(4, 95, 13), -- Gestão de Projetos
-(4, 96, 14), -- Cloud Computing
-(4, 97, 15), -- Agile
-(4, 83, 16), -- Business Continuity
-(4, 84, 17), -- Business Continuity
-(4, 85, 18), -- Disaster Recovery
-(4, 86, 19), -- Gestão de Incidentes
-(4, 88, 20), -- Gestão de Incidentes
+-- CURSO 4: Eletrónica Aplicada
+(4, 3, 1),
+(4, 4, 2),
+(4, 5, 3),
+(4, 12, 4),
+(4, 38, 5),
+(4, 39, 6),
+(4, 40, 7),
+(4, 41, 8),
+(4, 42, 9),
 
--- CURSO 5: Gestão Escolar (não tem alocações nos dados atuais, mas preparar alguns módulos)
-(5, 5, 1),   -- Ética Profissional
-(5, 15, 2),  -- Engenharia de Software
-(5, 16, 3),  -- Gestão de Projetos
-(5, 85, 4),  -- Marketing Digital
-(5, 89, 5),  -- E-commerce
-(5, 90, 6),  -- CRM Systems
-(5, 91, 7),  -- ERP Systems
-(5, 92, 8),  -- SAP
-(5, 94, 9),  -- Scrum
-(5, 95, 10), -- Gestão de Projetos
-(5, 97, 11), -- Agile
-(5, 98, 12), -- Kanban
-(5, 99, 13), -- ITIL
-(5, 100, 14), -- COBIT
-(5, 102, 15); -- Auditoria de Sistemas
+-- CURSO 5: Gestão Escolar
+(5, 5, 1),
+(5, 15, 2),
+(5, 16, 3),
+(5, 17, 4),
+(5, 18, 5),
+(5, 19, 6),
+(5, 20, 7);
+
 
 -- TURMAS
 INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim) VALUES 
@@ -591,50 +602,33 @@ INSERT INTO salas (descricao, num_max_alunos, id_tipo_sala) VALUES
 -- ALOCAÇÕES (Quem dá o quê em cada turma)
 INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES 
 -- Turma 1: TPSI-PAL-0525
-(1, 1, 1), (1, 2, 2), (1, 3, 3), (1, 4, 4), (1, 5, 5),
-(1, 6, 1), (1, 7, 2), (1, 8, 3), (1, 9, 4), (1, 10, 5),
-(1, 11, 1), (1, 12, 2), (1, 13, 3), (1, 14, 4), (1, 15, 5),
-(1, 16, 6), (1, 17, 7), (1, 18, 1), (1, 19, 2), (1, 20, 3),
-(1, 21, 4), (1, 22, 5),
+(1, 1, 1),(1, 2, 2),(1, 3, 3),(1, 4, 4),(1, 5, 5),
+(1, 6, 1),(1, 7, 2),(1, 8, 3),(1, 9, 4),(1, 10, 5),
+(1, 11, 1),(1, 12, 2),(1, 13, 3),(1, 14, 4),(1, 15, 5),
+(1, 16, 6),(1, 17, 7),(1, 18, 1),(1, 19, 2),(1, 20, 3),
+(1, 21, 4),(1, 22, 5),
 
 -- Turma 2: TPSI-PAL-0626
-(2, 1, 3), (2, 2, 4), (2, 3, 5), (2, 4, 6), (2, 5, 7),
-(2, 6, 3), (2, 7, 4), (2, 8, 5), (2, 9, 6), (2, 10, 7),
-(2, 11, 3), (2, 12, 4), (2, 13, 5), (2, 14, 6), (2, 15, 7),
-(2, 16, 1), (2, 17, 2), (2, 18, 3), (2, 19, 4), (2, 20, 5),
-(2, 21, 6), (2, 22, 7),
+(2, 1, 3),(2, 2, 4),(2, 3, 5),(2, 4, 6),(2, 5, 7),
+(2, 6, 3),(2, 7, 4),(2, 8, 5),(2, 9, 6),(2, 10, 7),
+(2, 11, 3),(2, 12, 4),(2, 13, 5),(2, 14, 6),(2, 15, 7),
+(2, 16, 1),(2, 17, 2),(2, 18, 3),(2, 19, 4),(2, 20, 5),
+(2, 21, 6),(2, 22, 7),
 
 -- Turma 3: CIBER-2025
-(3, 2, 2), (3, 8, 3), (3, 9, 4), (3, 22, 5), (3, 23, 6),
-(3, 24, 7), (3, 25, 1), (3, 42, 3), (3, 43, 4), (3, 44, 5),
-(3, 45, 6), (3, 79, 7), (3, 81, 1), (3, 82, 2), (3, 97, 3),
-(3, 98, 4), (3, 99, 5), (3, 100, 6), (3, 79, 7), (3, 80, 1),
+(3, 2, 2),(3, 8, 3),(3, 9, 4),(3, 22, 5),
+(3, 23, 6),(3, 24, 7),(3, 25, 1),(3, 26, 3),
+(3, 27, 4),(3, 28, 5),(3, 29, 6),(3, 30, 7),
 
 -- Turma 4: MEC-01
-(4, 3, 1), (4, 5, 5), (4, 12, 2), (4, 40, 3), (4, 41, 4),
-(4, 50, 6), (4, 60, 7), (4, 61, 1), (4, 62, 2), (4, 69, 3),
-(4, 70, 4), (4, 71, 5), (4, 72, 6), (4, 73, 7), (4, 95, 1),
-(4, 96, 2), (4, 83, 3), (4, 84, 4), (4, 85, 5), (4, 87, 6),
+(4, 3, 1),(4, 5, 5),(4, 12, 2),(4, 40, 3),(4, 41, 4),
+(4, 42, 6),(4, 43, 7),(4, 44, 1),(4, 45, 2),
 
 -- Turma 5: ELET-01
-(5, 3, 2), (5, 4, 4), (5, 5, 5), (5, 12, 1), (5, 38, 3),
-(5, 39, 4), (5, 40, 6), (5, 41, 7), (5, 42, 1), (5, 50, 2),
-(5, 51, 3), (5, 60, 4), (5, 95, 5), (5, 96, 6), (5, 97, 7),
-(5, 83, 1), (5, 84, 2), (5, 85, 3), (5, 87, 4), (5, 89, 5),
+(5, 3, 2),(5, 4, 4),(5, 5, 5),(5, 12, 1),(5, 38, 3),
+(5, 39, 4),(5, 40, 6),(5, 41, 7),(5, 42, 1),
+(5, 43, 2),(5, 44, 3),(5, 45, 4);
 
-(1, 23, 8),  -- Testes de Software
-(1, 24, 9),  -- Qualidade de Software
-(1, 25, 10), -- Criptografia
-
--- TPSI-PAL-0626 (Turma 2)
-(2, 26, 11), -- Análise de Sistemas
-(2, 27, 12), -- Programação Python
-(2, 28, 8),  -- Programação Java
-
--- CIBER-2025 (Turma 3)
-(3, 41, 9),  -- Administração de Redes
-(3, 42, 10), -- Firewall e VPN
-(3, 43, 11); -- Ethical Hacking
 
 -- INSCRIÇÕES
 INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES 
@@ -707,48 +701,39 @@ INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES
 (58, 5, '2025-09-22', 'Ativo');
 
 -- HORÁRIOS (Aulas marcadas para Janeiro e Fevereiro 2026)
--- TURMA 1: Sala 1, 2, 3 | Formadores 1, 2, 3
 INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
+-- TURMA 1
 (1, 1, 1, 1, '2026-01-26', '09:00:00', '13:00:00'),
-(1, 2, 2, 2, '2026-01-26', '14:00:00', '18:00:00');
+(1, 2, 2, 2, '2026-01-26', '14:00:00', '18:00:00'),
 
--- TURMA 2: Sala 4, 5 | Formadores 3, 4
-INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
---(2, 23, 3, 4, '2026-01-26', '09:00:00', '13:00:00'),
---(2, 23, 3, 4, '2026-01-27', '09:00:00', '13:00:00'),
-(2, 23, 3, 4, '2026-01-28', '09:00:00', '13:00:00'),
-(2, 23, 3, 4, '2026-01-29', '09:00:00', '13:00:00'),
-(2, 23, 3, 4, '2026-01-30', '09:00:00', '13:00:00'),
-(2, 24, 4, 5, '2026-02-02', '14:00:00', '18:00:00');
+-- TURMA 2
+(2, 3, 3, 4, '2026-01-28', '09:00:00', '13:00:00'),
+(2, 3, 3, 4, '2026-01-29', '09:00:00', '13:00:00'),
+(2, 3, 3, 4, '2026-01-30', '09:00:00', '13:00:00'),
+(2, 4, 4, 5, '2026-02-02', '14:00:00', '18:00:00'),
 
--- TURMA 3: Sala 7, 8 | Formadores 2, 1
-INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
-(3, 43, 2, 7, '2026-01-26', '09:00:00', '13:00:00'),
-(3, 44, 1, 8, '2026-01-26', '14:00:00', '18:00:00');
+-- TURMA 3
+(3, 5, 2, 7, '2026-01-26', '09:00:00', '13:00:00'),
+(3, 6, 1, 8, '2026-01-26', '14:00:00', '18:00:00'),
 
--- TURMA 5: Sala 20, 21 | Formadores 7, 5 (CORRIGIDO: Formador 7 em vez de 3)
-INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
-(5, 83, 7, 20, '2026-01-26', '09:00:00', '13:00:00'),
-(5, 84, 5, 21, '2026-01-26', '14:00:00', '18:00:00');
+-- TURMA 5
+(5, 7, 7, 20, '2026-01-26', '09:00:00', '13:00:00'),
+(5, 8, 5, 21, '2026-01-26', '14:00:00', '18:00:00'),
 
-INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES
--- TPSI-PAL-0525
-(1, 23, 8, 1, '2026-02-16', '09:00:00', '13:00:00'),
-(1, 23, 8, 1, '2026-02-17', '09:00:00', '13:00:00'),
+-- FEVEREIRO
+(1, 9, 8, 1, '2026-02-16', '09:00:00', '13:00:00'),
+(1, 9, 8, 1, '2026-02-17', '09:00:00', '13:00:00'),
+(1, 10, 9, 2, '2026-02-18', '14:00:00', '18:00:00'),
+(1, 10, 9, 2, '2026-02-19', '14:00:00', '18:00:00'),
 
-(1, 24, 9, 2, '2026-02-18', '14:00:00', '18:00:00'),
-(1, 24, 9, 2, '2026-02-19', '14:00:00', '18:00:00'),
+(2, 11, 11, 3, '2026-02-16', '09:00:00', '13:00:00'),
+(2, 11, 11, 3, '2026-02-17', '09:00:00', '13:00:00'),
+(2, 12, 12, 4, '2026-02-18', '14:00:00', '18:00:00'),
 
--- TPSI-PAL-0626
-(2, 26, 11, 3, '2026-02-16', '09:00:00', '13:00:00'),
-(2, 26, 11, 3, '2026-02-17', '09:00:00', '13:00:00'),
+(3, 13, 9, 5, '2026-02-16', '09:00:00', '13:00:00'),
+(3, 14, 10, 6, '2026-02-17', '14:00:00', '18:00:00'),
+(3, 15, 11, 7, '2026-02-18', '09:00:00', '13:00:00');
 
-(2, 27, 12, 4, '2026-02-18', '14:00:00', '18:00:00'),
-
--- CIBER-2025
-(3, 41, 9, 5, '2026-02-16', '09:00:00', '13:00:00'),
-(3, 42, 10, 6, '2026-02-17', '14:00:00', '18:00:00'),
-(3, 43, 11, 7, '2026-02-18', '09:00:00', '13:00:00');
 
 -- AVALIAÇÕES
 INSERT INTO avaliacoes (`id_avaliacao`, `id_inscricao`, `id_modulo`, `nota`, `data_avaliacao`) VALUES 
@@ -1040,296 +1025,3 @@ INSERT INTO disponibilidade_formadores (id_formador, data_disponivel, hora_inici
 (7, '2026-02-11', '09:00:00', '13:00:00'),
 (7, '2026-02-12', '09:00:00', '13:00:00'),
 (7, '2026-02-04', '14:00:00', '18:00:00');
-
--- DISPONIBILIDADE DE SALAS
--- Salas disponíveis durante o horário escolar (09:00-18:00)
--- Janeiro e Fevereiro 2026
-
-INSERT INTO disponibilidade_salas (id_sala, data_disponivel, hora_inicio, hora_fim) VALUES 
--- Laboratórios de Informática (1-4) - Disponíveis todos os dias úteis
-(1, '2026-01-26', '09:00:00', '13:00:00'),
-(1, '2026-01-26', '14:00:00', '18:00:00'),
-(1, '2026-01-27', '09:00:00', '13:00:00'),
-(1, '2026-01-27', '14:00:00', '18:00:00'),
-(1, '2026-01-28', '09:00:00', '13:00:00'),
-(1, '2026-01-28', '14:00:00', '18:00:00'),
-(1, '2026-01-29', '09:00:00', '13:00:00'),
-(1, '2026-01-29', '14:00:00', '18:00:00'),
-(1, '2026-01-30', '09:00:00', '13:00:00'),
-(1, '2026-01-30', '14:00:00', '18:00:00'),
-(1, '2026-02-02', '09:00:00', '13:00:00'),
-(1, '2026-02-02', '14:00:00', '18:00:00'),
-(1, '2026-02-03', '09:00:00', '13:00:00'),
-(1, '2026-02-03', '14:00:00', '18:00:00'),
-(1, '2026-02-04', '09:00:00', '13:00:00'),
-(1, '2026-02-04', '14:00:00', '18:00:00'),
-(1, '2026-02-05', '09:00:00', '13:00:00'),
-(1, '2026-02-05', '14:00:00', '18:00:00'),
-(1, '2026-02-06', '09:00:00', '13:00:00'),
-(1, '2026-02-06', '14:00:00', '18:00:00'),
-(1, '2026-02-09', '09:00:00', '13:00:00'),
-(1, '2026-02-09', '14:00:00', '18:00:00'),
-(1, '2026-02-10', '09:00:00', '13:00:00'),
-(1, '2026-02-10', '14:00:00', '18:00:00'),
-(1, '2026-02-11', '09:00:00', '13:00:00'),
-(1, '2026-02-11', '14:00:00', '18:00:00'),
-(1, '2026-02-12', '09:00:00', '13:00:00'),
-(1, '2026-02-12', '14:00:00', '18:00:00'),
-(1, '2026-02-13', '09:00:00', '13:00:00'),
-(1, '2026-02-13', '14:00:00', '18:00:00'),
-
-(2, '2026-01-26', '09:00:00', '18:00:00'),
-(2, '2026-01-27', '09:00:00', '18:00:00'),
-(2, '2026-01-28', '09:00:00', '18:00:00'),
-(2, '2026-01-29', '09:00:00', '18:00:00'),
-(2, '2026-01-30', '09:00:00', '18:00:00'),
-(2, '2026-02-02', '09:00:00', '18:00:00'),
-(2, '2026-02-03', '09:00:00', '18:00:00'),
-(2, '2026-02-04', '09:00:00', '18:00:00'),
-(2, '2026-02-05', '09:00:00', '18:00:00'),
-(2, '2026-02-06', '09:00:00', '18:00:00'),
-(2, '2026-02-09', '09:00:00', '18:00:00'),
-(2, '2026-02-10', '09:00:00', '18:00:00'),
-(2, '2026-02-11', '09:00:00', '18:00:00'),
-(2, '2026-02-12', '09:00:00', '18:00:00'),
-(2, '2026-02-13', '09:00:00', '18:00:00'),
-
-(3, '2026-01-26', '09:00:00', '18:00:00'),
-(3, '2026-01-27', '09:00:00', '18:00:00'),
-(3, '2026-01-28', '09:00:00', '18:00:00'),
-(3, '2026-01-29', '09:00:00', '18:00:00'),
-(3, '2026-01-30', '09:00:00', '18:00:00'),
-(3, '2026-02-02', '09:00:00', '18:00:00'),
-(3, '2026-02-03', '09:00:00', '18:00:00'),
-(3, '2026-02-04', '09:00:00', '18:00:00'),
-(3, '2026-02-05', '09:00:00', '18:00:00'),
-(3, '2026-02-06', '09:00:00', '18:00:00'),
-(3, '2026-02-09', '09:00:00', '18:00:00'),
-(3, '2026-02-10', '09:00:00', '18:00:00'),
-(3, '2026-02-11', '09:00:00', '18:00:00'),
-(3, '2026-02-12', '09:00:00', '18:00:00'),
-(3, '2026-02-13', '09:00:00', '18:00:00'),
-
-(4, '2026-01-26', '09:00:00', '18:00:00'),
-(4, '2026-01-27', '09:00:00', '18:00:00'),
-(4, '2026-01-28', '09:00:00', '18:00:00'),
-(4, '2026-01-29', '09:00:00', '18:00:00'),
-(4, '2026-01-30', '09:00:00', '18:00:00'),
-(4, '2026-02-02', '09:00:00', '18:00:00'),
-(4, '2026-02-03', '09:00:00', '18:00:00'),
-(4, '2026-02-04', '09:00:00', '18:00:00'),
-(4, '2026-02-05', '09:00:00', '18:00:00'),
-(4, '2026-02-06', '09:00:00', '18:00:00'),
-(4, '2026-02-09', '09:00:00', '18:00:00'),
-(4, '2026-02-10', '09:00:00', '18:00:00'),
-(4, '2026-02-11', '09:00:00', '18:00:00'),
-(4, '2026-02-12', '09:00:00', '18:00:00'),
-(4, '2026-02-13', '09:00:00', '18:00:00'),
-
--- Lab Redes e Sistemas (5)
-(5, '2026-01-26', '09:00:00', '18:00:00'),
-(5, '2026-01-27', '09:00:00', '18:00:00'),
-(5, '2026-01-28', '09:00:00', '18:00:00'),
-(5, '2026-01-29', '09:00:00', '18:00:00'),
-(5, '2026-01-30', '09:00:00', '18:00:00'),
-(5, '2026-02-02', '09:00:00', '18:00:00'),
-(5, '2026-02-03', '09:00:00', '18:00:00'),
-(5, '2026-02-04', '09:00:00', '18:00:00'),
-(5, '2026-02-05', '09:00:00', '18:00:00'),
-(5, '2026-02-06', '09:00:00', '18:00:00'),
-(5, '2026-02-09', '09:00:00', '18:00:00'),
-(5, '2026-02-10', '09:00:00', '18:00:00'),
-(5, '2026-02-11', '09:00:00', '18:00:00'),
-(5, '2026-02-12', '09:00:00', '18:00:00'),
-(5, '2026-02-13', '09:00:00', '18:00:00'),
-
--- Lab Hardware (6)
-(6, '2026-01-26', '09:00:00', '18:00:00'),
-(6, '2026-01-27', '09:00:00', '18:00:00'),
-(6, '2026-01-28', '09:00:00', '18:00:00'),
-(6, '2026-01-29', '09:00:00', '18:00:00'),
-(6, '2026-01-30', '09:00:00', '18:00:00'),
-(6, '2026-02-02', '09:00:00', '18:00:00'),
-(6, '2026-02-03', '09:00:00', '18:00:00'),
-(6, '2026-02-04', '09:00:00', '18:00:00'),
-(6, '2026-02-05', '09:00:00', '18:00:00'),
-(6, '2026-02-06', '09:00:00', '18:00:00'),
-(6, '2026-02-09', '09:00:00', '18:00:00'),
-(6, '2026-02-10', '09:00:00', '18:00:00'),
-(6, '2026-02-11', '09:00:00', '18:00:00'),
-(6, '2026-02-12', '09:00:00', '18:00:00'),
-(6, '2026-02-13', '09:00:00', '18:00:00'),
-
--- Lab Eletrónica (7)
-(7, '2026-01-26', '09:00:00', '18:00:00'),
-(7, '2026-01-27', '09:00:00', '18:00:00'),
-(7, '2026-01-28', '09:00:00', '18:00:00'),
-(7, '2026-01-29', '09:00:00', '18:00:00'),
-(7, '2026-01-30', '09:00:00', '18:00:00'),
-(7, '2026-02-02', '09:00:00', '18:00:00'),
-(7, '2026-02-03', '09:00:00', '18:00:00'),
-(7, '2026-02-04', '09:00:00', '18:00:00'),
-(7, '2026-02-05', '09:00:00', '18:00:00'),
-(7, '2026-02-06', '09:00:00', '18:00:00'),
-(7, '2026-02-09', '09:00:00', '18:00:00'),
-(7, '2026-02-10', '09:00:00', '18:00:00'),
-(7, '2026-02-11', '09:00:00', '18:00:00'),
-(7, '2026-02-12', '09:00:00', '18:00:00'),
-(7, '2026-02-13', '09:00:00', '18:00:00'),
-
--- Lab Robótica (8) - Manutenção na manhã de 28/01
-(8, '2026-01-26', '09:00:00', '18:00:00'),
-(8, '2026-01-27', '09:00:00', '18:00:00'),
-(8, '2026-01-28', '14:00:00', '18:00:00'),
-(8, '2026-01-29', '09:00:00', '18:00:00'),
-(8, '2026-01-30', '09:00:00', '18:00:00'),
-(8, '2026-02-02', '09:00:00', '18:00:00'),
-(8, '2026-02-03', '09:00:00', '18:00:00'),
-(8, '2026-02-04', '09:00:00', '18:00:00'),
-(8, '2026-02-05', '09:00:00', '18:00:00'),
-(8, '2026-02-06', '09:00:00', '18:00:00'),
-(8, '2026-02-09', '09:00:00', '18:00:00'),
-(8, '2026-02-10', '09:00:00', '18:00:00'),
-(8, '2026-02-11', '09:00:00', '18:00:00'),
-(8, '2026-02-12', '09:00:00', '18:00:00'),
-(8, '2026-02-13', '09:00:00', '18:00:00'),
-
--- Lab Automação (9)
-(9, '2026-01-26', '09:00:00', '18:00:00'),
-(9, '2026-01-27', '09:00:00', '18:00:00'),
-(9, '2026-01-28', '09:00:00', '18:00:00'),
-(9, '2026-01-29', '09:00:00', '18:00:00'),
-(9, '2026-01-30', '09:00:00', '18:00:00'),
-(9, '2026-02-02', '09:00:00', '18:00:00'),
-(9, '2026-02-03', '09:00:00', '18:00:00'),
-(9, '2026-02-04', '09:00:00', '18:00:00'),
-(9, '2026-02-05', '09:00:00', '18:00:00'),
-(9, '2026-02-06', '09:00:00', '18:00:00'),
-(9, '2026-02-09', '09:00:00', '18:00:00'),
-(9, '2026-02-10', '09:00:00', '18:00:00'),
-(9, '2026-02-11', '09:00:00', '18:00:00'),
-(9, '2026-02-12', '09:00:00', '18:00:00'),
-(9, '2026-02-13', '09:00:00', '18:00:00'),
-
--- Oficina Soldadura (10) - Horários restritos por segurança
-(10, '2026-01-27', '09:00:00', '13:00:00'),
-(10, '2026-01-29', '09:00:00', '13:00:00'),
-(10, '2026-02-03', '09:00:00', '13:00:00'),
-(10, '2026-02-05', '09:00:00', '13:00:00'),
-(10, '2026-02-06', '09:00:00', '13:00:00'),
-(10, '2026-02-10', '09:00:00', '13:00:00'),
-(10, '2026-02-12', '09:00:00', '13:00:00'),
-
--- Oficina Mecânica (11)
-(11, '2026-01-26', '09:00:00', '18:00:00'),
-(11, '2026-01-27', '09:00:00', '18:00:00'),
-(11, '2026-01-28', '09:00:00', '18:00:00'),
-(11, '2026-01-29', '09:00:00', '18:00:00'),
-(11, '2026-01-30', '09:00:00', '18:00:00'),
-(11, '2026-02-02', '09:00:00', '18:00:00'),
-(11, '2026-02-03', '09:00:00', '18:00:00'),
-(11, '2026-02-04', '09:00:00', '18:00:00'),
-(11, '2026-02-05', '09:00:00', '18:00:00'),
-(11, '2026-02-06', '09:00:00', '18:00:00'),
-(11, '2026-02-09', '09:00:00', '18:00:00'),
-(11, '2026-02-10', '09:00:00', '18:00:00'),
-(11, '2026-02-11', '09:00:00', '18:00:00'),
-(11, '2026-02-12', '09:00:00', '18:00:00'),
-(11, '2026-02-13', '09:00:00', '18:00:00'),
-
--- Salas Teóricas (16-23) - Todas disponíveis tempo completo
-(16, '2026-01-26', '09:00:00', '18:00:00'),
-(16, '2026-01-27', '09:00:00', '18:00:00'),
-(16, '2026-01-28', '09:00:00', '18:00:00'),
-(16, '2026-01-29', '09:00:00', '18:00:00'),
-(16, '2026-01-30', '09:00:00', '18:00:00'),
-(16, '2026-02-02', '09:00:00', '18:00:00'),
-(16, '2026-02-03', '09:00:00', '18:00:00'),
-(16, '2026-02-04', '09:00:00', '18:00:00'),
-(16, '2026-02-05', '09:00:00', '18:00:00'),
-(16, '2026-02-06', '09:00:00', '18:00:00'),
-(16, '2026-02-09', '09:00:00', '18:00:00'),
-(16, '2026-02-10', '09:00:00', '18:00:00'),
-(16, '2026-02-11', '09:00:00', '18:00:00'),
-(16, '2026-02-12', '09:00:00', '18:00:00'),
-(16, '2026-02-13', '09:00:00', '18:00:00'),
-
-(17, '2026-01-26', '09:00:00', '18:00:00'),
-(17, '2026-01-27', '09:00:00', '18:00:00'),
-(17, '2026-01-28', '09:00:00', '18:00:00'),
-(17, '2026-01-29', '09:00:00', '18:00:00'),
-(17, '2026-01-30', '09:00:00', '18:00:00'),
-(17, '2026-02-02', '09:00:00', '18:00:00'),
-(17, '2026-02-03', '09:00:00', '18:00:00'),
-(17, '2026-02-04', '09:00:00', '18:00:00'),
-(17, '2026-02-05', '09:00:00', '18:00:00'),
-(17, '2026-02-06', '09:00:00', '18:00:00'),
-(17, '2026-02-09', '09:00:00', '18:00:00'),
-(17, '2026-02-10', '09:00:00', '18:00:00'),
-(17, '2026-02-11', '09:00:00', '18:00:00'),
-(17, '2026-02-12', '09:00:00', '18:00:00'),
-(17, '2026-02-13', '09:00:00', '18:00:00'),
-
-(18, '2026-01-26', '09:00:00', '18:00:00'),
-(18, '2026-01-27', '09:00:00', '18:00:00'),
-(18, '2026-01-28', '09:00:00', '18:00:00'),
-(18, '2026-01-29', '09:00:00', '18:00:00'),
-(18, '2026-01-30', '09:00:00', '18:00:00'),
-(18, '2026-02-02', '09:00:00', '18:00:00'),
-(18, '2026-02-03', '09:00:00', '18:00:00'),
-(18, '2026-02-04', '09:00:00', '18:00:00'),
-(18, '2026-02-05', '09:00:00', '18:00:00'),
-(18, '2026-02-06', '09:00:00', '18:00:00'),
-(18, '2026-02-09', '09:00:00', '18:00:00'),
-(18, '2026-02-10', '09:00:00', '18:00:00'),
-(18, '2026-02-11', '09:00:00', '18:00:00'),
-(18, '2026-02-12', '09:00:00', '18:00:00'),
-(18, '2026-02-13', '09:00:00', '18:00:00'),
-
-(19, '2026-01-26', '09:00:00', '18:00:00'),
-(19, '2026-01-27', '09:00:00', '18:00:00'),
-(19, '2026-01-28', '09:00:00', '18:00:00'),
-(19, '2026-01-29', '09:00:00', '18:00:00'),
-(19, '2026-01-30', '09:00:00', '18:00:00'),
-(19, '2026-02-02', '09:00:00', '18:00:00'),
-(19, '2026-02-03', '09:00:00', '18:00:00'),
-(19, '2026-02-04', '09:00:00', '18:00:00'),
-(19, '2026-02-05', '09:00:00', '18:00:00'),
-(19, '2026-02-06', '09:00:00', '18:00:00'),
-(19, '2026-02-09', '09:00:00', '18:00:00'),
-(19, '2026-02-10', '09:00:00', '18:00:00'),
-(19, '2026-02-11', '09:00:00', '18:00:00'),
-(19, '2026-02-12', '09:00:00', '18:00:00'),
-(19, '2026-02-13', '09:00:00', '18:00:00'),
-
-(20, '2026-01-26', '09:00:00', '18:00:00'),
-(20, '2026-01-27', '09:00:00', '18:00:00'),
-(20, '2026-01-28', '09:00:00', '18:00:00'),
-(20, '2026-01-29', '09:00:00', '18:00:00'),
-(20, '2026-01-30', '09:00:00', '18:00:00'),
-(20, '2026-02-02', '09:00:00', '18:00:00'),
-(20, '2026-02-03', '09:00:00', '18:00:00'),
-(20, '2026-02-04', '09:00:00', '18:00:00'),
-(20, '2026-02-05', '09:00:00', '18:00:00'),
-(20, '2026-02-06', '09:00:00', '18:00:00'),
-(20, '2026-02-09', '09:00:00', '18:00:00'),
-(20, '2026-02-10', '09:00:00', '18:00:00'),
-(20, '2026-02-11', '09:00:00', '18:00:00'),
-(20, '2026-02-12', '09:00:00', '18:00:00'),
-(20, '2026-02-13', '09:00:00', '18:00:00'),
-
-(21, '2026-01-26', '09:00:00', '18:00:00'),
-(21, '2026-01-27', '09:00:00', '18:00:00'),
-(21, '2026-01-28', '09:00:00', '18:00:00'),
-(21, '2026-01-29', '09:00:00', '18:00:00'),
-(21, '2026-01-30', '09:00:00', '18:00:00'),
-(21, '2026-02-02', '09:00:00', '18:00:00'),
-(21, '2026-02-03', '09:00:00', '18:00:00'),
-(21, '2026-02-04', '09:00:00', '18:00:00'),
-(21, '2026-02-05', '09:00:00', '18:00:00'),
-(21, '2026-02-06', '09:00:00', '18:00:00'),
-(21, '2026-02-09', '09:00:00', '18:00:00'),
-(21, '2026-02-10', '09:00:00', '18:00:00'),
-(21, '2026-02-11', '09:00:00', '18:00:00'),
-(21, '2026-02-12', '09:00:00', '18:00:00'),
-(21, '2026-02-13', '09:00:00', '18:00:00');

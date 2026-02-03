@@ -114,21 +114,6 @@ export default function AdminDashboard() {
                 Informação Rápida sobre o Sistema
               </span>
             </div>
-            <div className="title-dashboard-right d-flex justify-content-end align-items-center gap-2">
-              <Link
-                to="/chatbot"
-                className="btn btn-outline-primary rounded px-4"
-              >
-                Assistente AI
-              </Link>
-
-              <Link
-                to="/horarios"
-                className="btn btn-outline-secondary rounded px-4"
-              >
-                Ver Horários
-              </Link>
-            </div>
           </div>
           <div className="quick-access-menu mt-3 p-3 shadow-sm">
             <h3>Ações Rápidas</h3>

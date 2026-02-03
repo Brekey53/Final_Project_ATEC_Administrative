@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Avaliacao;
+using ProjetoAdministracaoEscola.ModelsDTO.Formador;
 using ProjetoAdministracaoEscola.ModelsDTO.Turma;
+using ProjetoAdministracaoEscola.ModelsDTO.TurmaAlocacoes.Request;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
@@ -286,7 +288,214 @@ namespace ProjetoAdministracaoEscola.Controllers
             });
         }
 
+        /// <summary>
+        /// Obtém os formadores alocados a uma determinada turma,
+        /// incluindo os módulos que cada um leciona.
+        /// 
+        /// </summary>
+        [HttpGet("turma/{idTurma}/formadores")]
+        public async Task<ActionResult<IEnumerable<FormadorTurmaDTO>>> GetFormadoresDaTurma(int idTurma)
+        {
+            var existeTurma = await _context.Turmas.AnyAsync(t => t.IdTurma == idTurma);
+            if (!existeTurma)
+                return NotFound("Turma não encontrada");
+
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+            var alocacoes = await _context.TurmaAlocacoes
+                .Where(a => a.IdTurma == idTurma)
+                .Include(a => a.IdFormadorNavigation)
+                    .ThenInclude(f => f.IdUtilizadorNavigation)
+                .Include(a => a.IdModuloNavigation)
+                .ToListAsync();
+
+            var resultado = alocacoes.Select(a =>
+            {
+                var horasDadas = _context.Horarios
+                    .Where(h =>
+                        h.IdTurma == a.IdTurma &&
+                        h.IdFormador == a.IdFormador &&
+                        h.IdCursoModuloNavigation.IdModulo == a.IdModulo &&
+                        h.Data <= hoje
+                    )
+                    .ToList();
+
+                return new FormadorTurmaDTO
+                {
+                    IdFormador = a.IdFormador,
+                    NomeFormador = a.IdFormadorNavigation.IdUtilizadorNavigation.Nome,
+                    IdModulo = a.IdModulo,
+                    NomeModulo = a.IdModuloNavigation.Nome,
+                    HorasDadas = TurmaAlocacaoController.CalcularHorasDadas(horasDadas)
+                };
+            })
+            .OrderBy(r => r.NomeModulo)
+            .ThenBy(r => r.NomeFormador)
+            .ToList();
+
+            return Ok(resultado);
+        }
+
+        /// <summary>
+        /// Obtém a lista de todos os módulos de uma turma que ainda não foram alocados a um formador
+        /// </summary>
+        /// <param name="idTurma">Id da turma</param>
+        /// <returns>Lista de módulos disponiveis</returns>
+
+        [HttpGet("turma/{idTurma}/modulos-disponiveis")]
+        public async Task<IActionResult> GetModulosDisponiveis(int idTurma)
+        {
+            var turma = await _context.Turmas
+                .Include(t => t.IdCursoNavigation)
+                .FirstOrDefaultAsync(t => t.IdTurma == idTurma);
+
+            if (turma == null)
+                return NotFound();
+
+            var modulosAlocados = await _context.TurmaAlocacoes
+                .Where(a => a.IdTurma == idTurma)
+                .Select(a => a.IdModulo)
+                .ToListAsync();
+
+            var modulosDisponiveis = await _context.CursosModulos
+                .Where(cm =>
+                    cm.IdCurso == turma.IdCurso &&
+                    !modulosAlocados.Contains(cm.IdModulo)
+                )
+                .Include(cm => cm.IdModuloNavigation)
+                    .ThenInclude(m => m.IdTipoMateriaNavigation)
+                .Select(cm => new
+                {
+                    cm.IdModulo,
+                    NomeModulo = cm.IdModuloNavigation.Nome,
+                    cm.IdModuloNavigation.IdTipoMateria,
+                    TipoMateria = cm.IdModuloNavigation.IdTipoMateriaNavigation.Tipo
+                })
+                .ToListAsync();
+
+            return Ok(modulosDisponiveis);
+        }
+
+        /// <summary>
+        /// Obtém a lista de formadores capacitado para lecionar determinado módulo consoante a matéria
+        /// </summary>
+        /// <param name="idTipoMateria">Recebe o id tipo de matéria do Módulo selecionado</param>
+        /// <returns>Lista formadores que podem dar aquele módulo</returns>
+        [HttpGet("tipo-materia/{idTipoMateria}")]
+        public async Task<IActionResult> GetFormadoresPorTipoMateria(int idTipoMateria)
+        {
+            var formadores = await _context.FormadoresTipoMaterias
+                .Where(ftm => ftm.IdTipoMateria == idTipoMateria)
+                .Include(ftm => ftm.Formador)
+                    .ThenInclude(f => f.IdUtilizadorNavigation)
+                .Select(ftm => new
+                {
+                    ftm.Formador.IdFormador,
+                    NomeFormador = ftm.Formador.IdUtilizadorNavigation.Nome
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(formadores);
+        }
+
+        /// <summary>
+        /// Criar uma entrada na tabela turmaAlocacao para um formador lecionar um módulo
+        /// numa determinada turma
+        /// </summary>
+        /// <param name="dto">Recebe idTurma, idFormador e idModulo para criar entrada na bd</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> AlocarFormador(CriarTurmaAlocacaoDTO dto)
+        {
+            var existe = await _context.TurmaAlocacoes.AnyAsync(a =>
+                a.IdTurma == dto.IdTurma &&
+                a.IdModulo == dto.IdModulo
+            );
+
+            if (existe)
+                return BadRequest("Este módulo já está alocado à turma.");
+
+            _context.TurmaAlocacoes.Add(new TurmaAlocaco
+            {
+                IdTurma = dto.IdTurma,
+                IdModulo = dto.IdModulo,
+                IdFormador = dto.IdFormador
+            });
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        /// <summary>
+        /// Elimina entrada na tabela turmaAlocacao desde que não existam ainda horas dadas naquele módulo e desde que não haja entrada criada na tabela horários
+        /// </summary>
+        /// <param name="idTurma"> idturma</param>
+        /// <param name="idFormador">idformador</param>
+        /// <param name="idModulo">id modulo</param>
+        /// <returns></returns>
+        [HttpDelete("turma/{idTurma}/formador/{idFormador}/modulo/{idModulo}")]
+        public async Task<IActionResult> RemoverFormadorDaTurma(
+            int idTurma,
+            int idFormador,
+            int idModulo
+            )
+        {
+            var alocacao = await _context.TurmaAlocacoes
+                .Include(a => a.IdTurmaNavigation)
+                .FirstOrDefaultAsync(a =>
+                    a.IdTurma == idTurma &&
+                    a.IdFormador == idFormador &&
+                    a.IdModulo == idModulo
+                );
+
+            if (alocacao == null)
+                return NotFound(new { message = "Alocação não encontrada" });
+
+            var idCursoModulo = await _context.CursosModulos
+                .Where(cm =>
+                    cm.IdCurso == alocacao.IdTurmaNavigation.IdCurso &&
+                    cm.IdModulo == idModulo
+                )
+                .Select(cm => cm.IdCursoModulo)
+                .FirstOrDefaultAsync();
+
+            if (idCursoModulo == 0)
+                return BadRequest(new { message = "Matriz curso-módulo inválida" });
+
+
+            var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+            // se aulas tiverem mais de 0h dadas nao é possivel eliminar 
+            var jaTemHoras = await _context.Horarios.AnyAsync(h =>
+                h.IdTurma == idTurma &&
+                h.IdFormador == idFormador &&
+                h.IdCursoModulo == idCursoModulo &&
+                h.Data <= hoje
+            );
+
+            if (jaTemHoras)
+                return Conflict( new { message = "Não é possível remover o formador: o módulo já tem aulas dadas." });
+
+            // se existir uma entrada na tabela horários não é possivel eliminar
+            var existemHorarios = await _context.Horarios.AnyAsync(h =>
+                h.IdTurma == idTurma &&
+                h.IdCursoModuloNavigation.IdModuloNavigation.IdModulo == idModulo &&
+                h.IdFormador == idFormador
+            );
+
+            if (existemHorarios)
+            {
+                return Conflict(new { message = "Não é possível remover o formador: já existem horários registados." });
+            }
+
+            _context.TurmaAlocacoes.Remove(alocacao);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
 
     }
-
 }
