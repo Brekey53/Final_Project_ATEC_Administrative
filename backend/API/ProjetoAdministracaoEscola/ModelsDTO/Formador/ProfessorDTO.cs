@@ -1,4 +1,4 @@
-﻿namespace ProjetoAdministracaoEscola.ModelsDTO.GetMinhaTurma
+﻿namespace ProjetoAdministracaoEscola.ModelsDTO.Formador
 {
     public class ProfessorDTO
     {

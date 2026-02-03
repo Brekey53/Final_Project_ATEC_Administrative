@@ -1,4 +1,6 @@
-﻿namespace ProjetoAdministracaoEscola.ModelsDTO.GetMinhaTurma
+﻿using ProjetoAdministracaoEscola.ModelsDTO.Formador;
+
+namespace ProjetoAdministracaoEscola.ModelsDTO.GetMinhaTurma
 {
     public class MinhaTurma_ModuloDTO
     {

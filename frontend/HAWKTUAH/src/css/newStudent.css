@@ -74,7 +74,7 @@
 
 @media (max-width: 768px) {
   .tabela-modulos {
-    grid-template-columns: 2fr 1fr 100px; /* Esconde horas e créditos em mobile */
+    grid-template-columns: 2fr 1fr; /* Esconde horas e créditos em mobile */
   }
   .hide-mobile {
     display: none;
