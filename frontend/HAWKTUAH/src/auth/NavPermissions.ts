@@ -7,7 +7,6 @@ export type NavKey =
   | "formandos"
   | "formadores"
   | "horarios"
-  | "chatbot"
   | "turmas"
   | "turma";
 
@@ -19,7 +18,6 @@ export const NAV_PERMISSIONS: Record<UserRole, NavKey[]> = {
     "formandos",
     "formadores",
     "horarios",
-    "chatbot",
     "turmas"
   ],
 
@@ -28,8 +26,6 @@ export const NAV_PERMISSIONS: Record<UserRole, NavKey[]> = {
     "perfil",
     "cursos",
     "formandos",
-    "horarios",
-    "chatbot",
     "turmas"
   ],
 
@@ -37,8 +33,6 @@ export const NAV_PERMISSIONS: Record<UserRole, NavKey[]> = {
     "dashboard",
     "perfil",
     "cursos",
-    "horarios",
-    "chatbot",
     "turma"
   ],
 
@@ -46,7 +40,6 @@ export const NAV_PERMISSIONS: Record<UserRole, NavKey[]> = {
     "dashboard",
     "perfil",
     "cursos",
-    "chatbot",
     "turmas"
   ],
 };
