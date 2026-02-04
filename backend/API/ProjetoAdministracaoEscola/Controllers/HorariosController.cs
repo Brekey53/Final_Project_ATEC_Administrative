@@ -337,7 +337,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         private async Task<string?> ValidarConflitos(HorarioSaveDTO dto, TimeOnly inicio, TimeOnly fim, int? idIgnorar = null)
         {
 
-            // Verificar Formador
+            // Verificar Formador não tem sobreposição 
             var formadorOcupado = await _context.Horarios.AnyAsync(h =>
                 (idIgnorar == null || h.IdHorario != idIgnorar) && // Ignora o próprio (no caso de edit)
                 h.IdFormador == dto.IdFormador &&
@@ -349,6 +349,13 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (formadorOcupado)
                 return "Conflito: Este Formador já tem uma aula nesse horário (sobreposição detetada).";
+
+            // Verificar Disponibilidade Formador
+            var formadorDisponivel = await _context.DisponibilidadeFormadores.AnyAsync(df => df.IdFormador == dto.IdFormador
+                 && df.DataDisponivel == dto.Data && df.HoraInicio <= inicio && df.HoraFim >= fim);
+
+            if (!formadorDisponivel)
+                return "Conflito: Este Formador não tem disponibilidade para esse horário.";
 
             // Verificar Turma
             var turmaOcupada = await _context.Horarios.AnyAsync(h =>
