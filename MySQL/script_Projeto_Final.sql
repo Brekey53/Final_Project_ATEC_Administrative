@@ -222,7 +222,8 @@ INSERT INTO tipo_salas (nome) VALUES
 ('Sala Polivalente'),
 ('Biblioteca'),
 ('Sala Reuniões'),
-('Ginásio');
+('Ginásio'),
+('Online');
 
 
 -- TIPOS DE UTILIZADOR
