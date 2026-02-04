@@ -4,15 +4,18 @@ import {
   getHorariosFormador,
   getHorasFormadorMesAtual,
   getHorasFormadorMesAnterior,
+  getNumeroTurmasFormador
 } from "../../services/calendar/CalendarService";
 import { checkEmailGetName } from "../../services/users/UserService";
 import CalendarSchedule from "../CalendarSchedule";
 import { Link } from "react-router";
+import { Calendar, Clock, Users } from "lucide-react";
 
 export default function FormadorDashboard() {
   const [events, setEvents] = useState<[]>([]);
   const [horasMesAtual, setHorasMesAtual] = useState();
   const [horasMesAnterior, setHorasMesAnterior] = useState<[]>([]);
+  const [turmasAtuais, setTurmasAtuais] = useState(0);
   const [nameUser, setNameUser] = useState("");
 
   const user = authService.decodeToken();
@@ -45,19 +48,21 @@ export default function FormadorDashboard() {
   }, []);
 
   useEffect(() => {
-    async function fetchHorasDesteMes() {
+    async function fetchEstatisticasFormador() {
       try {
         const dataAtual = await getHorasFormadorMesAtual();
         const dataAnterior = await getHorasFormadorMesAnterior();
+        const numeroTurmas = await getNumeroTurmasFormador();
 
         setHorasMesAtual(dataAtual);
         setHorasMesAnterior(dataAnterior);
+        setTurmasAtuais(numeroTurmas);
       } catch (error) {
         console.error("Erro ao carregar horas", error);
       }
     }
 
-    fetchHorasDesteMes();
+    fetchEstatisticasFormador();
   }, []);
 
   if (!user) return null;
@@ -74,43 +79,81 @@ export default function FormadorDashboard() {
             Aqui está o resumo da tua atividade
           </small>
         </div>
-        <Link
-          to="/adicionar-disponibilidade"
-          className="btn btn-success"
-        >
+        <Link to="/adicionar-disponibilidade" className="btn btn-success">
           + Adicionar Disponibilidade
         </Link>
       </div>
 
       {/* Estatísticas */}
-      <div className="row mb-4">
-        <div className="col-md-6 mb-3">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h6 className="text-muted mb-1">Horas dadas este mês</h6>
-              <h3>{horasMesAtual}h</h3>
+      {/* Horas do Mês Atual */}
+      <div className="row g-3 mb-5">
+        <div className="col-12 col-sm-6 col-md-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center gap-3">
+                <div className="p-2 bg-primary bg-opacity-10 rounded-3 text-primary">
+                  <Clock size={20} /> 
+                </div>
+                <div>
+                  <h6 className="text-muted mb-0 small fw-semibold">
+                    Horas este mês
+                  </h6>
+                  <h4 className="fw-bold mb-0">{horasMesAtual}h</h4>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-6 mb-3">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h6 className="text-muted mb-1">Horas dadas mês passado</h6>
-              <h3>{horasMesAnterior}h</h3>
+        {/* Horas do Mês Anterior */}
+        <div className="col-12 col-sm-6 col-md-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center gap-3">
+                <div className="p-2 bg-secondary bg-opacity-10 rounded-3 text-secondary">
+                  <Calendar size={20} />
+                </div>
+                <div>
+                  <h6 className="text-muted mb-0 small fw-semibold">
+                    Mês Anterior
+                  </h6>
+                  <h4 className="fw-bold mb-0">{horasMesAnterior}h</h4>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+      {/* Turmas que o formador leciona agora */}
+      <div className="col-12 col-sm-6 col-md-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100">
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center gap-3">
+                <div className="p-2 bg-success bg-opacity-10 rounded-3 text-success">
+                  <Users size={20} />
+                </div>
+                <div>
+                  <h6 className="text-muted mb-0 small fw-semibold">
+                    Nº Turmas Atuais
+                  </h6>
+                  <h4 className="fw-bold mb-0">{turmasAtuais}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Horário semanal */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="mb-3">Horário desta semana</h5>
-
-          <div className="text-muted">
-            <CalendarSchedule events={events} />
+      <div className="card border-0 shadow-sm rounded-4">
+        <div className="card-header bg-white border-0 p-4 pb-0">
+          <div className="d-flex align-items-center gap-2">
+            <h3 className="fw-bold mb-0">Horário</h3>
           </div>
+        </div>
+        <div className="card-body p-4">
+          <CalendarSchedule events={events} />
         </div>
       </div>
     </div>
