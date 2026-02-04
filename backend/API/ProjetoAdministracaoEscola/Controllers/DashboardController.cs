@@ -23,7 +23,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             var stats = new
             {
                 CursosDecorrer = await _context.Turmas.CountAsync(t => t.DataFim > DateOnly.FromDateTime(DateTime.Now)),
-                TurmasConcluidas = await getTurmasConcluidas(),
+                TurmasConcluidas = await GetTurmasConcluidas(),
                 FormandosAtivos = await _context.Formandos.CountAsync(),
                 Formadores = await _context.Formadores.CountAsync(),
                 Salas = await _context.Salas.CountAsync(),
@@ -32,10 +32,9 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(stats);
         }
-        public async Task<int> getTurmasConcluidas()
+        private async Task<int> GetTurmasConcluidas()
         {
-            DateOnly hoje = DateOnly.FromDateTime(DateTime.Now);
-
+            var hoje = DateOnly.FromDateTime(DateTime.Now);
             return await _context.Turmas.CountAsync(t => t.DataFim <= hoje);
         }
 
