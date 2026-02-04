@@ -365,8 +365,6 @@ export default function NewSchedule() {
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
-      <Toaster />
-
       {/* HEADER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4">
         <div>
