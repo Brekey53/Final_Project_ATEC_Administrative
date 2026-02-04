@@ -152,13 +152,24 @@ namespace ProjetoAdministracaoEscola.Controllers
                     )
                     .ToListAsync();
 
+                var aulasExistentes = await _context.Horarios
+                    .Where(h =>
+                        h.IdTurma == a.IdTurma &&
+                        h.IdCursoModuloNavigation.IdModulo == a.IdModulo
+                    )
+                    .Select(h => new {h.HoraInicio, h.HoraFim })
+                    .ToListAsync();
+
                 var horasDadas = CalcularHorasDadas(horarios);
                 var horasTotais = a.IdModuloNavigation.HorasTotais;
 
+
+                double horasJaAgendadas = aulasExistentes.Sum(h => (h.HoraFim - h.HoraInicio).TotalHours);
+
                 string estado;
-                if (horasDadas == 0) estado = "Para começar";
-                else if (horasDadas < horasTotais) estado = "A decorrer";
-                else estado = "Terminado";
+                if (horasDadas == 0) estado = $"Para começar [{horasJaAgendadas}/{horasTotais}] ";
+                else if (horasDadas < horasTotais) estado = $"A decorrer [{horasJaAgendadas}/{horasTotais}] ";
+                else estado = $"Terminado [{horasJaAgendadas}/{horasTotais}] ";
 
                 var cursoModulo = await _context.CursosModulos
                 .FirstOrDefaultAsync(cm =>
