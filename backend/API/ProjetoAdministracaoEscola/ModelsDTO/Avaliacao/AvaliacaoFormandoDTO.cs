@@ -9,5 +9,7 @@
         public decimal? Nota { get; set; }
 
         public DateOnly? DataAvaliacao { get; set; }
+
+        public int TotalModulosCurso { get; set; }
     }
 }
