@@ -7,6 +7,7 @@ import {
 } from "../../services/calendar/CalendarService";
 import { checkEmailGetName } from "../../services/users/UserService";
 import CalendarSchedule from "../CalendarSchedule";
+import { Link } from "react-router";
 
 export default function FormadorDashboard() {
   const [events, setEvents] = useState<[]>([]);
@@ -73,8 +74,12 @@ export default function FormadorDashboard() {
             Aqui está o resumo da tua atividade
           </small>
         </div>
-
-        <button className="btn btn-success">+ Adicionar disponibilidade</button>
+        <Link
+          to="/adicionar-disponibilidade"
+          className="btn btn-success"
+        >
+          + Adicionar Disponibilidade
+        </Link>
       </div>
 
       {/* Estatísticas */}
@@ -92,7 +97,6 @@ export default function FormadorDashboard() {
           <div className="card shadow-sm">
             <div className="card-body">
               <h6 className="text-muted mb-1">Horas dadas mês passado</h6>
-              {/*TODO: IMPLEMENTAR BACKEND AQUI */}
               <h3>{horasMesAnterior}h</h3>
             </div>
           </div>
