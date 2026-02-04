@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -95,25 +96,25 @@ namespace ProjetoAdministracaoEscola.Controllers
                     switch (infoCurso)
                     {
                         case "Informática":
-                            tiposPermitidos.AddRange(new[] { "Laboratório Informática", "Sala Teórica", "Auditório" });
+                            tiposPermitidos.AddRange(new[] { "Laboratório Informática", "Sala Teórica", "Auditório", "Online" });
                             break;
 
                         case "Mecânica":
                         case "Automação":
-                            tiposPermitidos.AddRange(new[] { "Oficina", "Laboratório Técnico", "Sala Teórica" });
+                            tiposPermitidos.AddRange(new[] { "Oficina", "Laboratório Técnico", "Sala Teórica", "Online" });
                             break;
 
                         case "Eletrónica":
-                            tiposPermitidos.AddRange(new[] { "Laboratório Técnico", "Sala Teórica" });
+                            tiposPermitidos.AddRange(new[] { "Laboratório Técnico", "Sala Teórica", "Online" });
                             break;
 
                         case "Gestão":
-                            tiposPermitidos.AddRange(new[] { "Sala Teórica", "Sala Polivalente", "Sala Reuniões" });
+                            tiposPermitidos.AddRange(new[] { "Sala Teórica", "Sala Polivalente", "Sala Reuniões", "Online" });
                             break;
 
                         default:
                             // Se a área não tiver regra, permitimos apenas salas teóricas
-                            tiposPermitidos.Add("Sala Teórica");
+                            tiposPermitidos.AddRange(new[] { "Sala Teórica", "Online" });
                             break;
                     }
                 }
@@ -235,13 +236,21 @@ namespace ProjetoAdministracaoEscola.Controllers
 
 
         // DELETE: api/Salas/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSala(int id)
         {
             var sala = await _context.Salas.FindAsync(id);
             if (sala == null)
             {
-                return NotFound();
+                return NotFound(new {message = "Sala não encontrada" });
+            }
+
+            var salaEmUso = await _context.Horarios.AnyAsync(h => h.IdSala == id);
+
+            if (salaEmUso)
+            {
+                return BadRequest(new { message = "Não é possivel eliminar a sala pois existem aulas agendadas para a própria." });
             }
 
             _context.Salas.Remove(sala);
