@@ -24,26 +24,41 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult<IEnumerable<AvaliacaoFormandoDTO>>> GetAvaliacoesFormando()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) return Unauthorized();
+            if (userIdClaim == null) 
+                return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
 
+            var formando = await _context.Formandos
+                .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
+
+            if (formando == null) 
+                return NotFound("Formando não encontrado.");
+
+            var inscricao = await _context.Inscricoes
+                .Include(i => i.IdTurmaNavigation)
+                .FirstOrDefaultAsync(i => i.IdFormando == formando.IdFormando);
+
+            if (inscricao == null)
+                return Ok(new List<AvaliacaoFormandoDTO>());
+
+ 
+            int idCurso = inscricao.IdTurmaNavigation.IdCurso;
+
+
+            var totalModulosCurso = await _context.CursosModulos
+                .CountAsync(cm => cm.IdCurso == idCurso);
+
             var avaliacoes = await _context.Avaliacoes
-                .Include(a => a.IdModuloNavigation)
-                .Include(a => a.IdInscricaoNavigation)
-                    .ThenInclude(i => i.IdFormandoNavigation)
-                .Where(a =>
-                    a.IdInscricaoNavigation
-                     .IdFormandoNavigation
-                     .IdUtilizador == userId
-                )
+                .Where(a => a.IdInscricaoNavigation.IdFormando == formando.IdFormando)
                 .OrderByDescending(a => a.DataAvaliacao)
                 .Select(a => new AvaliacaoFormandoDTO
                 {
                     IdAvaliacao = a.IdAvaliacao,
                     NomeModulo = a.IdModuloNavigation.Nome,
                     Nota = a.Nota,
-                    DataAvaliacao = a.DataAvaliacao
+                    DataAvaliacao = a.DataAvaliacao,
+                    TotalModulosCurso = totalModulosCurso
                 })
                 .ToListAsync();
 
