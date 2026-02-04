@@ -511,7 +511,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .Where(h =>
                     h.IdFormador == formadorId &&
                     h.Data.Month == hoje.Month &&
-                    h.Data.Year == hoje.Year
+                    h.Data.Year == hoje.Year &&
+                    h.Data.Day < hoje.Day
                 )
                 .ToListAsync();
 
@@ -554,6 +555,15 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(new HorasFormadorDTO { TotalHoras = totalHoras });
         }
+
+        [HttpGet("numTurmas")]
+        public async Task<int> GetNumTurmasFormador()
+        {
+            var formadorId = await GetFormadorIdFromToken();
+
+            return await _context.TurmaAlocacoes.CountAsync(ta => ta.IdFormador == formadorId);
+        }
+
 
         /// <summary>
         /// Obtém o id do formador com base no token JWT
