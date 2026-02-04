@@ -25,19 +25,28 @@ export async function getUtilizadores(): Promise<Utilizador[]> {
 export async function getUtilizador(idUtilizador: string) {
   const res = await axios.get(`${API_BASE_URL}/utilizadores/${idUtilizador}`);
 
-  return res;
+  return res.data;
 }
 
 export async function deleteUtilizador(idUtilizador: string) {
-  return axios.delete(`${API_BASE_URL}/utilizadores/${idUtilizador}`);
+  const res = await axios.delete(
+    `${API_BASE_URL}/utilizadores/${idUtilizador}`,
+  );
+
+  return res.data;
 }
 
 export async function postNewUtilizador(data: FormData) {
-  return axios.post(`${API_BASE_URL}/utilizadores`, data);
+  const res = await axios.post(`${API_BASE_URL}/utilizadores`, data);
+
+  return res.data;
 }
 
 export async function updateUtilizador(idUtilizador: string, data: FormData) {
-  const res = await axios.put(`${API_BASE_URL}/utilizadores/${idUtilizador}`, data);
+  const res = await axios.put(
+    `${API_BASE_URL}/utilizadores/${idUtilizador}`,
+    data,
+  );
   return res.data;
 }
 

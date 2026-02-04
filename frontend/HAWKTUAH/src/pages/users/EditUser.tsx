@@ -38,8 +38,7 @@ export default function EditUser() {
     const fetchData = async () => {
       try {
         const res = await getUtilizador(id);
-        const u = res.data;
-        console.log(res.data)
+        const u = res;
         setFormData({
           email: u.email ?? "",
           nome: u.nome ?? "",
@@ -60,8 +59,11 @@ export default function EditUser() {
         if (u.anexoFicheiro) {
           setDocumentPreview(u.anexoFicheiro);
         }
-      } catch (err) {
-        toast.error("Erro ao carregar dados do utilizador.");
+      } catch (err: any) {
+        toast.error(
+          err.response?.data?.message ||
+            "Erro ao carregar dados do utilizador.",
+        );
       } finally {
         setFetching(false);
       }
@@ -269,7 +271,7 @@ export default function EditUser() {
                 </select>
               </div>
 
-              <div className="col-md-12 mb-3">
+              <div className="col-md-8 mb-3">
                 <label className="form-label">Morada</label>
                 <input
                   type="text"
@@ -304,3 +306,4 @@ export default function EditUser() {
     </div>
   );
 }
+

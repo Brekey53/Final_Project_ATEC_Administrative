@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
   getFormadores,
   deleteFormador,
+  downloadFicheiroPDF,
   type Formador,
 } from "../../services/formador/FormadorService";
 import { useEffect, useState } from "react";
@@ -155,6 +156,7 @@ export default function NewTeacher() {
                     title="Descarregar informações Formador"
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
+                    onClick={(e => downloadFicheiroPDF(Number(f.idFormador), f.nome))}
                   >
                     <Download />
                   </span>

@@ -80,8 +80,8 @@ export default function NewStudent() {
       setShowDeleteModal(false);
       setFormandoSelecionado(null);
       toast.success("Formando eliminado com sucesso");
-    } catch {
-      toast.error("Erro ao eliminar formando");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao eliminar formando");
     }
   }
 
