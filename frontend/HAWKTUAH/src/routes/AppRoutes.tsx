@@ -44,6 +44,7 @@ import Turmas from "../pages/turmas/ManageTurmas";
 import EditTurma from "../pages/turmas/EditTurma";
 import AddNewTurma from "../pages/turmas/AddNewTurma";
 import EditAvaliacoesFormador from "../pages/turmas/EditAvaliacoesFormador";
+import AddNewAvailability from "../pages/teacher/AddNewAvailability";
 
 function AppRoutes() {
   return (
@@ -94,6 +95,7 @@ function AppRoutes() {
 
           {/* Formadores */}
           <Route path="/formadores" element={<Formadores />} />
+          <Route path="/adicionar-disponibilidade" element={<AddNewAvailability />} />
           <Route path="/gerir-formadores" element={<NewTeacher />} />
           <Route path="/adicionar-formadores" element={<AddNewTeacher />} />
           <Route
