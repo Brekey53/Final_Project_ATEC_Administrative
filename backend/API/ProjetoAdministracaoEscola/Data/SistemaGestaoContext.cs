@@ -600,6 +600,13 @@ public partial class SistemaGestaoContext : DbContext
 
         });
 
+        modelBuilder.Entity<Utilizador>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Formador>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Formando>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Curso>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Modulo>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Turma>().HasQueryFilter(e => e.Ativo);
+
         OnModelCreatingPartial(modelBuilder);
     }
 
