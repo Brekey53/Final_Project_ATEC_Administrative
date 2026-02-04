@@ -38,13 +38,10 @@ html, body, #root {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   width: 36px;
   height: 36px;
-
   border-radius: 8px;
   cursor: pointer;
-
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
