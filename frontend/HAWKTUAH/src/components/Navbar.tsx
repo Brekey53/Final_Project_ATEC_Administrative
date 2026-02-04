@@ -44,20 +44,18 @@ export default function Navbar() {
     { key: "turma", label: "Turma", to: "/turmas" },
     { key: "turmas", label: "Turmas", to: "/turmas" },
     { key: "horarios", label: "Horários", to: "/horarios" },
-    { key: "chatbot", label: "Assistente IA", to: "/chatbot" },
   ];
 
-
   useEffect(() => {
-    const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
-    const dropdownList = Array.from(dropdownElementList).map(elemento => {
+    const dropdownElementList = document.querySelectorAll(".dropdown-toggle");
+    const dropdownList = Array.from(dropdownElementList).map((elemento) => {
       return new Dropdown(elemento);
     });
 
     return () => {
-      dropdownList.forEach(d => d.dispose());
+      dropdownList.forEach((d) => d.dispose());
     };
-  }, [allowedLinks, fotoPerfil]); 
+  }, [allowedLinks, fotoPerfil]);
 
   return (
     <nav className="navbar navbar-expand-lg bg-light px-4">
@@ -69,7 +67,9 @@ export default function Navbar() {
             className="d-flex align-items-center gap-2 text-decoration-none text-white"
           >
             <img src={foto} alt="" className="foto" />
-            <span className="fw-bold h5 mb-0">Hawk Portal</span>
+            <span className="fw-bold h5 mb-0 d-none d-sm-inline">
+              Hawk Portal
+            </span>
           </Link>
 
           <button
@@ -82,27 +82,8 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* CENTRO — LINKS */}
-        <div
-          className={`collapse navbar-collapse justify-content-center ${
-            isNavExpanded ? "show" : ""
-          }`}
-        >
-          <ul className="navbar-nav gap-4">
-            {navLinks
-              .filter((link) => allowedLinks.includes(link.key as any))
-              .map((link) => (
-                <li key={link.key} className="nav-item">
-                  <Link className="nav-link" to={link.to} onClick={closeMenu}>
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </div>
-
         {/* DIREITA — PERFIL*/}
-        <div className="dropdown ms-auto">
+        <div className="dropdown ms-auto order-lg-last px-2">
           <button
             className="btn p-0 border-0 bg-transparent dropdown-toggle"
             data-bs-toggle="dropdown"
@@ -137,6 +118,26 @@ export default function Navbar() {
             </li>
           </ul>
         </div>
+        
+        {/* CENTRO — LINKS */}
+        <div
+          className={`collapse navbar-collapse justify-content-center ${
+            isNavExpanded ? "show" : ""
+          }`}
+        >
+          <ul className="navbar-nav gap-4">
+            {navLinks
+              .filter((link) => allowedLinks.includes(link.key as any))
+              .map((link) => (
+                <li key={link.key} className="nav-item">
+                  <Link className="nav-link" to={link.to} onClick={closeMenu}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+          </ul>
+        </div>
+
       </div>
     </nav>
   );
