@@ -161,13 +161,29 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteModulo(int id)
         {
+
             var modulo = await _context.Modulos.FindAsync(id);
             if (modulo == null)
             {
-                return NotFound();
+                return NotFound(new {message = "Modulo não encontrado"});
             }
 
-            _context.Modulos.Remove(modulo);
+            // Verificar se o módulo ainda está em uso
+            bool moduloEmUso = await _context.Horarios
+                .Include(h => h.IdCursoModuloNavigation)
+                .AnyAsync(h => h.IdCursoModuloNavigation.IdModulo == id &&
+                h.Data > DateOnly.FromDateTime(DateTime.Now));
+
+            if (moduloEmUso)
+            {
+                return BadRequest(new { message = "Não é possivel eliminar o módulo pois existem aulas agendadas para o próprio." });
+            }
+
+            modulo.Ativo = false;
+            modulo.DataDesativacao = DateTime.Now;
+
+            // não remover (Soft Delete)
+            //_context.modulo.Remove(modulo); 
             await _context.SaveChangesAsync();
 
             return NoContent();
