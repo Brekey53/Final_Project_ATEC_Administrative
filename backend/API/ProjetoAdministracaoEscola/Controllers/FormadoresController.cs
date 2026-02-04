@@ -561,7 +561,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             var formadorId = await GetFormadorIdFromToken();
 
-            return await _context.TurmaAlocacoes.CountAsync(ta => ta.IdFormador == formadorId);
+            return await _context.TurmaAlocacoes.Where(ta => ta.IdFormador == formadorId).GroupBy(ta => ta.IdTurma).CountAsync();
         }
 
 
