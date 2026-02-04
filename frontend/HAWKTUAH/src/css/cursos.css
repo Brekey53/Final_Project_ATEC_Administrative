@@ -68,3 +68,11 @@
   display: flex;
   justify-content: center;
 }
+
+.info-icon {
+  transition: transform 2s ease-in-out;
+}
+
+.info-icon:hover {
+  transform: rotate(1800deg);
+}

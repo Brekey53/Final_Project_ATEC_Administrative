@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import "../../css/cursos.css";
 import "../../css/layoutTabelas.css";
 import verDetalhes from "../../img/verDetalhes.png";
-import { Search } from "lucide-react";
+import { Search, Info } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function Cursos() {
@@ -107,7 +107,7 @@ export default function Cursos() {
             <div>Curso</div>
             <div>Id Área</div>
             <div>Área</div>
-            <div> Ações</div>
+            <div>Ações</div>
           </div>
           {cursosPaginados.map((c) => (
             <Link
@@ -132,12 +132,16 @@ export default function Cursos() {
                 </div>
 
                 <div className="fw-medium">
-                  <img
+                  <Info
+                    size={30}
+                    className="text-primary card bg-transparent border-0 info-icon"
+                  />
+                  {/* <img
                     className="img-ver-detalhes"
                     src={verDetalhes}
                     alt="Ver detalhes"
                     title="Ver Detalhes do Curso"
-                  />
+                  /> */}
                 </div>
               </div>
             </Link>
