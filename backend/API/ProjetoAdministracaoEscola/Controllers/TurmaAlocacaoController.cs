@@ -215,6 +215,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                         .Select(a => a.Nota)
                         .FirstOrDefault()
                 })
+                .OrderBy(i => i.NomeFormando)
                 .ToListAsync();
 
             return Ok(alunos);
