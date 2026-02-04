@@ -41,7 +41,7 @@ import HorizontalBarChart from "../../components/HorizontalBarChart";
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     cursosDecorrer: 0,
-    totalCursos: 0,
+    turmasConcluidas: 0,
     formandosAtivos: 0,
     formadores: 0,
     salas: 0,
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
     { formador: "Jakim", horas: 70 },
   ];
 
-  const valueFormatter = (value: number | null) => (value ? `${value} mm` : "");
+  const valueFormatter = (value: number | null) => (value ? `${value} h` : "");
 
   const user = authService.decodeToken();
 
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
           </div>
           <div className="quick-access-menu mt-3 p-3 shadow-sm">
             <h3>Ações Rápidas</h3>
-            <div className="row row-cols-2 row-cols-md-4 g-3">
+            <div className="row row-cols-2 row-cols-md-4 my-2 g-3">
               <Link to="/gerir-modulos" className="text-decoration-none">
                 <div className="col">
                   <QuickActionsCards
@@ -186,10 +186,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* CardBoards info geral */}
-          <div className="row row-cols-1 row-cols-md-3 g-3 mt-3">
+          <div className="row row-cols-1 row-cols-md-3 g-3 mt-4">
             <div className="col">
               <CardsDashboard
-                title="Cursos a Decorrer"
+                title="Turmas a Decorrer"
                 value={loading ? "..." : stats.cursosDecorrer}
                 icon={<GraduationCap size={20} color="#28a745" />}
                 iconBgColor="#e8f5e9"
@@ -198,11 +198,11 @@ export default function AdminDashboard() {
             </div>
             <div className="col">
               <CardsDashboard
-                title="Total de Cursos"
-                value={loading ? "..." : stats.totalCursos}
+                title="Turmas Concluídas"
+                value={loading ? "..." : stats.turmasConcluidas}
                 icon={<BookOpen size={20} color="#007bff" />}
                 iconBgColor="#e3f2fd"
-                detailsLink="/cursos"
+                detailsLink="/turmas"
               />
             </div>
             <div className="col">
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
 
           <div className="mt-5">
             <div className="row g-4">
-              <div className="col-md-6">
+              <div className="col-md-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
@@ -288,7 +288,7 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
-              <div className="col-md-6">
+              <div className="col-md-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
@@ -338,23 +338,18 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="mt-5">
-            <div className="row g-4">
-              <div className="col-6 mb-4">
+              <div className="col-12 col-md-4 mb-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
                       Cursos por Área
                     </div>
-                    <a
-                      href="#"
-                      className="text-muted small text-decoration-none justify-content-right"
+                    <Link
+                      to="/cursos"
+                      className="text-muted small text-decoration-none"
                     >
                       Ver todos
-                    </a>
+                    </Link>
                   </div>
                   {cursosPorArea.length === 0 ? (
                     <p className="text-muted small">Sem dados disponíveis</p>
@@ -375,15 +370,20 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
-              <div className="col-6 mb-4">
-                  <HorizontalBarChart
-                    title="Top 10 Formadores com mais horas"
-                    dataset={dataset}
-                    categoryKey="formador"
-                    valueKey="horas"
-                    label="Horas"
-                    valueFormatter={valueFormatter}
-                  />
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="row g-4">
+              <div className="col-12 mb-4">
+                <HorizontalBarChart
+                  title="Top 10 Formadores com mais horas"
+                  dataset={dataset}
+                  categoryKey="formador"
+                  valueKey="horas"
+                  label="Horas"
+                  valueFormatter={valueFormatter}
+                />
               </div>
             </div>
           </div>
