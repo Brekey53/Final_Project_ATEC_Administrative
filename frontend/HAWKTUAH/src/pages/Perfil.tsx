@@ -24,7 +24,7 @@ export default function Perfil() {
         const data = await getMyPerfil();
         setPerfil(data);
       } catch {
-        toast.error("Erro ao carregar perfil");
+        toast.error("Erro ao carregar perfil", {id: "loadPerfil"});
       } finally {
         setLoading(false);
       }
