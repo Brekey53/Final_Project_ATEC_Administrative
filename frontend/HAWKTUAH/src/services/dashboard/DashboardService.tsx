@@ -3,7 +3,7 @@ import { API_BASE_URL } from "../../config.constants";
 
 export interface DashboardStats {
   cursosDecorrer: number;
-  totalCursos: number;
+  turmasConcluidas: number;
   formandosAtivos: number;
   formadores: number;
   salas: number;
@@ -58,6 +58,7 @@ export interface AvaliacaoFormando {
   nomeModulo: string;
   nota: number | null;
   dataAvaliacao: string | null;
+  totalModulosCurso: number;
 }
 
 export async function getAvaliacoesFormando(): Promise<AvaliacaoFormando[]> {
