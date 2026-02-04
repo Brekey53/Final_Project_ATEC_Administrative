@@ -52,8 +52,8 @@ export default function NewCourse() {
       setShowDeleteModal(false);
 
       toast.success("Curso eliminado com sucesso");
-    } catch {
-      toast.error("Erro ao eliminar curso");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Erro ao eliminar curso");
     }
   }
 
@@ -104,7 +104,7 @@ export default function NewCourse() {
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
-          <h2 className="fw-bold mb-1">Cursos</h2>
+          <h2 className="fw-bold mb-1">Gestão de Cursos</h2>
           <p className="text-muted mb-0">Consulta de Cursos Disponíveis</p>
         </div>
         <Link to="/adicionar-cursos">
