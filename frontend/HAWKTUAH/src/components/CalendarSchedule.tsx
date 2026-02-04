@@ -11,7 +11,7 @@ export default function CalendarSchedule({ events }: { events: any[] }) {
       events={events}
       allDaySlot={false}
       slotMinTime="08:00:00"
-      slotMaxTime="22:00:00"
+      slotMaxTime="23:00:00"
       height="auto"
       nowIndicator
     />
