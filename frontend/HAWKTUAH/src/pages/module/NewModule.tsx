@@ -84,11 +84,11 @@ export default function NewModule() {
     }
   }
 
-    // Quando pesquisa muda → voltar à página 1
+  // Quando pesquisa muda → voltar à página 1
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
-  
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
@@ -100,7 +100,7 @@ export default function NewModule() {
         </div>
         <Link to="/adicionar-modulos">
           <div className="btn btn-success px-4 py-2 rounded-pill">
-            + Novo Modulo
+            + Novo Módulo
           </div>
         </Link>
       </div>
@@ -110,7 +110,7 @@ export default function NewModule() {
           <input
             type="text"
             className="form-control form-control-lg"
-            placeholder="Pesquisar Modulos..."
+            placeholder="Pesquisar Módulos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -126,7 +126,7 @@ export default function NewModule() {
             <div>Modulo</div>
             <div className="hide-mobile">Horas</div>
             <div className="hide-mobile">Créditos</div>
-            <div className="text-end">Ações</div>
+            <div className="text-end hide-mobile">Ações</div>
           </div>
 
           {/* Map de modulos filtrados */}
@@ -140,7 +140,9 @@ export default function NewModule() {
                   <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
                     {m.nome.charAt(0).toUpperCase()}
                   </div>
-                  <span className="fw-medium text-truncate">{m.nome}</span>
+                  <span className="fw-medium text-truncate text-wrap">
+                    {m.nome}
+                  </span>
                 </div>
 
                 <div className="d-flex align-items-center gap-2 text-muted">
@@ -160,13 +162,13 @@ export default function NewModule() {
                     title="Editar informações Modulo"
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
-                    className="action-icon"
+                    className="action-icon hide-mobile"
                   >
                     <Pencil size={18} />
                   </Link>
 
                   <span
-                    className="action-icon text-danger cursor-pointer"
+                    className="action-icon text-danger cursor-pointer hide-mobile"
                     title="Eliminar Modulo"
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
@@ -269,7 +271,7 @@ export default function NewModule() {
       )}
 
       <p className="text-muted small text-center mt-2">
-        {filteredModulos.length} modulo(s) encontrado(s)
+        {filteredModulos.length} módulo(s) encontrado(s)
       </p>
     </div>
   );

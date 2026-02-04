@@ -59,10 +59,7 @@ export default function ManageUsers() {
       setUtilizadorSelecionado(null);
       toast.success("Utilizador eliminado com sucesso");
     } catch (err: any) {
-      const errorData = err.response?.data;
-      if (errorData?.message) {
-        toast.error(errorData.message || "Erro ao eliminar utilizador");
-      }
+      toast.error(err.response?.data?.message || "Erro ao eliminar utilizador");
     }
   }
 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -162,16 +163,30 @@ namespace ProjetoAdministracaoEscola.Controllers
 
 
         // DELETE: api/Cursos/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCurso(int id)
         {
             var curso = await _context.Cursos.FindAsync(id);
             if (curso == null)
             {
-                return NotFound();
+                return NotFound(new {message = "Curso não encontrado."});
             }
 
-            _context.Cursos.Remove(curso);
+
+            var cursoEmUso = await _context.Horarios.AnyAsync(h => h.IdCursoModuloNavigation.IdCursoNavigation.IdCurso == id &&
+            h.Data > DateOnly.FromDateTime(DateTime.Now));
+
+            if (cursoEmUso)
+            {
+                return BadRequest(new { message = "Não é possivel eliminar o curso pois existem aulas agendadas para o próprio." });
+            }
+
+            curso.Ativo = false;
+            curso.DataDesativacao = DateTime.Now;
+
+            // não remover (Soft Delete)
+            //_context.Cursos.Remove(curso); 
             await _context.SaveChangesAsync();
 
             return NoContent();

@@ -223,9 +223,9 @@ export default function EditTurma() {
 
       const data = await getFormadoresDaTurma(id);
       setFormadoresTurma(data);
-    } catch (err: string | any) {
+    } catch (err: any) {
       const mensagem =
-        err?.response?.data?.message ?? "Não foi possível remover o formador.";
+        err.response?.data?.message || "Não foi possível remover o formador.";
       toast.error(mensagem);
     } finally {
       setShowRemoveModal(false);
@@ -599,33 +599,38 @@ export default function EditTurma() {
           </div>
         </div>
       )}
-      {/* PAGINAÇÃO */}
-      {totalPages > 1 && (
-        <div className="d-flex justify-content-center align-items-center gap-2 py-4">
-          <button
-            className="btn btn-outline-secondary"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            Anterior
-          </button>
+        {/* PAGINAÇÃO */}
+        {totalPages > 1 && activeTab === "formadores" && (
+          <div>
+              <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+            <button
+              className="btn btn-outline-secondary"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              Anterior
+            </button>
 
-          <span className="text-muted">
-            Página {currentPage} de {totalPages}
-          </span>
+            <span className="text-muted">
+              Página {currentPage} de {totalPages}
+            </span>
 
-          <button
-            className="btn btn-outline-secondary"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Seguinte
-          </button>
+            <button
+              className="btn btn-outline-secondary"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              Seguinte
+            </button>
+          </div>
+
+          <div className="d-flex justify-content-center align-items-center gap-2">
+            <p className="text-muted small text-center mt-1">
+              {formadoresTurma.length} alocação(ões) encontrada(s)
+            </p>
+          </div>
         </div>
-      )}
-      <p className="text-muted small text-center mt-5">
-        {formadoresTurma.length} alocação(ões) encontrada(s)
-      </p>
+        )}
     </div>
   );
 }

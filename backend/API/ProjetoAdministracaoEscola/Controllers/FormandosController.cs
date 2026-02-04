@@ -426,30 +426,42 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         // DELETE: api/Formandos/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFormando(int id)
         {
-            var formando = await _context.Formandos.FindAsync(id);
-            if (formando == null) return NotFound();
+            var formando = await _context.Formandos
+                .Include(f => f.IdUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdFormando == id);
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            if (formando == null) return NotFound(new { message = "Formando não encontrado." });
+
+            // Verificar se existe alguma inscição associada
+            bool temAulasFuturas = await _context.Inscricoes
+                .Where(i => i.IdFormando == id) 
+                .AnyAsync(i => _context.Horarios.Any(h =>
+                    h.IdTurma == i.IdTurma && 
+                    h.Data > DateOnly.FromDateTime(DateTime.Now)
+                ));
+
+            if (temAulasFuturas)
             {
-                // Remover inscrições primeiro (se não houver cascade no SQL)
-                var inscricoes = _context.Inscricoes.Where(i => i.IdFormando == id);
-                _context.Inscricoes.RemoveRange(inscricoes);
-
-                _context.Formandos.Remove(formando);
-                await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-                return NoContent();
+                return BadRequest(new { message = "Não é possível eliminar o formando pois ele está inscrito numa turma com aulas agendadas para o futuro." });
             }
-            catch
+
+            // Inativar na tabela de Formandos (soft delete)
+            formando.Ativo = false;
+            formando.DataDesativacao = DateTime.Now;
+
+            if (formando.IdUtilizadorNavigation != null)
             {
-                await transaction.RollbackAsync();
-                return BadRequest("Não é possível remover o formando pois existem dados vinculados (notas, etc).");
+                formando.IdUtilizadorNavigation.Ativo = false;
+                formando.IdUtilizadorNavigation.DataDesativacao = DateTime.Now;
             }
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

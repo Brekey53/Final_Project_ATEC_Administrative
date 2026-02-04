@@ -71,7 +71,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             int userId = int.Parse(userIdClaim);
 
-            // Procuramos o utilizador e incluímos os perfis específicos se existirem
+            // Procuramos o utilizador e inclu?mos os perfis espec?ficos se existirem
             var user = await _context.Utilizadores
             .Include(u => u.Formadores)
             .Include(u => u.Formandos)
@@ -79,7 +79,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             .FirstOrDefaultAsync(u => u.IdUtilizador == userId);
 
 
-            if (user == null) return NotFound("Utilizador não encontrado");
+            if (user == null) return NotFound("Utilizador n?o encontrado");
 
             // Dados comuns a todos os perfis
             var perfilBase = new
@@ -95,7 +95,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 user.StatusAtivacao
             };
 
-            // Adicionar dados específicos se for Formando (Tipo 3) ou Formador (Tipo 2)
+            // Adicionar dados espec?ficos se for Formando (Tipo 3) ou Formador (Tipo 2)
             if (user.IdTipoUtilizador == 3 && user.Formandos.Any())
             {
                 var f = user.Formandos.First();
@@ -176,12 +176,12 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost ("new-user")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
         {
-            // Verificar se email já existe
+            // Verificar se email j? existe
             var emailExists = await _context.Utilizadores
                 .AnyAsync(u => u.Email == dto.Email);
 
             if (emailExists)
-                return BadRequest(new { message = "Email já registado." });
+                return BadRequest(new { message = "Email j? registado." });
 
             // Criar utilizador
             var user = new Utilizador
@@ -216,7 +216,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult> PostUtilizador(UtilizadorRegisterDTO dto)
         {
             if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
-                return Conflict("Email já registado");
+                return Conflict("Email j? registado");
 
             var newUser = new Utilizador
             {
@@ -240,13 +240,73 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUtilizador(int id)
         {
-            var utilizador = await _context.Utilizadores.FindAsync(id);
-            if (utilizador == null)
+            // Impedir que o admin se apague a si pr?prio
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (currentUserId != null && currentUserId == id.ToString())
             {
-                return NotFound();
+                return BadRequest(new { message = "N?o pode eliminar a sua pr?pria conta." });
             }
 
-            _context.Utilizadores.Remove(utilizador);
+
+            var utilizador = await _context.Utilizadores
+                .Include(u => u.IdTipoUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdUtilizador == id);
+
+            if (utilizador == null)
+            {
+                return NotFound(new { message = "Utilizador n?o encontrado." });
+            }
+
+
+            // Soft Delete
+            utilizador.Ativo = false;
+            utilizador.DataDesativacao = DateTime.Now;
+
+            // Caso seja formador desativa
+            var formador = await _context.Formadores
+                .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+
+            if (formador != null)
+            {
+                var aulasFuturasMarcadas = await _context.Horarios
+                .AnyAsync(h => h.IdFormador == formador.IdFormador &&
+                h.Data > DateOnly.FromDateTime(DateTime.Now));
+
+                if (aulasFuturasMarcadas)
+                {
+                    return BadRequest(new { message = "N?o ? poss?vel eliminar o formador pois ele est? tem aulas agendadas para o futuro." });
+                }
+
+                formador.Ativo = false;
+                formador.DataDesativacao = DateTime.Now;
+            }
+
+            // Caso seja formando desativa
+            var formando = await _context.Formandos
+                .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+
+            if (formando != null)
+            {
+                // Verificar se existe alguma insci??o associada
+                bool temAulasFuturas = await _context.Inscricoes
+                    .Where(i => i.IdFormando == id)
+                    .AnyAsync(i => _context.Horarios.Any(h =>
+                        h.IdTurma == i.IdTurma &&
+                        h.Data > DateOnly.FromDateTime(DateTime.Now)
+                    ));
+
+                if (temAulasFuturas)
+                {
+                    return BadRequest(new { message = "N?o ? poss?vel eliminar o formando pois ele est? inscrito numa turma com aulas agendadas para o futuro." });
+                }
+
+
+                formando.Ativo = false;
+                formando.DataDesativacao = DateTime.Now;
+            }
+
+
             await _context.SaveChangesAsync();
 
             return NoContent();

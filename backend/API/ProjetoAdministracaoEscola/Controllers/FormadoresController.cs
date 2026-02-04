@@ -1,3 +1,13 @@
+using iText.IO.Image;
+using iText.Kernel.Colors;
+using iText.Kernel.Events;
+using iText.Kernel.Geom;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas;
+using iText.Layout;
+using iText.Layout.Borders;
+using iText.Layout.Element;
+using iText.Layout.Properties;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -89,6 +99,174 @@ namespace ProjetoAdministracaoEscola.Controllers
             };
 
             return Ok(resposta);
+        }
+
+        // GET: api/Formadores/5{id}/download-ficha
+        [HttpGet("{id}/download-ficha")]
+        public async Task<IActionResult> DownloadFicha(int id)
+        {
+            // Procura o formando e os seus dados
+            var formador = await _context.Formadores
+                .Include(f => f.IdUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdFormador == id);
+
+            if (formador == null) return NotFound(new { message = "Formador não encontrado." });
+
+            var horarios = await _context.Horarios
+                .Where(h => h.IdFormador == id)
+                .Include(h => h.IdCursoModuloNavigation)
+                    .ThenInclude(cm => cm.IdCursoNavigation)
+                .Include(h => h.IdCursoModuloNavigation)
+                    .ThenInclude(cm => cm.IdModuloNavigation)
+                .Include(h => h.IdTurmaNavigation)
+                .ToListAsync();
+
+            var modulosLecionados = horarios
+                .GroupBy(h => new { h.IdCursoModulo, h.IdTurma })
+                .Select(g => g.First())
+                .ToList();
+
+            using (var ms = new MemoryStream())
+            {
+                var writer = new PdfWriter(ms);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf);
+
+                // --- CONTEÚDO DO PDF ---
+
+                // Cabeçalho:
+
+                Table headerTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 2, 1 })).UseAllAvailableWidth();
+                headerTable.SetMarginBottom(20);
+
+                // LADO ESQUERDO: Logo
+                string logoPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo_hawk.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    Image logo = new Image(ImageDataFactory.Create(logoPath)).SetWidth(50);
+                    headerTable.AddCell(new Cell().Add(logo).SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.MIDDLE));
+                }
+                else { headerTable.AddCell(new Cell().SetBorder(Border.NO_BORDER)); }
+
+                // CENTRO: Nome do Projeto
+                headerTable.AddCell(new Cell().Add(new Paragraph("HAWK PORTAL")
+                    .SetFontSize(18).SetBold().SetFontColor(new DeviceRgb(0, 80, 80)))
+                    .SetBorder(Border.NO_BORDER).SetTextAlignment(TextAlignment.CENTER).SetVerticalAlignment(VerticalAlignment.MIDDLE));
+
+                // LADO DIREITO: Data de Emissão
+                headerTable.AddCell(new Cell().Add(new Paragraph($"Emitido em:\n{DateTime.Now:dd/MM/yyyy HH:mm}")
+                    .SetFontSize(8).SetItalic().SetTextAlignment(TextAlignment.RIGHT))
+                    .SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.BOTTOM));
+
+                document.Add(headerTable);
+
+                // Tabela de 2 colunas para o perfil do formando
+                // Coluna 1: Dados | Coluna 2: Foto
+                Table perfilTable = new Table(UnitValue.CreatePercentArray(new float[] { 70, 30 })).UseAllAvailableWidth();
+                perfilTable.SetBorder(Border.NO_BORDER).SetMarginBottom(20);
+
+                // --- COLUNA DA ESQUERDA: DADOS ---
+                Cell dadosCell = new Cell().SetBorder(Border.NO_BORDER);
+                dadosCell.Add(new Paragraph("FICHA DE REGISTO").SetFontSize(16).SetBold().SetUnderline());
+                dadosCell.Add(new Paragraph($"\nNome: {formador.IdUtilizadorNavigation.Nome}"));
+                dadosCell.Add(new Paragraph($"E-mail: {formador.IdUtilizadorNavigation.Email}"));
+                dadosCell.Add(new Paragraph($"NIF: {formador.IdUtilizadorNavigation.Nif}"));
+                dadosCell.Add(new Paragraph($"IBAN: {formador.Iban}" ?? "'Não registado'"));
+                perfilTable.AddCell(dadosCell);
+
+                // --- COLUNA DA DIREITA: FOTO ---
+                Cell fotoCell = new Cell().SetBorder(Border.NO_BORDER).SetHorizontalAlignment(HorizontalAlignment.RIGHT);
+                if (formador.Fotografia != null && formador.Fotografia.Length > 0)
+                {
+                    Image img = new Image(ImageDataFactory.Create(formador.Fotografia)).SetMaxHeight(100).SetHorizontalAlignment(HorizontalAlignment.RIGHT);
+
+                    fotoCell.Add(img);
+                }
+                else
+                {
+                    fotoCell.Add(new Paragraph("[Sem Foto]").SetItalic().SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT));
+                }
+                perfilTable.AddCell(fotoCell);
+
+                // Adicionar a tabela de perfil ao documento
+                document.Add(perfilTable);
+
+                // Espaçamento antes da tabela de modulos
+                document.Add(new Paragraph("\n"));
+
+
+                // --- Tabela de Módulos Lecionados ---
+                document.Add(new Paragraph("Histórico de Módulos por Turma")
+                    .SetBold()
+                    .SetMarginBottom(10)
+                    .SetFontSize(14));
+
+                Table table = new Table(UnitValue.CreatePercentArray(new float[] { 7, 2 })).UseAllAvailableWidth();
+
+                // Cabeçalhos principais
+                Cell h1 = new Cell().Add(new Paragraph("Módulo").SetBold().SetFontColor(DeviceRgb.WHITE)).SetBackgroundColor(new DeviceRgb(0, 80, 80)).SetPaddingLeft(5).SetPaddingBottom(2).SetPaddingTop(2).SetFontSize(13);
+                Cell h2 = new Cell().Add(new Paragraph("Carga Horária").SetBold().SetFontColor(DeviceRgb.WHITE)).SetBackgroundColor(new DeviceRgb(0, 80, 80)).SetPaddingLeft(20).SetFontSize(13);
+
+                table.AddHeaderCell(h1);
+                table.AddHeaderCell(h2);
+
+                // Agrupar os dados pelo Nome do Curso
+                var gruposPorCurso = modulosLecionados
+                    .GroupBy(m => new
+                    {
+                        NomeCurso = m.IdCursoModuloNavigation.IdCursoNavigation.Nome,
+                        NomeTurma = m.IdTurmaNavigation.NomeTurma
+                    })
+                    .OrderBy(g => g.Key.NomeCurso)
+                    .ThenBy(g => g.Key.NomeTurma);
+
+                foreach (var grupo in gruposPorCurso)
+                {
+                    // Adicionar uma linha de sub-cabeçalho para o CURSO (ocupa as 2 colunas)
+                    Cell cursoHeader = new Cell(1, 2)
+                        .Add(new Paragraph($"CURSO: {grupo.Key.NomeCurso} | TURMA: {grupo.Key.NomeTurma}" ).SetBold())
+                        .SetBackgroundColor(new DeviceRgb(240, 240, 240)) // Cinza claro para destaque
+                        .SetPaddingLeft(10)
+                        .SetPaddingTop(5)
+                        .SetPaddingBottom(5);
+
+                    table.AddCell(cursoHeader);
+
+                    // Listar os Módulos deste curso específico
+                    foreach (var cm in grupo)
+                    {
+                        var moduloNome = cm.IdCursoModuloNavigation.IdModuloNavigation.Nome;
+                        var horas = cm.IdCursoModuloNavigation.IdModuloNavigation.HorasTotais;
+
+                        table.AddCell(new Cell().Add(new Paragraph(moduloNome)).SetPaddingLeft(20)); // Indentação para parecer sub-item
+                        table.AddCell(new Cell().Add(new Paragraph(horas.ToString("0") + "h")).SetTextAlignment(TextAlignment.CENTER));
+                    }
+                }
+
+                document.Add(table);
+
+                int totalPaginas = pdf.GetNumberOfPages();
+                
+                for (int i = 1; i <= totalPaginas; i++)
+                {
+                    PdfPage page = pdf.GetPage(i);
+                    float width = page.GetPageSize().GetWidth();
+
+                    new Canvas(new PdfCanvas(page), new Rectangle(0, 20, width, 20))
+                    .Add(new Paragraph($"Página {i} de {totalPaginas}")
+                        .SetFontSize(9)
+                        .SetFontColor(DeviceGray.GRAY)
+                        .SetTextAlignment(TextAlignment.CENTER))
+                    .Close();
+                }
+
+
+                document.Close();
+
+                // --- retorno do ficheiro ---
+                byte[] fileBytes = ms.ToArray();
+                return File(fileBytes, "application/pdf", $"Ficha_{formador.IdUtilizadorNavigation.Nome}.pdf");
+            }
         }
 
         /// <summary>
@@ -279,27 +457,39 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// NoContent se for removido com sucesso.
         /// </returns>
         // DELETE: api/Formadores/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFormadore(int id)
+        public async Task<IActionResult> DeleteFormador(int id)
         {
-            var formador = await _context.Formadores.FindAsync(id);
-            if (formador == null) return NotFound();
+            var formador = await _context.Formadores
+                .Include(f => f.IdUtilizadorNavigation)
+                .FirstOrDefaultAsync(f => f.IdFormador == id);
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                // Nota: Verifique se existem alocações ou horários pendentes antes de apagar
-                _context.Formadores.Remove(formador);
-                await _context.SaveChangesAsync();
+            if (formador == null) return NotFound(new {message = "Formador não encontrado."});
 
-                await transaction.CommitAsync();
-                return NoContent();
-            }
-            catch (Exception)
+            //Aulas futuras marcadas
+            var aulasFuturasMarcadas = await _context.Horarios
+                .AnyAsync(h => h.IdFormador == formador.IdFormador &&
+                h.Data > DateOnly.FromDateTime(DateTime.Now));
+
+            if (aulasFuturasMarcadas)
             {
-                await transaction.RollbackAsync();
-                return BadRequest(new { message = "Não é possível remover o formador pois existem dados vinculados." });
+                return BadRequest(new { message = "Não é possível eliminar o formador pois ele está tem aulas agendadas para o futuro." });
             }
+
+            formador.Ativo = false;
+            formador.DataDesativacao = DateTime.Now;
+
+            if (formador.IdUtilizadorNavigation != null)
+            {
+                formador.IdUtilizadorNavigation.Ativo = false;
+                formador.IdUtilizadorNavigation.DataDesativacao = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+
         }
 
         /// <summary>
@@ -384,5 +574,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .Select(f => f.IdFormador)
                 .FirstOrDefaultAsync();
         }
+
     }
+
+
 }

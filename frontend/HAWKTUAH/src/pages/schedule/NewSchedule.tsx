@@ -220,7 +220,6 @@ export default function NewSchedule() {
 
       const conflitoFormador =
         idFormador && h.idFormador === Number(idFormador);
-      // Nota: Verifica se a tua entidade Horario tem idTurma acessível
       const conflitoTurma = idTurma && h.idTurma === Number(idTurma);
 
       return conflitoFormador || conflitoTurma;
@@ -372,7 +371,9 @@ export default function NewSchedule() {
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Gestão de Horários</h2>
-          <p className="text-muted mb-0">Inserir, alterar, eliminar e consultar horários.</p>
+          <p className="text-muted mb-0">
+            Inserir, alterar, eliminar e consultar horários.
+          </p>
         </div>
         <div
           className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
@@ -603,7 +604,7 @@ export default function NewSchedule() {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content rounded-4 border-0 shadow">
               <div className="modal-header border-0 pb-0">
-                <h4 className="fw-bold text-success">Novo Horário</h4>
+                <h4 className="fw-bold text-primary">Novo Horário</h4>
                 <button
                   type="button"
                   className="btn-close"
@@ -781,7 +782,7 @@ export default function NewSchedule() {
                   </button>
                   <button
                     type="submit"
-                    className="btn btn-success rounded-pill px-4 text-white"
+                    className="btn btn-primary rounded-pill px-4 text-white"
                     disabled={
                       conflitos.formadorOcupado ||
                       conflitos.turmaOcupada ||

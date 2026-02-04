@@ -475,7 +475,9 @@ namespace ProjetoAdministracaoEscola.Controllers
             );
 
             if (jaTemHoras)
+            {
                 return Conflict( new { message = "Não é possível remover o formador: o módulo já tem aulas dadas." });
+            }
 
             // se existir uma entrada na tabela horários não é possivel eliminar
             var existemHorarios = await _context.Horarios.AnyAsync(h =>

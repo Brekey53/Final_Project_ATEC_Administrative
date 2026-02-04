@@ -33,7 +33,7 @@ export default function Login() {
     if (!ativado && !socialSuccessG && !socialSuccessF) return;
 
     if (ativado === "true") {
-      toast.success("Conta ativada com sucesso! Já pode fazer login.");
+      toast.success("Conta ativada com sucesso! Já pode fazer login." , { id: "ativado-toast"} );
       navigate("/login", { replace: true });
       return;
     }
@@ -73,7 +73,7 @@ export default function Login() {
         toast.success("Código de verificação enviado para o seu e-mail.");
       }
     } catch (err: any) {
-      toast.error("Email ou password inválidos");
+      toast.error(err.response?.data?.message || "Email ou password inválidos");
     } finally {
       setLoading(false);
     }
