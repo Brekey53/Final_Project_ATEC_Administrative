@@ -2,7 +2,6 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
 import { toast } from "react-hot-toast";
 
-// Interface atualizada para refletir os novos dados do Backend
 export interface Formando {
   idFormando: number;
   nome: string;
@@ -18,7 +17,7 @@ export interface Formando {
   anexoFicheiro: File | null;
 }
 
-// Obter todos os formandos (Listagem com Turma)
+// Obter todos os formandos
 export async function getFormandos(): Promise<Formando[]> {
   const res = await axios.get(`${API_BASE_URL}/formandos`);
   return res.data;
@@ -76,7 +75,7 @@ export async function downloadFicheiroPDF(
     const response = await axios.get(
       `${API_BASE_URL}/formandos/${idFormando}/download-ficha`,
       {
-        responseType: "blob", // ESSENCIAL: diz ao axios para tratar a resposta como ficheiro
+        responseType: "blob",
       },
     );
 
