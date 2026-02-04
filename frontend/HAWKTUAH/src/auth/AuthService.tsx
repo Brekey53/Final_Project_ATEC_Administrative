@@ -10,19 +10,11 @@ interface JwtToken {
 
 export const authService = {
   async login(email: string, password: string) {
-    try {
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password,
-      });
-      return res.data;
-    } catch (error: any) {
-      if (error.response) {
-        const message = "Erro ao ligar ao servidor";
-        throw new Error(message);
-      }
-      throw new Error("Erro ao ligar ao servidor");
-    }
+    const res = await axios.post(`${API_BASE_URL}/auth/login`, {
+      email,
+      password,
+    });
+    return res.data;
   },
 
   async verify2FA(email: string, code: string) {
@@ -44,8 +36,7 @@ export const authService = {
 
   decodeToken(): JwtToken | null {
     const token = localStorage.getItem("token");
-    if (!token) 
-      return null;
+    if (!token) return null;
 
     try {
       return jwtDecode<JwtToken>(token);
