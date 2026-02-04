@@ -2,10 +2,14 @@ import React, { useEffect, useState } from "react";
 import { getCursos, type Curso } from "../../services/cursos/CursosService";
 import { Link } from "react-router-dom";
 import "../../css/cursos.css";
-import verDetalhes from "../../img/verDetalhes.png"
+import "../../css/layoutTabelas.css";
+import verDetalhes from "../../img/verDetalhes.png";
+import { Search } from "lucide-react";
+import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
+  const [areaFiltro, setAreaFiltro] = useState("todas");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,11 +32,17 @@ export default function Cursos() {
   }, []);
 
   const cursosFiltrados = cursos.filter((c) => {
-    const termo = searchTerm.toLowerCase();
+    const termo = normalizarTexto(searchTerm);
+    const matchPesquisa =
+      normalizarTexto(c.nome).includes(termo) ||
+      normalizarTexto(String(c.idCurso)).includes(termo);
 
-    return (
-      c.nome.toLowerCase().includes(termo) || String(c.idCurso).includes(termo)
-    );
+    const matchArea =
+      areaFiltro === "todas" ||
+      areaFiltro === "" ||
+      String(c.nomeArea) === areaFiltro;
+
+    return matchPesquisa && matchArea;
   });
 
   const totalPages = Math.ceil(cursosFiltrados.length / ITEMS_PER_PAGE);
@@ -55,15 +65,39 @@ export default function Cursos() {
         </div>
       </div>
 
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar curso por nome ou código..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          {" "}
+          {/* Pesquisa Input*/}
+          <div className="col-md-8">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+          {/* Select Estado da Turma */}
+          <div className="col-md-4">
+            <select
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
+              value={areaFiltro}
+              onChange={(e) => setAreaFiltro(e.target.value)}
+            >
+              <option value="">Filtrar por Área</option>
+              {cursos.map((c) => (
+                <option key={c.idArea} value={c.nomeArea}>
+                  {c.nomeArea}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -83,7 +117,7 @@ export default function Cursos() {
             >
               <div className="px-4 py-3 border-bottom tabela-cursos curso-row">
                 <div className="d-flex align-items-center gap-3">
-                   <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
+                  <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
                     {c.nome.charAt(0)}
                   </div>
                   <span className="fw-medium">{c.nome}</span>
@@ -98,7 +132,12 @@ export default function Cursos() {
                 </div>
 
                 <div className="fw-medium">
-                  <img className="img-ver-detalhes" src={verDetalhes} alt="Ver detalhes" title="Ver Detalhes do Curso" />
+                  <img
+                    className="img-ver-detalhes"
+                    src={verDetalhes}
+                    alt="Ver detalhes"
+                    title="Ver Detalhes do Curso"
+                  />
                 </div>
               </div>
             </Link>

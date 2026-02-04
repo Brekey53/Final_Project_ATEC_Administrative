@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import "../css/newStudent.css";
+import { Search } from "lucide-react";
+import { normalizarTexto } from "../utils/stringUtils";
 import {
   getFormandos,
   type Formando,
 } from "../services/students/FormandoService";
-import "../css/newStudent.css";
 
 export default function Formandos() {
   const [formandos, setFormandos] = useState<Formando[]>([]);
@@ -24,10 +26,10 @@ export default function Formandos() {
     fetchFormandos();
   }, []);
 
-    const filteredFormandos = formandos.filter((f) => {
-    const term = searchTerm.toLowerCase();
+  const filteredFormandos = formandos.filter((f) => {
+    const termo = normalizarTexto(searchTerm);
     return (
-      f.nome.toLowerCase().includes(term) || f.nif.toLowerCase().includes(term)
+      normalizarTexto(f.nome).includes(termo) || normalizarTexto(f.nif).includes(termo)
     );
   });
 
@@ -56,13 +58,18 @@ export default function Formandos() {
       {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar Formandos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="input-group input-group-custom">
+            <span className="input-group-text bg-white border-0">
+              <Search size={20} className="text-muted" />
+            </span>
+            <input
+              type="text"
+              className="form-control form-control-lg border-0 shadow-none"
+              placeholder="Pesquisar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
@@ -71,32 +78,31 @@ export default function Formandos() {
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-formandos">
             <div>Formando</div>
             <div>Email</div>
-            <div >Telefone</div>
+            <div>Telefone</div>
           </div>
           {!loading && formandosPaginados.length > 0
-           ? formandosPaginados.map((f) => (
-            <div
-              key={f.idFormando}
-              className="px-4 py-3 border-bottom tabela-formandos"
-            >
-              <div className="d-flex align-items-center gap-3">
-                <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
-                  {f.nome.charAt(0)}
+            ? formandosPaginados.map((f) => (
+                <div
+                  key={f.idFormando}
+                  className="px-4 py-3 border-bottom tabela-formandos"
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
+                      {f.nome.charAt(0)}
+                    </div>
+                    <span className="fw-medium">{f.nome}</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2 text-muted">
+                    <span>{f.email || "-"}</span>
+                  </div>
+                  <div className="text-muted">{f.telefone || "-"}</div>{" "}
                 </div>
-                <span className="fw-medium">{f.nome}</span>
-              </div>
-              <div className="d-flex align-items-center gap-2 text-muted">
-                <span>{f.email || "-"}</span>
-              </div>
-              <div className="text-muted">{f.telefone || "-"}</div>{" "}
-            </div>
-          ))
-          : !loading && (
+              ))
+            : !loading && (
                 <div className="p-5 text-center text-muted">
                   Nenhum formando encontrado para "{searchTerm}"
                 </div>
               )}
-      
         </div>
       </div>
       {totalPages > 1 && (

@@ -7,11 +7,12 @@ import {
   type TurmaFormadorDTO,
 } from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil} from "lucide-react";
+import { Pencil, Search } from "lucide-react";
 
 export default function FormadorTurmas() {
   const [searchTerm, setSearchTerm] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("Todos");
+  const [ordenacao, setOrdenacao] = useState("desc");
 
   const [turmas, setTurmas] = useState<TurmaFormadorDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,15 +36,32 @@ export default function FormadorTurmas() {
     fetchTurmas();
   }, []);
 
-  const turmasFiltradas = turmas.filter((t) => {
-    const matchTexto = `${normalizarTexto(t.nomeTurma)} ${normalizarTexto(t.nomeCurso)} ${normalizarTexto(t.nomeModulo)}`
-      .includes(normalizarTexto(searchTerm));
+  const turmasFiltradas = turmas
+    .filter((t) => {
+      const termo = normalizarTexto(searchTerm);
+      const matchPesquisa =
+        normalizarTexto(t.nomeTurma).includes(termo) ||
+        normalizarTexto(String(t.idTurma)).includes(termo);
 
-    const matchEstado =
-      estadoFiltro === "Todos" || t.estado === estadoFiltro;
+      const matchArea =
+        estadoFiltro === "Todos" ||
+        estadoFiltro === "" ||
+        String(t.estado) === estadoFiltro;
 
-    return matchTexto && matchEstado;
-  });
+      return matchPesquisa && matchArea;
+    })
+    .sort((a, b) => {
+      const dataA = a.horasDadas ? new Date(a.horasDadas).getTime() : 0;
+      const dataB = b.horasTotaisModulo
+        ? new Date(b.horasTotaisModulo).getTime()
+        : 0;
+
+      if (ordenacao === "asc") {
+        return dataA - dataB;
+      } else {
+        return dataB - dataA;
+      }
+    });
 
   useEffect(() => {
     setCurrentPage(1);
@@ -70,31 +88,47 @@ export default function FormadorTurmas() {
       </div>
 
       {/* PESQUISA + FILTRO */}
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-md-8">
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          {" "}
+          {/* Pesquisa Input*/}
+          <div className="col-md-6">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
               <input
                 type="text"
-                className="form-control form-control-lg"
-                placeholder="Pesquisar por turma, curso ou módulo…"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
-            <div className="col-md-4">
-              <select
-                className="form-select form-select-lg"
-                value={estadoFiltro}
-                onChange={(e) => setEstadoFiltro(e.target.value)}
-              >
-                <option value="Todos">Todos os estados</option>
-                <option value="Para começar">Para começar</option>
-                <option value="A decorrer">A decorrer</option>
-                <option value="Terminado">Terminado</option>
-              </select>
-            </div>
+          </div>
+          {/* Select Estado da Turma */}
+          <div className="col-md-3">
+            <select
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
+              value={estadoFiltro}
+              onChange={(e) => setEstadoFiltro(e.target.value)}
+            >
+              <option value="Todos">Todas</option>
+              <option value="Para começar">Para começar</option>
+              <option value="A decorrer">A decorrer</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+          </div>
+          {/* Select para ordenar por data*/}
+          <div className="col-md-3">
+            <select
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
+              value={ordenacao}
+              onChange={(e) => setOrdenacao(e.target.value)}
+            >
+              <option value="desc">Mais horas</option>
+              <option value="asc">Menos horas</option>
+            </select>
           </div>
         </div>
       </div>
@@ -119,7 +153,7 @@ export default function FormadorTurmas() {
               >
                 {/* Turma */}
                 <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                  <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
                     {t.nomeTurma.charAt(0)}
                   </div>
                   <span className="fw-medium">{t.nomeTurma}</span>
@@ -143,8 +177,8 @@ export default function FormadorTurmas() {
                       t.estado === "Para começar"
                         ? "bg-secondary"
                         : t.estado === "A decorrer"
-                        ? "bg-primary"
-                        : "bg-success"
+                          ? "bg-primary"
+                          : "bg-success"
                     }`}
                   >
                     {t.estado}

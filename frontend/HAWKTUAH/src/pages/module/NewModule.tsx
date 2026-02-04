@@ -7,7 +7,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
 export default function NewModule() {
@@ -105,15 +105,21 @@ export default function NewModule() {
         </Link>
       </div>
 
+      {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar Módulos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="input-group input-group-custom">
+            <span className="input-group-text bg-white border-0">
+              <Search size={20} className="text-muted" />
+            </span>
+            <input
+              type="text"
+              className="form-control form-control-lg border-0 shadow-none"
+              placeholder="Pesquisar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 

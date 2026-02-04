@@ -6,6 +6,8 @@ import {
 } from "../../services/turmas/TurmasService";
 import { toast } from "react-hot-toast";
 import "../../css/EditAvaliacoesFormador.css";
+import "../../css/layoutTabelas.css";
+import { Search } from "lucide-react";
 
 type AvaliacaoAlunoDTO = {
   idInscricao: number;
@@ -22,6 +24,9 @@ export default function EditAvaliacoesFormador() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     if (!turmaId || !moduloId) {
@@ -82,6 +87,11 @@ export default function EditAvaliacoesFormador() {
     a.nomeFormando.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  const totalPages = Math.ceil(alunosFiltrados.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const alunosPaginados = alunosFiltrados.slice(startIndex, endIndex);
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       {/* HEADER */}
@@ -112,15 +122,22 @@ export default function EditAvaliacoesFormador() {
       </div>
 
       {/* PESQUISA */}
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar formando…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          <div className="col-md-12">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -135,10 +152,10 @@ export default function EditAvaliacoesFormador() {
 
           {/* LINHAS */}
           {!loading && alunosFiltrados.length > 0 ? (
-            alunosFiltrados.map((a) => (
+            alunosPaginados.map((a) => (
               <div key={a.idInscricao} className="avaliacao-row">
                 <div className="avaliacao-aluno">
-                  <div className="avaliacao-avatar">
+                  <div className="avatar-circle rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold border">
                     {a.nomeFormando.charAt(0)}
                   </div>
                   <span>{a.nomeFormando}</span>
@@ -148,7 +165,7 @@ export default function EditAvaliacoesFormador() {
                   type="number"
                   min={0}
                   max={20}
-                  step={0.25}
+                  step={0.01}
                   value={a.nota ?? ""}
                   onChange={(e) => atualizarNota(a.idInscricao, e.target.value)}
                   className="avaliacao-input"
@@ -165,8 +182,33 @@ export default function EditAvaliacoesFormador() {
         </div>
       </div>
 
-      <p className="text-muted small text-center mt-5">
-        {alunosFiltrados.length} formando(s)
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+
+      <p className="text-muted small text-center mt-1">
+        {alunosFiltrados.length} módulo(s) encontrado(s)
       </p>
     </div>
   );

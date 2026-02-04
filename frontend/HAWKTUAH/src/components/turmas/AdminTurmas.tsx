@@ -4,13 +4,15 @@ import "../../css/layoutTabelas.css";
 import { toast } from "react-hot-toast";
 import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
 export default function AdminTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [areaFiltro, setAreaFiltro] = useState("todas");
+  const [ordenacao, setOrdenacao] = useState("desc");
 
   const ITEMS_PER_PAGE = 10;
 
@@ -28,32 +30,52 @@ export default function AdminTurmas() {
     fetchTurmas();
   }, []);
 
-  const turmasFiltradas = turmas.filter((t) =>
-    `${normalizarTexto(t.nomeTurma)} ${normalizarTexto(t.nomeCurso)}`
-      .includes(normalizarTexto(searchTerm)),
-  );
+  const turmasFiltradas = turmas
+    .filter((t) => {
+      const termo = normalizarTexto(searchTerm);
+      const matchPesquisa =
+        normalizarTexto(t.nomeTurma).includes(termo) ||
+        normalizarTexto(String(t.idTurma)).includes(termo);
+
+      const matchArea =
+        areaFiltro === "todas" ||
+        areaFiltro === "" ||
+        String(t.estado) === areaFiltro;
+
+      return matchPesquisa && matchArea;
+    })
+    .sort((a, b) => {
+      const dataA = a.dataInicio ? new Date(a.dataInicio).getTime() : 0;
+      const dataB = b.dataInicio ? new Date(b.dataInicio).getTime() : 0;
+
+      if (ordenacao === "asc") {
+        return dataA - dataB;
+      } else {
+        return dataB - dataA;
+      }
+    });
 
   const totalPages = Math.ceil(turmasFiltradas.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const turmasPaginadas = turmasFiltradas.slice(startIndex, endIndex);
 
-    useEffect(() => {
-      // 1. Procurar os elementos
-      const tooltipTriggerList = document.querySelectorAll(
-        '[data-bs-toggle="tooltip"]',
-      );
-  
-      // 2. Inicializar
-      const tooltipList = Array.from(tooltipTriggerList).map(
-        (el) => new Tooltip(el),
-      );
-  
-      // 3. Limpeza
-      return () => {
-        tooltipList.forEach((t) => t.dispose());
-      };
-    }, [turmasPaginadas]); // Re-executa quando a lista carrega
+  useEffect(() => {
+    // 1. Procurar os elementos
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]',
+    );
+
+    // 2. Inicializar
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el),
+    );
+
+    // 3. Limpeza
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [turmasPaginadas]); // Re-executa quando a lista carrega
 
   /* sempre que pesquisa muda → volta à página 1 */
   useEffect(() => {
@@ -78,15 +100,47 @@ export default function AdminTurmas() {
       </div>
 
       {/* PESQUISA */}
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar turmas (nome, curso)…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          {/* Pesquisa Input*/}
+          <div className="col-md-6">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+          {/* Select Estado da Turma */}
+          <div className="col-md-3">
+            <select
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
+              value={areaFiltro}
+              onChange={(e) => setAreaFiltro(e.target.value)}
+            >
+              <option value="">Filtrar por estado</option>
+              <option value="Para começar">Para começar</option>
+              <option value="A decorrer">A decorrer</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+          </div>
+          {/* Select para ordenar por data*/}
+          <div className="col-md-3">
+            <select
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
+              value={ordenacao}
+              onChange={(e) => setOrdenacao(e.target.value)}
+            >
+              <option value="desc">Mais recentes primeiro</option>
+              <option value="asc">Mais antigas primeiro</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -140,16 +194,19 @@ export default function AdminTurmas() {
 
                 {/* Ações */}
                 <div className="d-flex justify-content-end gap-3 align-items-center">
-                  <Link to={`edit-turma/${t.idTurma}`} className="action-icon"
-                                      title="Editar informações Turma"
+                  <Link
+                    to={`edit-turma/${t.idTurma}`}
+                    className="action-icon"
+                    title="Editar informações Turma"
                     data-bs-toggle="tooltip"
-                    data-bs-placement="top">
+                    data-bs-placement="top"
+                  >
                     <Pencil size={18} />
                   </Link>
 
                   <span
                     className="action-icon text-danger cursor-pointer"
-                                        title="Eliminar Turma"
+                    title="Eliminar Turma"
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
                     onClick={() => {
