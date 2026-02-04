@@ -16,6 +16,11 @@ export async function getHorasFormadorMesAnterior() {
   return res.data.totalHoras;
 }
 
+export async function getNumeroTurmasFormador() {
+  const res = await axios.get(`${API_BASE_URL}/formadores/numTurmas`);
+  return res.data;
+}
+
 export async function getHorariosFormando() {
   const res = await axios.get("/horarios/formando");
   return res.data;
