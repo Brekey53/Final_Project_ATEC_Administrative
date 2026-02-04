@@ -169,7 +169,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 string estado;
                 if (horasDadas == 0) estado = $"Para começar [{horasJaAgendadas}/{horasTotais}] ";
                 else if (horasDadas < horasTotais) estado = $"A decorrer [{horasJaAgendadas}/{horasTotais}] ";
-                else estado = $"Terminado [{horasJaAgendadas}/{horasTotais}] ";
+                else estado = $"Terminado [{horasTotais}] ";
 
                 var cursoModulo = await _context.CursosModulos
                 .FirstOrDefaultAsync(cm =>
