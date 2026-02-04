@@ -80,6 +80,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             inicio = TimeOnly.Parse(dto.HoraInicio);
             fim = TimeOnly.Parse(dto.HoraFim);
 
+            var duracao = fim - inicio;
+
+            if (duracao.TotalHours < 2)
+            {
+                return BadRequest(new { message = "A disponibilidade mínima tem ser de 2 horas." });
+            }
+
             var existeMarcacao = await _context.DisponibilidadeFormadores.AnyAsync(df => df.IdFormador == formadorId
                   && df.DataDisponivel == data && inicio < df.HoraFim && fim > df.HoraInicio );
 
