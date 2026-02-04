@@ -28,7 +28,11 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Modulo>>> GetModulos()
         {
-            return await _context.Modulos.ToListAsync();
+            var modulos = await _context.Modulos
+                .OrderBy(m => m.Nome)
+                .ToListAsync();
+
+            return Ok(modulos);
         }
 
         // GET: api/Modulos/5
