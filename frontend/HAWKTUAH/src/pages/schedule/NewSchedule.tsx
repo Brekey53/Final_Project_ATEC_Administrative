@@ -12,7 +12,7 @@ import { getTurmasFormadorHorario } from "../../services/turmas/TurmasService";
 import { getSalasDisponiveis } from "../../services/rooms/SalasService";
 import { getFormadores } from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
-import { Search } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -20,18 +20,24 @@ type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 export default function NewSchedule() {
-  // --- ESTADOS GERAIS ---
+  // --- Estados gerais ---
   const [dataSelecionada, setDataSelecionada] = useState<Value>(new Date());
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // --- ESTADOS DOS MODAIS ---
+  // --- Estados para filtro e paginação
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  // --- Estados dos modal ---
   const [showModal, setShowModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedHorario, setSelectedHorario] = useState<Horario | null>(null);
 
-  // --- ESTADO DO NOVO HORÁRIO ---
+  // --- Estado do Novo Horario ---
   const [newHorario, setNewHorario] = useState({
     idTurma: "",
     idFormador: "",
@@ -43,7 +49,7 @@ export default function NewSchedule() {
     horaFim: "",
   });
 
-  // --- ESTADOS DAS LISTAS ---
+  // --- Estados das listas ---
   const [turmasRaw, setTurmasRaw] = useState<any[]>([]); // Lista crua da API
   const [formadores, setFormadores] = useState<any[]>([]);
   const [salasDisponiveis, setSalasDisponiveis] = useState<any[]>([]);
@@ -58,7 +64,7 @@ export default function NewSchedule() {
     });
   };
 
-  // --- 1. CARREGAMENTO INICIAL ---
+  // --- CARREGAMENTO INICIAL ---
   const fetchHorarios = async () => {
     setLoading(true);
     try {
@@ -85,8 +91,13 @@ export default function NewSchedule() {
     loadFormadores();
   }, []);
 
-  // --- 2. LÓGICA DE FILTRAGEM (USEMEMO) ---
-  // AQUI ESTÁ A MAGIA: Prepara os dados para os dois selects separados
+  // Resetar paginação quando filtros mudam
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, startDate, endDate, dataSelecionada]);
+
+  // --- LÓGICA DE FILTRAGEM (USEMEMO) ---
+  // Prepara os dados para os dois selects separados
 
   // Lista de Turmas Únicas (Remove duplicados se a turma tiver vários módulos)
   const turmasUnicas = useMemo(() => {
@@ -105,7 +116,7 @@ export default function NewSchedule() {
     return turmasRaw.filter((t) => t.idTurma.toString() === newHorario.idTurma);
   }, [turmasRaw, newHorario.idTurma]);
 
-  // --- 3. HANDLERS (O que acontece quando mudas os selects) ---
+  // --- HANDLERS (O que acontece quando se muda os selects) ---
 
   const handleFormadorChange = async (
     e: React.ChangeEvent<HTMLSelectElement>,
@@ -136,7 +147,7 @@ export default function NewSchedule() {
     setNewHorario({
       ...newHorario,
       idTurma: e.target.value,
-      idModulo: "", // Importante: Resetar módulo ao trocar turma
+      idModulo: "", // Resetar módulo ao trocar turma
       idCursoModulo: "",
     });
   };
@@ -162,7 +173,7 @@ export default function NewSchedule() {
     }
   };
 
-  // --- 4. SALAS E VALIDAÇÃO ---
+  // --- SALAS E VALIDAÇÃO ---
 
   const fetchSalasDisponiveis = async () => {
     const { data, horaInicio, horaFim, idCursoModulo } = newHorario;
@@ -238,7 +249,7 @@ export default function NewSchedule() {
 
   const conflitos = verificarConflitos();
 
-  // --- 5. CRUD ---
+  // --- CRUD ---
 
   const handleOpenModal = (horario: Horario) => {
     setSelectedHorario({ ...horario });
@@ -327,7 +338,7 @@ export default function NewSchedule() {
     }
   };
 
-  // --- FILTROS ---
+  // --- Filtros e paginação ---
   const correspondePesquisa = (h: Horario, termo: string) => {
     const t = normalizarTexto(termo);
     return (
@@ -338,19 +349,64 @@ export default function NewSchedule() {
     );
   };
 
+  // Determina se o filtro de intervalo está ativo
+  const isRangeActive = startDate !== "" && endDate !== "";
+
+  // Filtra os horários
   const horariosFiltrados = horarios.filter((h) => {
-    if (!(dataSelecionada instanceof Date)) return false;
-    return (
-      new Date(h.data).toDateString() === dataSelecionada.toDateString() &&
-      correspondePesquisa(h, searchTerm)
-    );
+    // Filtro de Texto
+    if (!correspondePesquisa(h, searchTerm)) return false;
+
+    const dataHorario = new Date(h.data).toISOString().split("T")[0];
+
+    // Modo Intervalo
+    if (isRangeActive) {
+      return dataHorario >= startDate && dataHorario <= endDate;
+    }
+
+    // Modo Data Única (Calendário)
+    if (dataSelecionada instanceof Date) {
+      // Ajuste para evitar problemas de fuso horário na comparação simples
+      const dataSelStr = new Date(
+        dataSelecionada.getTime() - dataSelecionada.getTimezoneOffset() * 60000,
+      )
+        .toISOString()
+        .split("T")[0];
+      return dataHorario === dataSelStr;
+    }
+
+    return false;
   });
 
+  // Ordenar por data e hora
+  horariosFiltrados.sort((a, b) => {
+    const dateA = new Date(`${a.data}T${a.horaInicio}`);
+    const dateB = new Date(`${b.data}T${b.horaInicio}`);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  // Lógica de Paginação
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentHorarios = horariosFiltrados.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
+  const totalPages = Math.ceil(horariosFiltrados.length / ITEMS_PER_PAGE);
+
   const getTileContent = ({ date, view }: { date: Date; view: string }) => {
+    // Se o modo de intervalo estiver ativo, não mostrar bolinhas e desativar visualmente
+    if (isRangeActive) return null;
+
     if (view === "month") {
+      const dataStr = new Date(
+        date.getTime() - date.getTimezoneOffset() * 60000,
+      )
+        .toISOString()
+        .split("T")[0];
       const tem = horarios.some(
         (h) =>
-          new Date(h.data).toDateString() === date.toDateString() &&
+          new Date(h.data).toISOString().split("T")[0] === dataStr &&
           correspondePesquisa(h, searchTerm),
       );
       if (tem)
@@ -361,6 +417,12 @@ export default function NewSchedule() {
         );
     }
     return null;
+  };
+
+  // Limpar filtros de intervalo
+  const clearRangeFilter = () => {
+    setStartDate("");
+    setEndDate("");
   };
 
   return (
@@ -382,20 +444,62 @@ export default function NewSchedule() {
         </div>
       </div>
 
-      {/* BARRA DE PESQUISA */}
+      {/* BARRA DE FILTROS E PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <div className="input-group input-group-custom">
-            <span className="input-group-text bg-white border-0">
-              <Search size={20} className="text-muted" />
-            </span>
-            <input
-              type="text"
-              className="form-control form-control-lg border-0 shadow-none"
-              placeholder="Pesquisar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div className="card-body col-md-12">
+          <div className="row g-2 align-items-center">
+            {/* Pesquisa Texto */}
+            <div className="col-md">
+              <div className="input-group input-group-custom">
+                <span className="input-group-text bg-white border-0">
+                  <Search size={20} className="text-muted" />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border-0 shadow-none"
+                  placeholder="Pesquisar turma, formador ou sala..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Filtro de Intervalo de Datas */}
+            <div className="col-md-auto">
+              <div className="d-flex gap-2 align-items-center flex-wrap justify-content-md-end">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-muted small fw-bold">De:</span>
+                  <input
+                    type="date"
+                    className="form-control shadow-none"
+                    style={{ maxWidth: "160px" }}
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-muted small fw-bold">Até:</span>
+                  <input
+                    type="date"
+                    className="form-control shadow-none"
+                    style={{ maxWidth: "160px" }}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={startDate}
+                  />
+                </div>
+
+                {isRangeActive && (
+                  <button
+                    className="btn btn-outline-danger d-flex align-items-center gap-1 rounded-pill px-3"
+                    onClick={clearRangeFilter}
+                    title="Limpar filtros de data"
+                  >
+                    <XCircle size={16} /> Limpar
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -403,74 +507,146 @@ export default function NewSchedule() {
       {/* CALENDÁRIO E LISTA */}
       <div className="row g-4">
         <div className="col-lg-4">
-          <div className="card shadow-sm border-0 rounded-4 p-3 bg-white">
-            <h5 className="text-center fw-bold mb-3">Calendário</h5>
-            <Calendar
-              onChange={setDataSelecionada}
-              value={dataSelecionada}
-              locale="pt-PT"
-              className="w-100 border-0"
-              tileContent={getTileContent}
-            />
+          <div
+            className={`card shadow-sm border-0 rounded-4 p-3 bg-white ${isRangeActive ? "opacity-50" : ""}`}
+          >
+            <h5 className="text-center fw-bold mb-3">
+              {isRangeActive ? "Calendário Bloqueado" : "Calendário"}
+            </h5>
+            <div style={{ pointerEvents: isRangeActive ? "none" : "auto" }}>
+              <Calendar
+                onChange={setDataSelecionada}
+                value={dataSelecionada}
+                locale="pt-PT"
+                className="w-100 border-0"
+                tileContent={getTileContent}
+                // Bloqueia visualmente se o filtro de intervalo estiver ativo
+                tileDisabled={() => isRangeActive}
+              />
+            </div>
+            {isRangeActive && (
+              <div className="text-center mt-2">
+                <small className="text-danger fw-bold">
+                  Modo de intervalo ativo.
+                </small>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="col-lg-8">
-          <div className="card shadow-sm border-0 rounded-4 p-5 text-center">
+          <div className="card shadow-sm border-0 rounded-4 p-4 text-center h-100">
             <h6 className="text-center mb-4">
-              Horários para <strong>{formatarData(dataSelecionada)}</strong>
-            </h6>
-            <div className="py-2">
-              {loading ? (
-                <div
-                  className="spinner-border text-success"
-                  role="status"
-                ></div>
-              ) : horariosFiltrados.length > 0 ? (
-                <div className="text-start">
-                  {horariosFiltrados.map((h) => (
-                    <div
-                      key={h.idHorario}
-                      className="card border-0 bg-light rounded-4 mb-3 shadow-sm schedule-card-map"
-                    >
-                      <div className="card-body d-flex align-items-center p-3">
-                        <div
-                          className="text-center pe-4 border-end"
-                          style={{ minWidth: "100px" }}
-                        >
-                          <h4
-                            className="fw-bold mb-0"
-                            style={{ color: "#065f5a" }}
-                          >
-                            {h.horaInicio}
-                          </h4>
-                          <small className="text-muted">até {h.horaFim}</small>
-                        </div>
-                        <div className="ps-4 flex-grow-1">
-                          <h5 className="fw-bold mb-1">{h.nomeTurma}</h5>
-                          <p className="text-muted small mb-1">
-                            {h.nomeModulo}
-                          </p>
-                          <small className="text-secondary">
-                            <i className="bi bi-person me-1"></i>
-                            {h.nomeFormador} |
-                            <i className="bi bi-geo-alt ms-2 me-1"></i>
-                            {h.nomeSala}
-                          </small>
-                        </div>
-                        <button
-                          className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
-                          onClick={() => handleOpenModal(h)}
-                        >
-                          Editar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {isRangeActive ? (
+                <span>
+                  Horários de <strong>{startDate}</strong> a{" "}
+                  <strong>{endDate}</strong>
+                </span>
               ) : (
-                <div>
-                  <p className="text-muted mt-3">Sem horários para este dia.</p>
+                <span>
+                  Horários para <strong>{formatarData(dataSelecionada)}</strong>
+                </span>
+              )}
+            </h6>
+
+            <div
+              className="py-2 d-flex flex-column"
+              style={{ minHeight: "400px" }}
+            >
+              {loading ? (
+                <div className="d-flex justify-content-center align-items-center flex-grow-1">
+                  <div
+                    className="spinner-border text-success"
+                    role="status"
+                  ></div>
+                </div>
+              ) : currentHorarios.length > 0 ? (
+                <>
+                  <div className="text-start flex-grow-1">
+                    {currentHorarios.map((h) => (
+                      <div
+                        key={h.idHorario}
+                        className="card border-0 bg-light rounded-4 mb-3 shadow-sm schedule-card-map"
+                      >
+                        <div className="card-body d-flex align-items-center p-3">
+                          <div
+                            className="text-center pe-4 border-end"
+                            style={{ minWidth: "110px" }}
+                          >
+                            {/* Se for intervalo, mostra a data também */}
+                            {isRangeActive && (
+                              <div className="text-muted small fw-bold mb-1">
+                                {new Date(h.data).toLocaleDateString("pt-PT", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                })}
+                              </div>
+                            )}
+                            <h4
+                              className="fw-bold mb-0"
+                              style={{ color: "#065f5a" }}
+                            >
+                              {h.horaInicio}
+                            </h4>
+                            <small className="text-muted">
+                              até {h.horaFim}
+                            </small>
+                          </div>
+                          <div className="ps-4 flex-grow-1">
+                            <h5 className="fw-bold mb-1">{h.nomeTurma}</h5>
+                            <p className="text-muted small mb-1">
+                              {h.nomeModulo}
+                            </p>
+                            <small className="text-secondary">
+                              <i className="bi bi-person me-1"></i>
+                              {h.nomeFormador} |
+                              <i className="bi bi-geo-alt ms-2 me-1"></i>
+                              {h.nomeSala}
+                            </small>
+                          </div>
+                          <button
+                            className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
+                            onClick={() => handleOpenModal(h)}
+                          >
+                            Editar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* PAGINAÇÃO */}
+                  {totalPages > 1 && (
+                    <div className="d-flex justify-content-center align-items-center gap-3 mt-4 pt-3 border-top">
+                      <button
+                        className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage((p) => p - 1)}
+                        style={{ width: "40px", height: "40px" }}
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+
+                      <span className="fw-semibold text-muted">
+                        Página {currentPage} de {totalPages}
+                      </span>
+
+                      <button
+                        className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                        style={{ width: "40px", height: "40px" }}
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex-grow-1 d-flex flex-column justify-content-center align-items-center">
+                  <p className="text-muted mt-3">
+                    Sem horários encontrados para este filtro.
+                  </p>
                   <div
                     className="btn btn-outline-success px-4 py-2 rounded-pill shadow-sm"
                     onClick={handleOpenCreateModal}
@@ -644,12 +820,12 @@ export default function NewSchedule() {
                       </select>
                       {conflitos.formadorOcupado && (
                         <div className="invalid-feedback fw-bold">
-                          ⚠️ Formador ocupado neste horário!
+                          Formador ocupado neste horário!
                         </div>
                       )}
                     </div>
 
-                    {/* TURMA (Usa turmasUnicas) */}
+                    {/* TURMA */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Turma</label>
                       <select
@@ -672,12 +848,12 @@ export default function NewSchedule() {
                       </select>
                       {conflitos.turmaOcupada && (
                         <div className="invalid-feedback fw-bold">
-                          ⚠️ Turma ocupada neste horário!
+                          Turma ocupada neste horário!
                         </div>
                       )}
                     </div>
 
-                    {/* MÓDULO (Usa modulosDaTurma) */}
+                    {/* MÓDULO */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Módulo</label>
                       <select
