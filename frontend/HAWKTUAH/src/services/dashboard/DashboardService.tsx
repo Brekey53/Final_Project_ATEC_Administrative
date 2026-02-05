@@ -65,3 +65,14 @@ export async function getAvaliacoesFormando(): Promise<AvaliacaoFormando[]> {
   const res = await axios.get(`${API_BASE_URL}/avaliacoes/formando`);
   return res.data;
 }
+
+
+export type TopFormadorHoras = {
+  nome: string;
+  horas: number;
+};
+
+export async function getTopFormadores(): Promise<TopFormadorHoras[]> {
+  const res = await axios.get(`${API_BASE_URL}/dashboard/topformadores`);
+  return res.data;
+}
