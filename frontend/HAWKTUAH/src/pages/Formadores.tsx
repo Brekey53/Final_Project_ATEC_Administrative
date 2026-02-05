@@ -111,7 +111,7 @@ export default function Formadores() {
 
       {/* PAGINAÇÃO */}
       {totalPages > 1 && (
-        <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+        <div className="d-flex justify-content-center align-items-center gap-2 pt-4">
           <button
             className="btn btn-outline-secondary"
             disabled={currentPage === 1}
@@ -133,7 +133,7 @@ export default function Formadores() {
           </button>
         </div>
       )}
-      <p className="text-muted small text-center mt-5">
+      <p className="text-muted small text-center mt-3">
         {filteredFormadores.length} formador(es) encontrado(s)
       </p>
     </div>

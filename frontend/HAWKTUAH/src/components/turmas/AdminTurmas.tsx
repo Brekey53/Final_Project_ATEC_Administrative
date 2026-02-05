@@ -210,6 +210,7 @@ export default function AdminTurmas() {
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
                     onClick={() => {
+                      //TODO: Implementar dleete turmas 
                       // setTurmaSelecionada(t);
                       // setShowDeleteModal(true);
                     }}
@@ -229,7 +230,7 @@ export default function AdminTurmas() {
 
       {/* PAGINAÇÃO */}
       {totalPages > 1 && (
-        <div className="d-flex justify-content-center align-items-center gap-3 py-4">
+        <div className="d-flex justify-content-center align-items-center gap-3 py-3">
           <button
             className="btn btn-outline-secondary"
             disabled={currentPage === 1}
@@ -252,7 +253,7 @@ export default function AdminTurmas() {
         </div>
       )}
 
-      <p className="text-muted small text-center mt-2">
+      <p className="text-muted small text-center mt-4">
         {turmasFiltradas.length} turma(s) encontrada(s)
       </p>
     </div>
