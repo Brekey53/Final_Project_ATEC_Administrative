@@ -6,12 +6,14 @@ import "./config.constants"
 
 import AppRoutes from "./routes/AppRoutes";
 import { Toaster } from "react-hot-toast";
+import ChatbotWidget from "./components/Chatbot";
 
 function App() {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
       <AppRoutes></AppRoutes>
+      <ChatbotWidget />
     </>
   );
 }
