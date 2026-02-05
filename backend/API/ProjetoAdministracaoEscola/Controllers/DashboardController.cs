@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.ModelsDTO.Curso;
+using ProjetoAdministracaoEscola.ModelsDTO.Formador;
 using ProjetoAdministracaoEscola.ModelsDTO.Turma;
 
 namespace ProjetoAdministracaoEscola.Controllers
@@ -109,5 +110,39 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(data);
         }
 
+        [HttpGet("topformadores")]
+        public async Task<ActionResult<IEnumerable<TopFormadoresDTO>>> GetTopFormadores()
+        {
+            var hoje = DateOnly.FromDateTime(DateTime.Now);
+
+            var dados = await _context.Horarios
+                .Where(h => h.Data < hoje)
+                .Select(h => new
+                {
+                    h.IdFormador,
+                    Nome = h.IdFormadorNavigation.IdUtilizadorNavigation.Nome,
+                    h.HoraInicio,
+                    h.HoraFim
+                })
+                .ToListAsync();
+
+            var topFormadores = dados
+                .GroupBy(h => new { h.IdFormador, h.Nome })
+                .Select(g => new TopFormadoresDTO
+                {
+                    Nome = g.Key.Nome,
+                    Horas = Math.Round(
+                        g.Sum(h => (h.HoraFim - h.HoraInicio).TotalHours)
+                    )
+                })
+                .OrderByDescending(x => x.Horas)
+                .Take(10)
+                .ToList();
+
+            return Ok(topFormadores);
+
+        }
+
     }
 }
+
