@@ -79,17 +79,17 @@ export default function NewCourse() {
   const cursosPaginados = cursosFiltrados.slice(startIndex, endIndex);
 
   useEffect(() => {
-    // 1. Procurar os elementos
+    // Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // 2. Inicializar
+    // Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
 
-    // 3. Limpeza
+    // Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
