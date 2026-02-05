@@ -8,10 +8,8 @@ export interface HorizontalBarChartProps<T> {
   valueKey: keyof T; 
   label?: string;
   height?: number;
-  width?: number;
   valueFormatter?: (value: number | null) => string;
 }
-
 
 export default function HorizontalBarChart<T extends Record<string, any>>({
   title,
@@ -19,13 +17,12 @@ export default function HorizontalBarChart<T extends Record<string, any>>({
   categoryKey,
   valueKey,
   label,
-  height = 320,
-  width = 500,
+  height = 360,
   valueFormatter,
 }: HorizontalBarChartProps<T>) {
   return (
-    <Card>
-      <CardContent>
+    <Card sx={{ width: "100%" }}>
+      <CardContent sx={{ width: "100%" }}>
         {title && (
           <Typography variant="h6" gutterBottom>
             {title}
@@ -38,6 +35,7 @@ export default function HorizontalBarChart<T extends Record<string, any>>({
             {
               scaleType: "band",
               dataKey: categoryKey as string,
+              width: 200,
             },
           ]}
           series={[
@@ -48,8 +46,8 @@ export default function HorizontalBarChart<T extends Record<string, any>>({
             },
           ]}
           layout="horizontal"
+          margin={{ top: 20, right: 40, left: 40, bottom: 20 }}
           height={height}
-          width={width}
         />
       </CardContent>
     </Card>
