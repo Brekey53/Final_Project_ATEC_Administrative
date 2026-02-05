@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import Cursos from "../../pages/course/Cursos";
-import Horarios from "../../pages/schedule/Schedules";
+import CalendarSchedule from "../../components/CalendarSchedule";
 import { authService } from "../../auth/AuthService";
 import { getHorariosFormando } from "../../services/calendar/CalendarService";
 import {
@@ -43,6 +42,8 @@ export default function FormandoDashboard() {
 
     fetchHorarios();
   }, []);
+
+  
 
   useEffect(() => {
     getAvaliacoesFormando().then(setAvaliacoes);
@@ -193,7 +194,7 @@ export default function FormandoDashboard() {
               <h5 className="fw-bold mb-0">Agenda Semanal</h5>
             </div>
             <div className="card-body p-4">
-              <Horarios />
+              <CalendarSchedule events={events}/>
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ import { getFormadores } from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
 import { Search, ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
-import toast, { Toaster } from "react-hot-toast";
+import toast  from "react-hot-toast";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
