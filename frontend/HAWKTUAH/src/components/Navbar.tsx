@@ -64,6 +64,7 @@ export default function Navbar() {
           <Link
             to="/dashboard"
             className="d-flex align-items-center gap-2 text-decoration-none text-white"
+            onClick={closeMenu}
           >
             <img src={foto} alt="" className="foto" />
             <span className="fw-bold h5 mb-0 d-none d-sm-inline">
