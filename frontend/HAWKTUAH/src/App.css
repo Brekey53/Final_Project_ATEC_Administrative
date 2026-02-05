@@ -74,3 +74,24 @@ html, body, #root {
 .fc .fc-day-today {
     background-color: rgba(76, 175, 80, 0.05) !important;
 }
+
+@media (max-width: 768px) {
+  .fc-toolbar-title {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .fc-col-header-cell-cushion {
+    font-size: 0.75rem;
+    padding: 4px;
+  }
+
+  .fc-timegrid-slot-label {
+    font-size: 0.7rem;
+  }
+
+  .fc-event {
+    font-size: 0.7rem;
+    padding: 2px;
+  }
+}
