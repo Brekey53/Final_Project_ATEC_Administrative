@@ -13,6 +13,8 @@ import {
   getCursosPorArea,
   type CursosPorArea,
   type TurmaAIniciar,
+  getTopFormadores,
+  type TopFormadorHoras
 } from "../../services/dashboard/DashboardService";
 import { authService } from "../../auth/AuthService";
 import { checkEmailGetName } from "../../services/users/UserService";
@@ -48,19 +50,6 @@ export default function AdminDashboard() {
     modulos: 0,
   });
 
-  const dataset = [
-    { formador: "António", horas: 40 },
-    { formador: "Bento", horas: 55 },
-    { formador: "Carla", horas: 30 },
-    { formador: "David", horas: 70 },
-    { formador: "Égua", horas: 15 },
-    { formador: "Feliz", horas: 80 },
-    { formador: "Gastroenterite", horas: 90 },
-    { formador: "Hugo", horas: 70 },
-    { formador: "Isabel", horas: 70 },
-    { formador: "Jakim", horas: 70 },
-  ];
-
   const valueFormatter = (value: number | null) => (value ? `${value} h` : "");
 
   const user = authService.decodeToken();
@@ -69,6 +58,7 @@ export default function AdminDashboard() {
   const [cursosADecorrer, setCursosADecorrer] = useState<CursosADecorrer[]>([]);
   const [turmasAIniciar, setTurmasAIniciar] = useState<TurmaAIniciar[]>([]);
   const [cursosPorArea, setCursosPorArea] = useState<CursosPorArea[]>([]);
+  const [topFormadores, setTopFormadores] = useState<TopFormadorHoras[]>([]);
   const [nameUser, setNameUser] = useState("");
 
   useEffect(() => {
@@ -76,22 +66,30 @@ export default function AdminDashboard() {
       try {
         if (!user) return null;
 
-        const [statsData, cursosData, turmasData, areasData, resNome] =
-          await Promise.all([
-            getDashboardStats(),
-            getCursosADecorrer(),
-            getTurmasAIniciar(),
-            getCursosPorArea(),
-            checkEmailGetName(user.email),
-          ]);
+        const [
+          statsData,
+          cursosData,
+          turmasData,
+          areasData,
+          resNome,
+          topFormadoresData,
+        ] = await Promise.all([
+          getDashboardStats(),
+          getCursosADecorrer(),
+          getTurmasAIniciar(),
+          getCursosPorArea(),
+          checkEmailGetName(user.email),
+          getTopFormadores(),
+        ]);
 
         setNameUser(resNome.nome);
         setStats(statsData);
         setCursosADecorrer(cursosData);
         setTurmasAIniciar(turmasData);
         setCursosPorArea(areasData);
-      } catch (e) {
-        toast.error("Erro ao carregar dashboard");
+        setTopFormadores(topFormadoresData);
+      } catch (err: any) {
+        toast.error("Erro ao carregar dashboard", { id: "erroDashboard" });
       } finally {
         setLoading(false);
       }
@@ -100,6 +98,10 @@ export default function AdminDashboard() {
     loadAll();
   }, []);
 
+  const dataset = topFormadores.map((f) => ({
+    formador: f.nome,
+    horas: f.horas,
+  }));
   return (
     <>
       <div className="main-layout mt-3">
@@ -245,6 +247,7 @@ export default function AdminDashboard() {
 
           <div className="mt-5">
             <div className="row g-4">
+              {/* Turmas a decorrer Card */}
               <div className="col-md-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
@@ -288,6 +291,8 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
+
+              {/* Próximos 60 dias Card */}
               <div className="col-md-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
@@ -338,7 +343,9 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
-              <div className="col-12 col-md-4 mb-4">
+
+              {/* Cursos Por área Card */}
+              <div className="col-12 col-md-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
@@ -375,15 +382,20 @@ export default function AdminDashboard() {
 
           <div className="mt-5">
             <div className="row g-4">
+              {/* Top 10 Formador com mais horas */}
               <div className="col-12 mb-4">
-                <HorizontalBarChart
-                  title="Top 10 Formadores com mais horas"
-                  dataset={dataset}
-                  categoryKey="formador"
-                  valueKey="horas"
-                  label="Horas"
-                  valueFormatter={valueFormatter}
-                />
+                {loading ? (
+                  <p className="text-muted">A carregar gráfico...</p>
+                ) : (
+                  <HorizontalBarChart
+                    title="Top 10 Formadores com mais horas"
+                    dataset={dataset}
+                    categoryKey="formador"
+                    valueKey="horas"
+                    label="Horas"
+                    valueFormatter={valueFormatter}
+                  />
+                )}
               </div>
             </div>
           </div>
