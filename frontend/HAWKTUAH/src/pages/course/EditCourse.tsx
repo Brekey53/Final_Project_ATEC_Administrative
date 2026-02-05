@@ -45,7 +45,7 @@ export default function EditCourse() {
     if (!moduloSelecionado) return;
 
     const modulo = modulosDisponiveis.find(
-      (m) => m.idModulo === moduloSelecionado
+      (m) => m.idModulo === moduloSelecionado,
     );
 
     if (!modulo) return;
@@ -100,18 +100,15 @@ export default function EditCourse() {
 
   if (fetching) {
     return (
-      <div className="container mt-5 text-center">
-        A carregar dados...
-      </div>
+      <div className="container mt-5 text-center">A carregar dados...</div>
     );
   }
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h2>
-          Editar Curso:{" "}
-          <span className="text-primary">{curso.nome}</span>
+          Editar Curso: <span className="text-primary">{curso.nome}</span>
         </h2>
         <button className="btn btn-light border" onClick={() => navigate(-1)}>
           Voltar
@@ -120,7 +117,7 @@ export default function EditCourse() {
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA  */}
-        <div className="col-lg-4">
+        <div className="col-lg-4 d-none d-lg-block">
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light h-100">
             <div className="display-1 mb-3">📚</div>
             <h5>Configuração Técnica</h5>
@@ -151,9 +148,7 @@ export default function EditCourse() {
                 type="text"
                 className="form-control form-control-lg"
                 value={curso.nome}
-                onChange={(e) =>
-                  setCurso({ ...curso, nome: e.target.value })
-                }
+                onChange={(e) => setCurso({ ...curso, nome: e.target.value })}
                 required
               />
             </div>
@@ -164,9 +159,7 @@ export default function EditCourse() {
             <h6 className="fw-bold mb-3">Módulos do Curso</h6>
 
             {curso.modulos.length === 0 && (
-              <p className="text-muted small">
-                Nenhum módulo associado.
-              </p>
+              <p className="text-muted small">Nenhum módulo associado.</p>
             )}
 
             <ul className="list-group mb-3">
@@ -192,9 +185,7 @@ export default function EditCourse() {
               <select
                 className="form-select"
                 value={moduloSelecionado}
-                onChange={(e) =>
-                  setModuloSelecionado(Number(e.target.value))
-                }
+                onChange={(e) => setModuloSelecionado(Number(e.target.value))}
               >
                 <option value="">Adicionar módulo existente</option>
                 {modulosDisponiveis.map((m) => (
@@ -214,7 +205,7 @@ export default function EditCourse() {
             </div>
 
             {/* AÇÕES */}
-            <div className="d-flex justify-content-end gap-2 mt-4">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light px-4"

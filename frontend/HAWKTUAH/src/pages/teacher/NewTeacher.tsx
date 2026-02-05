@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Trash, Download } from "lucide-react";
 import { Tooltip } from 'bootstrap';
+import "../../css/formadores.css"
 
 export default function NewTeacher() {
   const [formadores, setFormadores] = useState<Formador[]>([]);

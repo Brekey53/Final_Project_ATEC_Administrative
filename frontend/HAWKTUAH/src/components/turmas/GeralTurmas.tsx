@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import "../../css/manageUsers.css";
 import "../../css/layoutTabelas.css";
 import { toast } from "react-hot-toast";
 import { getTurmas, type Turma } from "../../services/turmas/TurmasService";

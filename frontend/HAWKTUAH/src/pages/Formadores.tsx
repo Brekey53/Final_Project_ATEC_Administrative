@@ -3,7 +3,6 @@ import {
   type Formador,
 } from "../services/formador/FormadorService";
 import { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../utils/stringUtils";
 import { Search } from "lucide-react";
 

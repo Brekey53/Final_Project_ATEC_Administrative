@@ -14,7 +14,7 @@ import {
   type CursosPorArea,
   type TurmaAIniciar,
   getTopFormadores,
-  type TopFormadorHoras
+  type TopFormadorHoras,
 } from "../../services/dashboard/DashboardService";
 import { authService } from "../../auth/AuthService";
 import { checkEmailGetName } from "../../services/users/UserService";
@@ -49,6 +49,9 @@ export default function AdminDashboard() {
     salas: 0,
     modulos: 0,
   });
+
+  const isMobile = window.innerWidth < 768;
+  const iconSize = isMobile ? 16 : 25;
 
   const valueFormatter = (value: number | null) => (value ? `${value} h` : "");
 
@@ -104,12 +107,12 @@ export default function AdminDashboard() {
   }));
   return (
     <>
-      <div className="main-layout mt-3">
+      <div className="main-layout mt-2 mt-md-3">
         <div className="container">
           {/*  Titulo e Açoes rápidas*/}
-          <div className="title-dashboard d-flex justify-content-between w-100">
+          <div className="title-dashboard d-flex flex-column flex-md-row justify-content-between w-100 gap-2">
             <div className="title-dashboard-left ">
-              <h3 className="mb-1">
+              <h3 className="mb-1 fs-4 fs-md-3">
                 Bem-vindo(a), <strong>{nameUser}</strong>
               </h3>
               <span className="text-muted">
@@ -117,78 +120,78 @@ export default function AdminDashboard() {
               </span>
             </div>
           </div>
-          <div className="quick-access-menu mt-3 p-3 shadow-sm">
+          <div className="quick-access-menu mt-3 p-3 p-md-4 shadow-sm">
             <h3>Ações Rápidas</h3>
-            <div className="row row-cols-2 row-cols-md-4 my-2 g-3">
-              <Link to="/gerir-modulos" className="text-decoration-none">
-                <div className="col">
+            <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 my-2 g-2 g-md-3">
+              <div className="col">
+                <Link to="/gerir-modulos" className="text-decoration-none">
                   <QuickActionsCards
                     title="Gerir Módulos"
-                    icon={<Layers size={20} color="#28a745" />}
+                    icon={<Layers size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
-              <Link to="/gerir-salas" className="text-decoration-none">
-                <div className="col">
+                </Link>
+              </div>
+              <div className="col">
+                <Link to="/gerir-salas" className="text-decoration-none">
                   <QuickActionsCards
                     title="Gerir Salas"
-                    icon={<Building size={20} color="#28a745" />}
+                    icon={<Building size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
-              <Link to="/gerir-cursos" className="text-decoration-none">
-                <div className="col">
+                </Link>
+              </div>
+              <div className="col">
+                <Link to="/gerir-cursos" className="text-decoration-none">
                   <QuickActionsCards
                     title="Gerir Cursos"
-                    icon={<BookOpen size={20} color="#28a745" />}
+                    icon={<BookOpen size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
-              <Link to="/gerir-horarios" className="text-decoration-none">
-                <div className="col">
+                </Link>
+              </div>
+              <div className="col">
+                <Link to="/gerir-horarios" className="text-decoration-none">
                   <QuickActionsCards
-                    title="Gerir Horários "
-                    icon={<CalendarClock size={20} color="#28a745" />}
+                    title="Gerir Horários"
+                    icon={<CalendarClock size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
-              <Link to="/gerir-formandos" className="text-decoration-none">
-                <div className="col">
+                </Link>
+              </div>
+              <div className="col">
+                <Link to="/gerir-formandos" className="text-decoration-none">
                   <QuickActionsCards
                     title="Gerir Formandos"
-                    icon={<Users size={20} color="#28a745" />}
+                    icon={<Users size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
-              <Link to="/gerir-formadores" className="text-decoration-none">
-                <div className="col">
+                </Link>
+              </div>
+              <div className="col">
+                <Link to="/gerir-formadores" className="text-decoration-none">
                   <QuickActionsCards
                     title="Gerir Formadores"
-                    icon={<UserCog size={20} color="#28a745" />}
+                    icon={<UserCog size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
-              <Link to="/gerir-utilizadores" className="text-decoration-none">
-                <div className="col">
+                </Link>
+              </div>
+              <div className="col">
+                <Link to="/gerir-utilizadores" className="text-decoration-none">
                   <QuickActionsCards
                     title="Gerir Utilizadores"
-                    icon={<UsersRound size={20} color="#28a745" />}
+                    icon={<UsersRound size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
-              <Link to="/turmas" className="text-decoration-none">
-                <div className="col">
+                </Link>
+              </div>
+              <div className="col">
+                <Link to="/turmas" className="text-decoration-none">
                   <QuickActionsCards
                     title="Gerir Turmas"
-                    icon={<CalendarClock size={20} color="#28a745" />}
+                    icon={<CalendarClock size={iconSize} color="#28a745" />}
                   />
-                </div>
-              </Link>
+                </Link>
+              </div>
             </div>
           </div>
 
           {/* CardBoards info geral */}
-          <div className="row row-cols-1 row-cols-md-3 g-3 mt-4">
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 mt-4">
             <div className="col">
               <CardsDashboard
                 title="Turmas a Decorrer"
@@ -249,7 +252,7 @@ export default function AdminDashboard() {
             <div className="row g-4">
               {/* Turmas a decorrer Card */}
               <div className="col-md-4">
-                <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
+                <div className="card border-0 shadow-sm p-3 p-md-4 h-100 rounded-4">
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
                       <span className="green-circle-active-courses"></span>
@@ -347,7 +350,7 @@ export default function AdminDashboard() {
               {/* Cursos Por área Card */}
               <div className="col-12 col-md-4">
                 <div className="card border-0 shadow-sm p-4 h-100 rounded-4">
-                  <div className="d-flex justify-content-between align-items-center mb-4">
+                  <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
                     <div className="d-flex align-items-center gap-2 fw-semibold">
                       Cursos por Área
                     </div>
@@ -365,7 +368,7 @@ export default function AdminDashboard() {
                       {cursosPorArea.map((area) => (
                         <li
                           key={area.idArea}
-                          className="list-group-item d-flex justify-content-between align-items-center px-0"
+                          className="list-group-item d-flex justify-content-between align-items-start align-items-md-center px-0 gap-2"
                         >
                           <span>{area.nomeArea}</span>
                           <span className="badge bg-primary rounded-pill">
@@ -384,18 +387,20 @@ export default function AdminDashboard() {
             <div className="row g-4">
               {/* Top 10 Formador com mais horas */}
               <div className="col-12 mb-4">
-                {loading ? (
-                  <p className="text-muted">A carregar gráfico...</p>
-                ) : (
-                  <HorizontalBarChart
-                    title="Top 10 Formadores com mais horas"
-                    dataset={dataset}
-                    categoryKey="formador"
-                    valueKey="horas"
-                    label="Horas"
-                    valueFormatter={valueFormatter}
-                  />
-                )}
+                <div className="card border-0 shadow-sm p-3 p-md-4 rounded-4">
+                  {loading ? (
+                    <p className="text-muted">A carregar gráfico...</p>
+                  ) : (
+                    <HorizontalBarChart
+                      title="Top 10 Formadores com mais horas"
+                      dataset={dataset}
+                      categoryKey="formador"
+                      valueKey="horas"
+                      label="Horas"
+                      valueFormatter={valueFormatter}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>

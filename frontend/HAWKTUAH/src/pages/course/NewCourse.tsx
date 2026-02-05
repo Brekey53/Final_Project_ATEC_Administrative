@@ -5,7 +5,7 @@ import {
   deleteCurso,
   type Curso,
 } from "../../services/cursos/CursosService";
-import "../../css/layoutTabelas.css";
+import "../../css/cursos.css";
 import toast from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Trash } from "lucide-react";
@@ -135,6 +135,7 @@ export default function NewCourse() {
                 value={areaFiltro}
                 onChange={(e) => setAreaFiltro(e.target.value)}
               >
+                {/*TODO: ISTO ESTÁ HARDCODED */}
                 <option value="todas">Todas as áreas</option>
                 <option value="1">Informática</option>
                 <option value="2">Mecânica</option>

@@ -47,7 +47,7 @@ export default function AddNewModule() {
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h2 className="fw-bold mb-1 text-primary">Adicionar Novo Módulo</h2>
         <button
           className="btn btn-light border"
@@ -59,7 +59,7 @@ export default function AddNewModule() {
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: ICONE/RESUMO */}
-        <div className="col-lg-4">
+        <div className="col-lg-4 d-none d-lg-block text-center">
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light">
             <div className="display-1 text-primary mb-3">
               <i className="bi bi-book"></i>
@@ -137,7 +137,7 @@ export default function AddNewModule() {
               </div>
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light px-4"

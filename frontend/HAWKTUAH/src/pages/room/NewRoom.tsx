@@ -7,7 +7,7 @@ import {
 } from "../../services/rooms/SalasService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import "../../css/addNewStudent.css";
+import "../../css/salas.css";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";

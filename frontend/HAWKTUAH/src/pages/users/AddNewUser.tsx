@@ -209,7 +209,7 @@ export default function AddNewUser() {
               </div>
             </div>
 
-            <div className="d-flex justify-content-end gap-2">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light"

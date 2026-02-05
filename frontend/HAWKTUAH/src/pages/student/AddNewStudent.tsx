@@ -159,10 +159,12 @@ export default function AddNewStudent() {
 
   return (
     <div className="container mt-5">
-     <h2 className="fw-bold mb-4 text-primary">Adicionar Novo Formando</h2>
+      <h2 className="fw-bold mb-4 text-primary text-center text-md-start">
+        Adicionar Novo Formando
+      </h2>
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTOS */}
-        <div className="col-lg-4 text-center">
+        <div className="col-lg-4 d-none d-lg-block text-center">
           <div className="card p-3 shadow-sm">
             <img
               src={fotoPreview}
@@ -398,7 +400,7 @@ export default function AddNewStudent() {
                     )}
                   </div>
 
-                  <div className="d-flex justify-content-end gap-2 mt-4">
+                  <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                     <button
                       type="button"
                       className="btn btn-light"

@@ -1,14 +1,12 @@
 import "../../css/login.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Facebook from "../../img/facebook.jpg";
 import { Link } from "react-router-dom";
 import { authService } from "../../auth/AuthService";
 import { API_BASE_URL } from "../../config.constants";
 import toast from "react-hot-toast";
 
 import { GoogleLogin } from "@react-oauth/google";
-import FacebookButton from "../../components/FacebookButton";
 import axios from "axios";
 
 export default function Login() {
@@ -114,7 +112,7 @@ export default function Login() {
       toast.success("Google login efetuado com sucesso!", { id: "google-success" });
 
       navigate("/dashboard", { replace: true });
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Erro no login com Google", { id: "google-error" });
     }
   }

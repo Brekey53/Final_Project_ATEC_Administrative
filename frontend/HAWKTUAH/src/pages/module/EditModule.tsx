@@ -76,9 +76,9 @@ export default function EditModule() {
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold mb-1">Editar Módulo: {" "}
-          <span className="text-primary">{formData.nome}</span>
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <h2 className="fw-bold mb-1">
+          Editar Módulo: <span className="text-primary">{formData.nome}</span>
         </h2>
         <button
           className="btn btn-light border"
@@ -90,7 +90,7 @@ export default function EditModule() {
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: RESUMO/ÍCONE */}
-        <div className="col-lg-4">
+        <div className="col-lg-4 d-none d-lg-block">
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light h-100">
             <div className="display-1 text-primary mb-3">📚</div>
             <h5>Configuração Técnica</h5>
@@ -169,17 +169,17 @@ export default function EditModule() {
               </div>
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
-                className="btn btn-light px-4"
+                className="btn btn-light px-5 w-100 w-sm-auto"
                 onClick={() => navigate("/gerir-modulos")}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="btn btn-primary px-5"
+                className="btn btn-primary px-5 w-100 w-sm-auto"
                 disabled={loading}
               >
                 {loading ? "A atualizar..." : "Guardar Alterações"}

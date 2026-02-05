@@ -175,8 +175,9 @@ export default function EditFormando() {
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}
-        <div className="col-lg-4 text-center">
+        <div className="col-lg-4 d-none d-lg-block text-center">
           <div className="card p-3 shadow-sm mb-4">
+            {/*TODO: Tirar style inline */}
             <img
               src={fotoPreview}
               alt="Preview"
@@ -392,7 +393,7 @@ export default function EditFormando() {
             </div>
 
             {/* Botões de Ação */}
-            <div className="d-flex justify-content-end gap-2 mt-2">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light rounded-pill px-4"

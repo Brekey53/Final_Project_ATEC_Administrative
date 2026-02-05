@@ -257,7 +257,7 @@ export default function EditTurma() {
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-4 text-primary">Editar Turmas</h2>
           <p className="text-muted small mb-0">
@@ -272,8 +272,8 @@ export default function EditTurma() {
         </button>
       </div>
 
-      <ul className="nav nav-tabs mb-4">
-        <li className="nav-item">
+      <ul className="nav nav-tabs mb-4 flex-nowrap overflow-auto">
+        <li className="nav-item flex-shrink-0">
           <button
             className={`nav-link ${activeTab === "dados" ? "active" : ""}`}
             onClick={() => setActiveTab("dados")}
@@ -282,7 +282,7 @@ export default function EditTurma() {
             Dados da Turma
           </button>
         </li>
-        <li className="nav-item">
+        <li className="nav-item flex-shrink-0">
           <button
             className={`nav-link ${activeTab === "formadores" ? "active" : ""}`}
             onClick={() => setActiveTab("formadores")}
@@ -295,7 +295,7 @@ export default function EditTurma() {
 
       {activeTab === "dados" && (
         <form onSubmit={handleSubmit} className="row g-4">
-          <div className="col-lg-4">
+          <div className="col-lg-4 d-none d-lg-block text-center">
             <div className="card p-4 shadow-sm border-0 rounded-4 bg-light text-center h-100">
               <div className="display-1 mb-3">👥</div>
               <h5 className="fw-bold">{formData.nomeTurma || "Sem Nome"}</h5>
@@ -366,7 +366,7 @@ export default function EditTurma() {
                 </div>
               </div>
 
-              <div className="d-flex justify-content-end gap-2 mt-4">
+              <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                 <button
                   type="submit"
                   className="btn btn-primary px-5 rounded-pill"
@@ -599,10 +599,10 @@ export default function EditTurma() {
           </div>
         </div>
       )}
-        {/* PAGINAÇÃO */}
-        {totalPages > 1 && activeTab === "formadores" && (
-          <div>
-              <div className="d-flex justify-content-center align-items-center gap-2 py-4">
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && activeTab === "formadores" && (
+        <div>
+          <div className="d-flex justify-content-center align-items-center gap-2 py-4">
             <button
               className="btn btn-outline-secondary"
               disabled={currentPage === 1}
@@ -630,7 +630,7 @@ export default function EditTurma() {
             </p>
           </div>
         </div>
-        )}
+      )}
     </div>
   );
 }

@@ -10,6 +10,8 @@ import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
+import "../../css/modulos.css"
+
 export default function NewModule() {
   const [modulos, setModulos] = useState<Modulos[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,10 +157,10 @@ export default function NewModule() {
                   <span>{m.codigoIdentificacao || "-"}</span>
                 </div>
 
-                <div className="hide-mobile text-muted">
+                <div className="text-muted">
                   {m.horasTotais || "-"}
                 </div>
-                <div className="hide-mobile text-muted">
+                <div className="text-muted">
                   {m.creditos || "-"}
                 </div>
 

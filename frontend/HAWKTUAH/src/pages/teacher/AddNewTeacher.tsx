@@ -166,7 +166,7 @@ export default function AddNewTeacher() {
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTOS */}
-        <div className="col-lg-4 text-center">
+        <div className="col-lg-4 d-none d-lg-block text-center">
           <div className="card p-3 shadow-sm border-0 rounded-4">
             <img
               src={fotoPreview}
@@ -283,8 +283,10 @@ export default function AddNewTeacher() {
                     <input
                       type="text"
                       name="nif"
-                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       maxLength={9}
+                      className={`form-control ${emailStatus === "exists" ? "bg-light" : ""}`}
                       value={formData.nif}
                       onChange={handleChange}
                       readOnly={emailStatus === "exists"}
@@ -372,8 +374,9 @@ export default function AddNewTeacher() {
                   <div className="col-md-6 mb-3">
                     <label className="form-label">Telefone de Contacto</label>
                     <input
-                      type="text"
+                      type="tel"
                       name="telefone"
+                      inputMode="tel"
                       className="form-control"
                       value={formData.telefone}
                       onChange={handleChange}
@@ -386,6 +389,7 @@ export default function AddNewTeacher() {
                     <input
                       type="text"
                       name="iban"
+                      autoCapitalize="characters"
                       className="form-control"
                       value={formData.iban}
                       onChange={handleChange}
@@ -407,7 +411,7 @@ export default function AddNewTeacher() {
                   </div>
 
                   {/* Botões de Ação */}
-                  <div className="d-flex justify-content-end gap-2 mt-2">
+                  <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-3">
                     <button
                       type="button"
                       className="btn btn-light"

@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getCursos, type Curso } from "../../services/cursos/CursosService";
 import { Link } from "react-router-dom";
 import "../../css/cursos.css";
-import "../../css/layoutTabelas.css";
-import verDetalhes from "../../img/verDetalhes.png";
 import { Search, Info } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
 
@@ -27,7 +25,6 @@ export default function Cursos() {
         setLoading(false);
       }
     }
-
     fetchCursos();
   }, []);
 
@@ -136,12 +133,6 @@ export default function Cursos() {
                     size={30}
                     className="text-primary card bg-transparent border-0 info-icon"
                   />
-                  {/* <img
-                    className="img-ver-detalhes"
-                    src={verDetalhes}
-                    alt="Ver detalhes"
-                    title="Ver Detalhes do Curso"
-                  /> */}
                 </div>
               </div>
             </Link>

@@ -49,7 +49,7 @@ export default function AddNewCourse() {
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h2>Registar Novo Curso</h2>
         <button className="btn btn-light border" onClick={() => navigate(-1)}>
           Voltar
@@ -58,7 +58,7 @@ export default function AddNewCourse() {
 
       <form onSubmit={handleSubmit} className="row">
         {/* COLUNA ESQUERDA: ICONE/RESUMO */}
-        <div className="col-lg-4">
+        <div className="col-lg-4 d-none d-lg-block">
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light">
             <div className="display-1 text-primary mb-3">
               <i className="bi bi-book"></i>
@@ -98,7 +98,9 @@ export default function AddNewCourse() {
                   className="form-select"
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
+                  required
                 >
+                  {/*TODO: HARDCODED*/}
                   <option value="">Selecionar área</option>
                   <option value="1">Informática</option>
                   <option value="2">Mecânica</option>
@@ -119,7 +121,7 @@ export default function AddNewCourse() {
               />
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light px-4"

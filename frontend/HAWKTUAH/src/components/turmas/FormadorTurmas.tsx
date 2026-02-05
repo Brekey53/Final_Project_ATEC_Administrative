@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "../../css/manageUsers.css";
 import "../../css/turmas.css";
 import {
   getTurmasFormador,
@@ -136,7 +135,7 @@ export default function FormadorTurmas() {
       {/* TABELA */}
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turmas">
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-formador-turmas">
             <div>Turma</div>
             <div>Curso</div>
             <div>Módulo</div>
@@ -149,7 +148,7 @@ export default function FormadorTurmas() {
             turmasPaginadas.map((t) => (
               <div
                 key={`${t.idTurma}-${t.idModulo}`}
-                className="px-4 py-3 border-bottom tabela-turmas align-items-center"
+                className="px-4 py-3 border-bottom tabela-formador-turmas align-items-center"
               >
                 {/* Turma */}
                 <div className="d-flex align-items-center gap-3">

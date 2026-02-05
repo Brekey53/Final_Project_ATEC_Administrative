@@ -88,7 +88,7 @@ export default function EditRoom() {
   return (
     <div className="container mt-5">
       {/* Cabeçalho */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1 text-primary">Editar Sala</h2>
           <p className="text-muted small mb-0">ID da Sala: {formData.idSala}</p>
@@ -103,7 +103,7 @@ export default function EditRoom() {
 
       <form onSubmit={handleSubmit} className="row g-4">
         {/* Coluna Esquerda: Resumo Visual */}
-        <div className="col-lg-4">
+        <div className="col-lg-4 d-none d-lg-block">
           <div className="card p-4 shadow-sm border-0 rounded-4 bg-light text-center h-100">
             <div className="display-1 mb-3">🏫</div>
             <h5 className="fw-bold">{formData.descricao || "Nova Sala"}</h5>
@@ -118,13 +118,6 @@ export default function EditRoom() {
                 <span className="badge bg-primary rounded-pill">
                   {formData.numMaxAlunos} alunos
                 </span>
-              </div>
-              <div className="d-flex justify-content-between">
-                <span className="text-muted small">Estado:</span>
-                <span className="text-success small fw-bold">
-                  Disponível
-                </span>{" "}
-                {/* TODO: Queres deixar isto aqui? */}
               </div>
             </div>
           </div>
@@ -146,7 +139,7 @@ export default function EditRoom() {
                 <input
                   type="text"
                   name="descricao"
-                  className="form-control form-control-lg"
+                  className="form-control form-control-lg form-control-sm d-lg-none"
                   placeholder="Ex: Sala 102 - Laboratório"
                   value={formData.descricao}
                   onChange={handleChange}
@@ -160,7 +153,7 @@ export default function EditRoom() {
                 <input
                   type="number"
                   name="numMaxAlunos"
-                  className="form-control form-control-lg text-center" // Adicionado text-center para melhor leitura
+                  className="form-control form-control-lg form-control-sm d-lg-none"
                   value={formData.numMaxAlunos}
                   onChange={handleChange}
                   min="1"
@@ -191,7 +184,7 @@ export default function EditRoom() {
             </div>
 
             {/* Ações */}
-            <div className="d-flex justify-content-end gap-2 mt-5">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-5">
               <button
                 type="button"
                 className="btn btn-light px-4 rounded-pill"

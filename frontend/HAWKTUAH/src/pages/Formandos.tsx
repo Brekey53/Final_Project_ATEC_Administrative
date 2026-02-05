@@ -29,7 +29,8 @@ export default function Formandos() {
   const filteredFormandos = formandos.filter((f) => {
     const termo = normalizarTexto(searchTerm);
     return (
-      normalizarTexto(f.nome).includes(termo) || normalizarTexto(f.nif).includes(termo)
+      normalizarTexto(f.nome).includes(termo) ||
+      normalizarTexto(f.nif).includes(termo)
     );
   });
 

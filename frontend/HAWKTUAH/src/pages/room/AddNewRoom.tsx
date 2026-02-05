@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { postNewSala, getTipoSalas, type TipoSala } from "../../services/rooms/SalasService";
+import {
+  postNewSala,
+  getTipoSalas,
+  type TipoSala,
+} from "../../services/rooms/SalasService";
 import { useNavigate } from "react-router-dom";
 
 export default function AddNewRoom() {
@@ -64,7 +68,7 @@ export default function AddNewRoom() {
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h2 className="fw-bold mb-1 text-primary">Adicionar Nova Sala</h2>
         <button
           className="btn btn-light border"
@@ -76,7 +80,7 @@ export default function AddNewRoom() {
 
       <form onSubmit={handleSubmit} className="row g-4">
         {/* COLUNA ESQUERDA */}
-        <div className="col-lg-4">
+        <div className="col-lg-4 d-none d-lg-block">
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light h-100">
             <div className="display-1 mb-3">🏫</div>
             <h5 className="fw-bold">Informação da Sala</h5>
@@ -110,9 +114,7 @@ export default function AddNewRoom() {
 
               {/* LOTAÇÃO */}
               <div className="col-md-4 mb-3">
-                <label className="form-label fw-semibold">
-                  Lotação Máxima
-                </label>
+                <label className="form-label fw-semibold">Lotação Máxima</label>
                 <input
                   type="number"
                   name="numMaxAlunos"
@@ -145,17 +147,17 @@ export default function AddNewRoom() {
             </div>
 
             {/* AÇÕES */}
-            <div className="d-flex justify-content-end gap-2 mt-4">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
-                className="btn btn-light px-4 rounded-pill"
+                className="btn btn-light px-4 rounded-pill w-100 w-sm-auto"
                 onClick={() => navigate("/gerir-salas")}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="btn btn-primary px-5 rounded-pill"
+                className="btn btn-primary px-5 rounded-pill w-100 w-sm-auto"
                 disabled={loading}
               >
                 {loading ? "A criar..." : "Criar Sala"}

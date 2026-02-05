@@ -1,5 +1,3 @@
-//TODO: alterar isto tudo, está para formadores
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -174,7 +172,7 @@ export default function EditUser() {
         {/* COLUNA DIREITA: DADOS */}
         <div className="col-lg-12">
           <div className="card p-4 shadow-sm">
-            <div className="row">
+            <div className="row g-3 g-md-4">
               <h5 className="text-primary mb-3">
                 Dados Pessoais e Profissionais
               </h5>
@@ -284,7 +282,7 @@ export default function EditUser() {
               </div>
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
               <button
                 type="button"
                 className="btn btn-light"
@@ -306,4 +304,3 @@ export default function EditUser() {
     </div>
   );
 }
-

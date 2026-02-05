@@ -29,6 +29,8 @@ export default function AddNewAvailability() {
     horaFim: "",
   });
 
+  const isMobile = window.innerWidth < 768;
+
   useEffect(() => {
     const fetchHorariosDisponiveis = async () => {
       try {
@@ -91,7 +93,7 @@ export default function AddNewAvailability() {
 
     const dataInicioDate = new Date(dataInicio);
 
-    // só dá para marcar para daqui a um mes 
+    // só dá para marcar para daqui a um mes
     if (dataInicioDate < dataValidaMarcacoes) {
       toast.error(
         "A disponibilidade só pode ser marcada com pelo menos 1 mês de antecedência.",
@@ -137,7 +139,6 @@ export default function AddNewAvailability() {
     }));
   };
 
-
   const isHoraValida = (hora: string): boolean => {
     const [, minutos] = hora.split(":");
     return minutos === "00" || minutos === "30";
@@ -150,9 +151,15 @@ export default function AddNewAvailability() {
     return diaSemana === 0 || diaSemana === 6;
   };
 
+  useEffect(() => {
+    if (isMobile) {
+      setActiveTab("Dados");
+    }
+  }, []);
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
-      <div>
+      <div className="mb-3 mb-md-0 text-center text-md-start">
         <h2 className="fw-bold mb-1">Adicionar Disponibilidade</h2>
         <p className="text-muted mb-0">
           Inserir, alterar, eliminar ou consultar disponibilidade.
@@ -160,28 +167,30 @@ export default function AddNewAvailability() {
       </div>
 
       {/* TABS */}
-      <ul className="nav nav-tabs my-4">
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "Schedule" ? "active" : ""}`}
-            onClick={() => setActiveTab("Schedule")}
-            type="button"
-          >
-            Vista Horário
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "Dados" ? "active" : ""}`}
-            onClick={() => setActiveTab("Dados")}
-            type="button"
-          >
-            Vista nAUM SEI A PALAVRA CERTA ANDRÉ
-          </button>
-        </li>
-      </ul>
-      {activeTab == "Schedule" && (
-        <div className="mt-5">
+      {!isMobile && (
+        <ul className="nav nav-tabs my-4 flex-column flex-md-row">
+          <li className="nav-item">
+            <button
+              className={`nav-link w-100 text-center ${activeTab === "Schedule" ? "active" : ""}`}
+              onClick={() => setActiveTab("Schedule")}
+              type="button"
+            >
+              Vista Horário
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link w-100 text-center ${activeTab === "Dados" ? "active" : ""}`}
+              onClick={() => setActiveTab("Dados")}
+              type="button"
+            >
+              Vista nAUM SEI A PALAVRA CERTA ANDRÉ
+            </button>
+          </li>
+        </ul>
+      )}
+      {activeTab == "Schedule" && !isMobile && (
+        <div className="mt-3 mt-md-5">
           <CreateAvailabilitySchedule
             events={horariosDisponiveis}
             onSelect={handleAdicionarHorarios}
@@ -194,12 +203,12 @@ export default function AddNewAvailability() {
           <div className="my-5">
             {/* Período */}
             <form onSubmit={handleAddDisponibilidade}>
-              <div className="d-flex justify-content-end">
-                <button className="btn btn-success">
+              <div className="d-flex justify-content-end justify-content-md-end">
+                <button className="btn btn-success w-100 w-md-auto pt-2 py-md-1">
                   + Adicionar Disponibilidade
                 </button>
               </div>
-              <div className="row">
+              <div className="row g-3 mt-4">
                 <div className="col-md-4 mb-3">
                   <label className="form-label">Válido de</label>
                   <input
@@ -219,7 +228,7 @@ export default function AddNewAvailability() {
                   />
                 </div>
 
-                <div className="col-md-4 mb-3">
+                <div className="col-md-4 mb-3 ">
                   <label className="form-label">Até</label>
                   <input
                     type="date"

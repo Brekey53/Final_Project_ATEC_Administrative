@@ -1,9 +1,3 @@
-.tabela-alunos {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr;
-  align-items: center;
-}
-
 .tabela-modulos {
   display: grid;
   grid-template-columns: 3fr 1.5fr 1fr 1fr 120px;
@@ -14,13 +8,6 @@
 .tabela-formadores {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.5fr 1fr 130px;
-  align-items: center;
-  gap: 1rem;
-}
-
-.tabela-formandos {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1fr;
   align-items: center;
   gap: 1rem;
 }
@@ -57,7 +44,7 @@
 .avatar-circle {
   width: 35px;
   height: 35px;
-  flex-shrink: 0; /* Impede que o círculo esmague em ecrãs pequenos */
+  flex-shrink: 0;
 }
 
 
@@ -67,16 +54,151 @@
   text-align: center;
   padding: 5px 0; 
   font-size: 0.75rem; 
-  white-space: nowrap; /* Impede que o texto quebre em duas linhas */
-  overflow: hidden; /* Esconde texto se for maior que a largura */
-  text-overflow: ellipsis; /* Adiciona "..." se o nome for gigante */
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
 }
 
 @media (max-width: 768px) {
   .tabela-modulos {
-    grid-template-columns: 2fr 1fr; /* Esconde horas e créditos em mobile */
+    grid-template-columns: 2fr 1fr;
   }
   .hide-mobile {
     display: none;
+  }
+}
+
+.tabela-formandos {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+
+@media (max-width: 768px) {
+  .tabela-formandos:first-child {
+    display: none;
+  }
+
+ .avatar-circle {
+    display: none !important;
+  }
+
+  .tabela-formandos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .tabela-formandos > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .tabela-formandos > div span {
+    text-align: right;
+  }
+
+  .tabela-formandos {
+    padding: 1rem !important;
+  }
+
+  .tabela-formandos:not(:last-child) {
+    border-bottom: 1px solid #eee;
+  }
+}
+
+.tabela-formadores-publico {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+
+  .tabela-formadores-publico:first-child {
+    display: none;
+  }
+
+  .tabela-formadores-publico {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+
+  .tabela-formadores-publico > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .tabela-formadores-publico .avatar-circle {
+    display: none !important;
+  }
+
+  .tabela-formadores-publico span,
+  .tabela-formadores-publico div {
+    text-align: right;
+  }
+}
+
+.tabela-alunos {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.5fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tabela-alunos:first-child {
+    display: none;
+  }
+
+  .tabela-alunos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+
+  .tabela-alunos > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tabela-alunos .avatar-circle {
+    display: none !important;
+  }
+
+  .tabela-alunos .text-muted,
+  .tabela-alunos .text-truncate {
+    text-align: right;
+  }
+
+  .badge-turma-fixa {
+    font-size: 0.85rem;
+  }
+
+  .tabela-alunos .action-icon {
+    font-size: 1.1rem;
+    padding: 0.4rem;
+  }
+
+  .tabela-alunos .d-flex.justify-content-end {
+    justify-content: flex-start !important;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-control-lg {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
   }
 }

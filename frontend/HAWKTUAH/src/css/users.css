@@ -1,0 +1,89 @@
+.tabela-utilizadores {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.2fr 1.5fr 1.2fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tabela-utilizadores:first-child {
+    display: none;
+  }
+
+  .tabela-utilizadores {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+
+  .tabela-utilizadores > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tabela-utilizadores .rounded-circle {
+    display: none;
+  }
+
+  .tabela-utilizadores .text-muted {
+    text-align: right;
+  }
+
+  .tabela-utilizadores .action-icon {
+    font-size: 1.1rem;
+    padding: 0.4rem;
+  }
+
+  .tabela-utilizadores .d-flex.justify-content-end {
+    justify-content: flex-start !important;
+    gap: 1rem;
+  }
+}
+
+.avatar-circle {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+}
+
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-modal-overlay .modal-dialog {
+  z-index: 1060;
+}
+
+@media (max-width: 768px) {
+  .avatar-circle {
+    display: none !important;
+  }
+
+  .card {
+    border-radius: 12px;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 0.95rem;
+  }
+
+  h2 {
+    text-align: center;
+  }
+  
+  .form-control-lg {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+  }
+}

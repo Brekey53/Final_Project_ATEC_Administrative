@@ -109,3 +109,32 @@
 .quick-action-card:hover .quick-action-icon {
   color: var(--bs-primary);
 }
+
+
+@media (max-width: 576px) {
+
+  .quick-action-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .quick-card-icon {
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-card {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+  .dashboard-card-main {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+}
