@@ -1,4 +1,5 @@
 ﻿using Humanizer;
+using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -82,9 +83,9 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             var duracao = fim - inicio;
 
-            if (duracao.TotalHours < 2)
+            if (duracao.TotalHours < 1)
             {
-                return BadRequest(new { message = "A disponibilidade mínima tem ser de 2 horas." });
+                return BadRequest(new { message = "A disponibilidade mínima tem ser de 1 hora." });
             }
 
             var existeMarcacao = await _context.DisponibilidadeFormadores.AnyAsync(df => df.IdFormador == formadorId
@@ -114,6 +115,116 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(novaDisponibilidade);
         }
 
+        [HttpPost("inputs")]
+        public async Task<IActionResult> AdicionarDisponibilidadeFormador([FromBody] AdicionarDisponibilidadeFormadorInputsDTO dto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            var formadorId = await _context.Formadores
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.IdFormador)
+                .FirstOrDefaultAsync();
+
+            if (formadorId == 0)
+            {
+                return BadRequest(new { message = "Formador não encontrado." });
+            }
+
+            DateOnly dataInicio, dataFim;
+            TimeOnly horaInicio, horaFim;
+
+            try
+            {
+                dataInicio = DateOnly.Parse(dto.DataInicio);
+                dataFim = DateOnly.Parse(dto.DataFim);
+                horaInicio = TimeOnly.Parse(dto.HoraInicio);
+                horaFim = TimeOnly.Parse(dto.HoraFim);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Formato de data ou hora inválido." });
+            }
+
+            if (dataFim < dataInicio)
+            {
+                return BadRequest(new { message = "A data de fim tem de ser posterior à data de início." });
+            }
+
+            if (horaFim <= horaInicio)
+            {
+                return BadRequest(new { message = "A hora de fim tem de ser depois da hora de início." });
+            }
+
+            if ((horaFim - horaInicio).TotalHours < 1)
+            {
+                return BadRequest(new { message = "A disponibilidade mínima tem de ser de 1 hora." });
+            }
+
+            if (horaInicio < new TimeOnly(8, 0) || horaFim > new TimeOnly(23, 0))
+            {
+                return BadRequest(new { message = "Não é permitido adicionar disponibilidade entre as 23h e as 08h." });
+            }
+
+            var disponibilidades = new List<DisponibilidadeFormador>();
+
+            for (var data = dataInicio; data <= dataFim; data = data.AddDays(1))
+            {
+                // Ignorar fins de semana
+                if (data.DayOfWeek == DayOfWeek.Saturday ||
+                    data.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    continue;
+                }
+
+                bool existeConflito = await _context.DisponibilidadeFormadores
+                    .AnyAsync(df =>
+                        df.IdFormador == formadorId &&
+                        df.DataDisponivel == data &&
+                        horaInicio < df.HoraFim &&
+                        horaFim > df.HoraInicio
+                    );
+
+                if (existeConflito)
+                {
+                    return BadRequest(new
+                    {
+                        message = $"Já existe disponibilidade marcada para este dia hora."
+                    });
+                }
+
+                disponibilidades.Add(new DisponibilidadeFormador
+                {
+                    IdFormador = formadorId,
+                    DataDisponivel = data,
+                    HoraInicio = horaInicio,
+                    HoraFim = horaFim
+                });
+            }
+
+
+            if (!disponibilidades.Any())
+            {
+                return BadRequest(new
+                {
+                    message = "O intervalo selecionado não contém dias úteis."
+                });
+            }
+
+            _context.DisponibilidadeFormadores.AddRange(disponibilidades);
+            await _context.SaveChangesAsync();
+
+
+            return Ok(new
+            {
+                message = "Disponibilidade adicionada com sucesso.",
+                total = disponibilidades.Count
+            });
+
+        }
 
 
         [HttpDelete("{id}")]

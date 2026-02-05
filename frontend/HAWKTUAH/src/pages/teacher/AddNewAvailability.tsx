@@ -7,14 +7,27 @@ import {
   getEventosCalendario,
   postEventosCalendario,
   type ScheduleEvent,
+  postDisponibilidadeInput,
+  type ScheduleInputEvent,
 } from "../../services/calendar/CreateAvailabilityScheduleService";
 import toast from "react-hot-toast";
+
+type Tabs = "Schedule" | "Dados";
 
 export default function AddNewAvailability() {
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<
     AvailabilityEvent[]
   >([]);
   const [loading, setLoading] = useState(true);
+
+  const [activeTab, setActiveTab] = useState<Tabs>("Schedule");
+
+  const [scheduleInput, setScheduleInput] = useState<ScheduleInputEvent>({
+    dataInicio: "",
+    dataFim: "",
+    horaInicio: "",
+    horaFim: "",
+  });
 
   useEffect(() => {
     const fetchHorariosDisponiveis = async () => {
@@ -60,23 +73,201 @@ export default function AddNewAvailability() {
     }
   };
 
+  {
+    /*Este é da segunda tab 
+    André, para evitar chamadas à API inuteis por utilziador inuteis coloquei aqui resta aprte para nao 
+    mandar para lá coisas burras 
+    
+
+    */
+  }
+
+  const handleAddDisponibilidade = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const { dataInicio, dataFim, horaInicio, horaFim } = scheduleInput;
+    const dataValidaMarcacoes = new Date();
+    dataValidaMarcacoes.setMonth(dataValidaMarcacoes.getMonth() + 1);
+
+    const dataInicioDate = new Date(dataInicio);
+
+    // só dá para marcar para daqui a um mes 
+    if (dataInicioDate < dataValidaMarcacoes) {
+      toast.error(
+        "A disponibilidade só pode ser marcada com pelo menos 1 mês de antecedência.",
+        { id: "DataMinima" },
+      );
+      return;
+    }
+
+    //  Data fim superior à inicio
+    if (dataFim < dataInicio) {
+      toast.error("A data de fim tem de ser posterior à data de início.", {
+        id: "DataFimSuperiorInicio",
+      });
+      return;
+    }
+
+    // Horas válidas "cheias"
+    if (!isHoraValida(horaInicio) || !isHoraValida(horaFim)) {
+      toast.error(
+        "Só são permitidas horas cheias (:00) ou meias horas (:30).",
+        { id: "horasNaoCheias" },
+      );
+      return;
+    }
+
+    try {
+      await postDisponibilidadeInput(scheduleInput);
+      toast.success("Horário adicionado com sucesso!");
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message || "Erro ao adicionar horário disponível",
+        { id: "ErroGeralHorario" },
+      );
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setScheduleInput((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+
+  const isHoraValida = (hora: string): boolean => {
+    const [, minutos] = hora.split(":");
+    return minutos === "00" || minutos === "30";
+  };
+
+  const isFimDeSemana = (data: string): boolean => {
+    const date = new Date(data);
+    const diaSemana = date.getDay();
+
+    return diaSemana === 0 || diaSemana === 6;
+  };
+
   return (
-    <>
-      <div className="container-fluid container-lg py-4 py-lg-5">
-        <div>
-          <h2 className="fw-bold mb-1">Adicionar Disponibilidade</h2>
-          <p className="text-muted mb-0">
-            Inserir, alterar, eliminar ou consultar disponibilidade colocadas
-          </p>
-          </div>
-        <div className="my-4">
+    <div className="container-fluid container-lg py-4 py-lg-5">
+      <div>
+        <h2 className="fw-bold mb-1">Adicionar Disponibilidade</h2>
+        <p className="text-muted mb-0">
+          Inserir, alterar, eliminar ou consultar disponibilidade.
+        </p>
+      </div>
+
+      {/* TABS */}
+      <ul className="nav nav-tabs my-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "Schedule" ? "active" : ""}`}
+            onClick={() => setActiveTab("Schedule")}
+            type="button"
+          >
+            Vista Horário
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "Dados" ? "active" : ""}`}
+            onClick={() => setActiveTab("Dados")}
+            type="button"
+          >
+            Vista nAUM SEI A PALAVRA CERTA ANDRÉ
+          </button>
+        </li>
+      </ul>
+      {activeTab == "Schedule" && (
+        <div className="mt-5">
           <CreateAvailabilitySchedule
             events={horariosDisponiveis}
             onSelect={handleAdicionarHorarios}
             onDelete={handleDeleteHorario}
           />
         </div>
-      </div>
-    </>
+      )}
+      {activeTab === "Dados" && (
+        <>
+          <div className="my-5">
+            {/* Período */}
+            <form onSubmit={handleAddDisponibilidade}>
+              <div className="d-flex justify-content-end">
+                <button className="btn btn-success">
+                  + Adicionar Disponibilidade
+                </button>
+              </div>
+              <div className="row">
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Válido de</label>
+                  <input
+                    type="date"
+                    name="dataInicio"
+                    className="form-control"
+                    value={scheduleInput.dataInicio}
+                    onChange={handleChange}
+                    onBlur={() => {
+                      if (isFimDeSemana(scheduleInput.dataInicio)) {
+                        toast.error(
+                          "Não é possível selecionar fins de semana.",
+                        );
+                      }
+                    }}
+                    required
+                  />
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Até</label>
+                  <input
+                    type="date"
+                    name="dataFim"
+                    className="form-control"
+                    value={scheduleInput.dataFim}
+                    onChange={handleChange}
+                    onBlur={() => {
+                      if (isFimDeSemana(scheduleInput.dataInicio)) {
+                        toast.error(
+                          "Não é possível selecionar fins de semana.",
+                        );
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Horário */}
+              <div className="row">
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Hora início</label>
+                  <input
+                    type="time"
+                    name="horaInicio"
+                    className="form-control"
+                    value={scheduleInput.horaInicio}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Hora fim</label>
+                  <input
+                    type="time"
+                    name="horaFim"
+                    className="form-control"
+                    value={scheduleInput.horaFim}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
