@@ -29,14 +29,11 @@ import AddNewCourse from "../pages/course/AddNewCourse";
 import EditCourse from "../pages/course/EditCourse";
 import AddNewRoom from "../pages/room/AddNewRoom";
 import EditRoom from "../pages/room/EditRoom";
-import AddNewSchedule from "../pages/schedule/AddNewSchedule";
-import EditSchedule from "../pages/schedule/EditSchedule";
 import CursoDetalhe from "../pages/course/CursoDetalhe";
 import AddNewUser from "../pages/users/AddNewUser";
 import EditUser from "../pages/users/EditUser";
 import Formadores from "../pages/Formadores"
 
-import Schedule from "../pages/schedule/Schedules";
 
 import Chatbot from "../pages/chatbot/Chatbot";
 
@@ -125,20 +122,10 @@ function AppRoutes() {
           <Route path="/gerir-salas" element={<NewRoom />} />
           <Route path="/adicionar-salas" element={<AddNewRoom />} />
           <Route path="/gerir-salas/edit-sala/:id" element={<EditRoom />} />
-
-          
-          {/*Privado (?) */}
-          {/*<Route path="/horarios" element={<Horario />} /> */}
-          <Route path="/horarios" element={<Schedule />} />
           
           {/* Horarios - Admin */}
           <Route path="/gerir-horarios" element={<NewSchedule />} />
-          <Route path="/adicionar-horarios" element={<AddNewSchedule />} />
-          <Route
-            path="/gerir-horarios/edit-horario/:id"
-            element={<EditSchedule />}
-          />
-          
+
           {/* CHATBOT */}
           <Route path="/chatbot" element={<Chatbot />} />
 

@@ -6,7 +6,6 @@ export type NavKey =
   | "cursos"
   | "formandos"
   | "formadores"
-  | "horarios"
   | "turmas"
   | "turma";
 
@@ -17,7 +16,6 @@ export const NAV_PERMISSIONS: Record<UserRole, NavKey[]> = {
     "cursos",
     "formandos",
     "formadores",
-    "horarios",
     "turmas"
   ],
 

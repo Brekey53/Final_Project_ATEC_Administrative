@@ -43,7 +43,6 @@ export default function Navbar() {
     { key: "formadores", label: "Formadores", to: "/formadores" },
     { key: "turma", label: "Turma", to: "/turmas" },
     { key: "turmas", label: "Turmas", to: "/turmas" },
-    { key: "horarios", label: "Horários", to: "/horarios" },
   ];
 
   useEffect(() => {
