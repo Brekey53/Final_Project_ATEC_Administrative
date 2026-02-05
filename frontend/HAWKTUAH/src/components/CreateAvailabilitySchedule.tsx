@@ -13,7 +13,6 @@ interface CreateAvailabilityScheduleProps {
   onSelect: (event: ScheduleEvent) => void;
   onDelete: (id: number) => void;
 }
-
 export default function CreateAvailabilitySchedule({
   events,
   onSelect,
@@ -104,7 +103,6 @@ export default function CreateAvailabilitySchedule({
         slotMinTime="08:00:00"
         slotMaxTime="23:00:00"
         height="auto"
-        selectMinDuration="02:00:00"
         snapDuration="01:00:00"
         selectMinDistance={20}
         events={[
@@ -128,7 +126,7 @@ export default function CreateAvailabilitySchedule({
           if (start < dataLimite) return false;
 
           const diff = end.getTime() - start.getTime();
-          const duracaoMinimaHoras = 2;
+          const duracaoMinimaHoras = 1;
           const milissegundosPorHora = 3600000;
           
           if (diff < duracaoMinimaHoras * milissegundosPorHora) {
