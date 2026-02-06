@@ -1,33 +1,43 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { data, Link } from "react-router-dom";
 import {
   getUtilizadores,
   deleteUtilizador,
-  type Utilizador,
+  type UtilizadorListItem,
 } from "../../services/users/UserService";
 import "../../css/users.css";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
 export default function ManageUsers() {
-  const [utilizadores, setUtilizadores] = useState<Utilizador[]>([]);
+  const [utilizadores, setUtilizadores] = useState<UtilizadorListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [utilizadorSelecionado, setUtilizadorSelecionado] =
-    useState<Utilizador | null>(null);
+    useState<UtilizadorListItem | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 8;
+  const ITEMS_PER_PAGE = 10;
+
+  const [tipoFiltro, setTipoFiltro] = useState<string>("todos");
+  const [estadoFiltro, setEstadoFiltro] = useState<string>("todos");
 
   useEffect(() => {
     async function fetchUtilizadores() {
-      const data = await getUtilizadores();
-      setUtilizadores(data);
-      setLoading(false);
+      try {
+        const data = await getUtilizadores();
+        setUtilizadores(data);
+      } catch (err) {
+        toast.error("Erro ao carregar utilizadores", {
+          id: "erro-utilizadores",
+        });
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchUtilizadores();
@@ -35,12 +45,26 @@ export default function ManageUsers() {
 
   const filteredUtilizadores = utilizadores.filter((u) => {
     const term = normalizarTexto(searchTerm);
-    return (
+    const tipo = u.tipoUtilizador.toLowerCase();
+
+    const matchTexto =
       normalizarTexto(u.nome).includes(term) ||
       normalizarTexto(u.email).includes(term) ||
-      normalizarTexto(u.tipoUtilizador).includes(term) ||
-      normalizarTexto(u.telefone).includes(term)
-    );
+      normalizarTexto(tipo).includes(term) ||
+      normalizarTexto(u.telefone ?? "").includes(term);
+
+    const matchTipo =
+      tipoFiltro === "todos" ||
+      (tipoFiltro === "administrativo" &&
+        (tipo === "administrativo" || tipo === "admin")) ||
+      tipo === tipoFiltro;
+
+    const matchEstado =
+      estadoFiltro === "todos" ||
+      (estadoFiltro === "ativo" && u.status) ||
+      (estadoFiltro === "inativo" && !u.status);
+
+    return matchTexto && matchTipo && matchEstado;
   });
 
   async function handleDeleteUtilizador() {
@@ -74,26 +98,22 @@ export default function ManageUsers() {
   );
 
   useEffect(() => {
-    // 1. Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // 2. Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
 
-    // 3. Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
-  }, [utilizadoresPaginados, loading]); // Re-executa quando a lista carrega
+  }, [utilizadoresPaginados, loading]);
 
-  // Quando pesquisa muda → voltar à página 1
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, tipoFiltro, estadoFiltro]);
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -104,22 +124,58 @@ export default function ManageUsers() {
             Inserir, alterar, eliminar e consultar utilizadores
           </p>
         </div>
-        <Link to="adicionar-utilizador">
-          <div className="btn btn-success px-4 py-2 rounded-pill">
-            + Novo Utilizador
-          </div>
+        <Link
+          to="adicionar-utilizador"
+          className="btn btn-success px-4 py-2 rounded-pill"
+        >
+          + Novo Utilizador
         </Link>
       </div>
 
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar Utilizadores (nome, email, telefone, tipo de utilizador)..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          {" "}
+          {/* Pesquisa Input*/}
+          <div className="col-md-6">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+          {/* Select Tipo Utilizador  */}
+          <div className="col-md-3">
+            <select
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2"
+              value={tipoFiltro}
+              onChange={(e) => setTipoFiltro(e.target.value)}
+            >
+              <option value="todos">Todos</option>
+              <option value="administrativo">Administrativo</option>
+              <option value="formador">Formador</option>
+              <option value="formando">Formando</option>
+              <option value="geral">Geral</option>
+            </select>
+          </div>
+          {/* Select para ordenar por status*/}
+          <div className="col-md-3">
+            <select
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2"
+              value={estadoFiltro}
+              onChange={(e) => setEstadoFiltro(e.target.value)}
+            >
+              <option value="todos">Todos</option>
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -130,6 +186,7 @@ export default function ManageUsers() {
             <div>Email</div>
             <div>Telefone</div>
             <div>Tipo Utilizador</div>
+            <div>Status</div>
             <div className="text-end">Ações</div>
           </div>
 
@@ -151,6 +208,9 @@ export default function ManageUsers() {
                 </div>
                 <div className="text-muted">{u.telefone || "-"}</div>{" "}
                 <div className="text-muted">{u.tipoUtilizador || "-"}</div>{" "}
+                <div className="text-muted">
+                  {u.status ? "Ativo" : "Inativo"}
+                </div>
                 <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link
                     to={`edit-utilizador/${u.idUtilizador}`}
@@ -179,7 +239,7 @@ export default function ManageUsers() {
             ))
           ) : (
             <div className="p-5 text-center text-muted">
-              Nenhum utilizador encontrado para "{searchTerm}"
+              Nenhum utilizador encontrado
             </div>
           )}
 
