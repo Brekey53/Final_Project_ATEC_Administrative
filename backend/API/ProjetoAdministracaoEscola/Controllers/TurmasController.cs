@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -177,16 +178,28 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// <param name="id">Id da turma a remover.</param>
         /// <returns>NoContent se for removida com sucesso ou NotFound se não existir.</returns>
         // DELETE: api/Turmas/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTurma(int id)
         {
-            var turma = await _context.Turmas.FindAsync(id);
+            var turma = await _context.Turmas.FirstOrDefaultAsync(t => t.IdTurma == id);
             if (turma == null)
             {
-                return NotFound();
+                return NotFound(new {message = "Turma não encontrada."});
             }
 
-            _context.Turmas.Remove(turma);
+            var aulasFuturasMarcadas = await _context.Horarios
+                .AnyAsync(h => h.IdTurma == id && h.Data > DateOnly.FromDateTime(DateTime.Now));
+
+            if (aulasFuturasMarcadas)
+            {
+                return BadRequest(new { message = "Não é possível eliminar a turma pois está com aulas agendadas para o futuro." });
+            }
+
+            turma.Ativo = false;
+
+            //Não necessario (soft delete)
+            //_context.Turmas.Remove(turma);
             await _context.SaveChangesAsync();
 
             return NoContent();

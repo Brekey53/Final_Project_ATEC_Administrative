@@ -11,7 +11,7 @@ import { Pencil, Search } from "lucide-react";
 export default function FormadorTurmas() {
   const [searchTerm, setSearchTerm] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("Todos");
-  const [ordenacao, setOrdenacao] = useState("desc");
+  const [ordenacao, setOrdenacao] = useState("");
 
   const [turmas, setTurmas] = useState<TurmaFormadorDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,15 +50,24 @@ export default function FormadorTurmas() {
       return matchPesquisa && matchArea;
     })
     .sort((a, b) => {
-      const dataA = a.horasDadas ? new Date(a.horasDadas).getTime() : 0;
-      const dataB = b.horasTotaisModulo
-        ? new Date(b.horasTotaisModulo).getTime()
-        : 0;
+      // Ordenar por nome caso vazio
+      if (ordenacao === "") {
+        const nomeA = a.nomeModulo ? normalizarTexto(a.nomeModulo) : "";
+        const nomeB = b.nomeModulo ? normalizarTexto(b.nomeModulo) : "";
+        return nomeA.localeCompare(nomeB);
+      }
 
+      let valorA = Number(a.horasDadas) || 0;
+      let valorB = Number(b.horasDadas) || 0;
+
+      valorA = (Number(a.horasTotaisModulo) * 100) / Number(a.horasDadas);
+      valorB = (Number(b.horasTotaisModulo) * 100) / Number(b.horasDadas);
+
+      // Ordenar por horas
       if (ordenacao === "asc") {
-        return dataA - dataB;
+        return valorB - valorA;
       } else {
-        return dataB - dataA;
+        return valorA - valorB;
       }
     });
 
@@ -125,8 +134,9 @@ export default function FormadorTurmas() {
               value={ordenacao}
               onChange={(e) => setOrdenacao(e.target.value)}
             >
-              <option value="desc">Mais horas</option>
-              <option value="asc">Menos horas</option>
+              <option value="">Ordenar por horas...</option>
+              <option value="desc">Mais horas lecionadas</option>
+              <option value="asc">Menos horas lecionadas</option>
             </select>
           </div>
         </div>

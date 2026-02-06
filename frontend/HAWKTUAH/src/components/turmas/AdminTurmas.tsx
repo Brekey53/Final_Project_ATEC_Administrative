@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../../css/layoutTabelas.css";
 import { toast } from "react-hot-toast";
-import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
+import { getTurmas, deleteTurma, type Turma } from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
@@ -10,6 +10,8 @@ import { Tooltip } from "bootstrap";
 export default function AdminTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [turmaSelecionada, setTurmaSelecionada] = useState<Turma | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [areaFiltro, setAreaFiltro] = useState("todas");
   const [ordenacao, setOrdenacao] = useState("desc");
@@ -29,6 +31,25 @@ export default function AdminTurmas() {
 
     fetchTurmas();
   }, []);
+
+   async function handleDeleteTurma() {
+      if (!turmaSelecionada) return;
+  
+      try {
+        await deleteTurma(turmaSelecionada.idTurma);
+  
+        setTurmas((prev) =>
+          prev.filter((c) => c.idTurma !== turmaSelecionada.idTurma),
+        );
+  
+        setTurmaSelecionada(null);
+        setShowDeleteModal(false);
+  
+        toast.success("Turma eliminada com sucesso");
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || "Erro ao eliminar Turma");
+      }
+    }
 
   const turmasFiltradas = turmas
     .filter((t) => {
@@ -61,17 +82,17 @@ export default function AdminTurmas() {
   const turmasPaginadas = turmasFiltradas.slice(startIndex, endIndex);
 
   useEffect(() => {
-    // 1. Procurar os elementos
+    // Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // 2. Inicializar
+    // Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
 
-    // 3. Limpeza
+    // Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
@@ -211,8 +232,8 @@ export default function AdminTurmas() {
                     data-bs-placement="top"
                     onClick={() => {
                       //TODO: Implementar dleete turmas 
-                      // setTurmaSelecionada(t);
-                      // setShowDeleteModal(true);
+                      setTurmaSelecionada(t);
+                      setShowDeleteModal(true);
                     }}
                   >
                     <Trash size={18} />
@@ -223,6 +244,56 @@ export default function AdminTurmas() {
           ) : (
             <div className="p-5 text-center text-muted">
               Nenhuma turma encontrada
+            </div>
+          )}
+          {showDeleteModal && turmaSelecionada && (
+            <div
+              className="modal fade show d-block"
+              tabIndex={-1}
+              onClick={() => setShowDeleteModal(false)}
+              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+            >
+              <div
+                className="modal-dialog modal-dialog-centered"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-content rounded-4 shadow">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Confirmar eliminação</h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowDeleteModal(false)}
+                    />
+                  </div>
+
+                  <div className="modal-body">
+                    <p>
+                      Tem a certeza que pretende eliminar o turma{" "}
+                      <strong>{turmaSelecionada?.nomeTurma}</strong>?
+                    </p>
+                    <p className="text-muted mb-0">
+                      Esta ação não pode ser revertida.
+                    </p>
+                  </div>
+
+                  <div className="modal-footer">
+                    <button
+                      className="btn btn-light"
+                      onClick={() => setShowDeleteModal(false)}
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleDeleteTurma}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

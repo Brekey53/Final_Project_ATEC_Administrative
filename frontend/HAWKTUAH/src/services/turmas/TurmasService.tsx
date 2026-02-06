@@ -17,22 +17,22 @@ export async function getTurmas() {
   return res.data;
 }
 
-export async function getTurma(idSala: string) {
-  const res = await axios.get(`${API_BASE_URL}/turmas/${idSala}`);
+export async function getTurma(idTurma: string) {
+  const res = await axios.get(`${API_BASE_URL}/turmas/${idTurma}`);
 
   return res.data;
 }
 
-export async function deleteTurma(idSala: number) {
-  return axios.delete(`${API_BASE_URL}/turmas/${idSala}`);
+export async function deleteTurma(idTurma: number) {
+  return axios.delete(`${API_BASE_URL}/turmas/${idTurma}`);
 }
 
 export async function postNewTurma(data: any) {
   return axios.post(`${API_BASE_URL}/turmas`, data);
 }
 
-export async function updateTurma(idSala: string, data: any) {
-  const res = await axios.put(`${API_BASE_URL}/turmas/${idSala}`, data);
+export async function updateTurma(idTurma: string, data: any) {
+  const res = await axios.put(`${API_BASE_URL}/turmas/${idTurma}`, data);
   return res.data;
 }
 
