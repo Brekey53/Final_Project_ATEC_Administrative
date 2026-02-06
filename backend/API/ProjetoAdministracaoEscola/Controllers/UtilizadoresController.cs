@@ -28,26 +28,29 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // GET: api/Utilizadores
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetUtilizadores()
+        public async Task<ActionResult<IEnumerable<UtilizadorDTO>>> GetUtilizadores()
         {
             return await _context.Utilizadores
                 .Include(u => u.IdTipoUtilizadorNavigation)
-                .Select(u => new
+                .Select(u => new UtilizadorDTO
                 {
-                    idUtilizador = u.IdUtilizador,
-                    nome = u.Nome,
-                    email = u.Email,
-                    telefone = u.Telefone,
-                    nif = u.Nif,
-                    tipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador // Admin, Formador, Formando, Administrativo, Geral
+                    IdUtilizador = u.IdUtilizador,
+                    Nome = u.Nome,
+                    Email = u.Email,
+                    Telefone = u.Telefone,
+                    Nif = u.Nif,
+                    TipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador, // Admin, Formador, Formando, Administrativo, Geral,
+                    Status = u.Ativo
                 })
-                .OrderBy(u => u.nome)
+                .OrderBy(u => u.Nome)
                 .ToListAsync();
         }
 
 
 
         // GET: api/Utilizadores/5
+        //TODO: Pode só ir buscar os UTILIZADOR DTO 
+        //todo: METER POLICY ADMIN ADMINISTRATIVO ACIMA
         [HttpGet("{id}")]
         public async Task<ActionResult<Utilizador>> GetUtilizador(int id)
         {
@@ -162,11 +165,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (user == null) return NotFound();
 
             user.Nome = dto.Nome;
+            user.Nif = dto.Nif;
             user.Telefone = dto.Telefone;
             user.Morada = dto.Morada;
             user.Sexo = dto.Sexo;
             user.DataNascimento = dto.DataNascimento;
             user.IdTipoUtilizador = dto.IdTipoUtilizador;
+            user.Ativo = dto.Ativo;
 
             await _context.SaveChangesAsync();
             return NoContent();
