@@ -272,7 +272,7 @@ export default function EditTurma() {
         </button>
       </div>
 
-      <ul className="nav nav-tabs mb-4 flex-nowrap overflow-auto">
+      <ul className="nav nav-tabs mb-4 flex-nowrap">
         <li className="nav-item flex-shrink-0">
           <button
             className={`nav-link ${activeTab === "dados" ? "active" : ""}`}
