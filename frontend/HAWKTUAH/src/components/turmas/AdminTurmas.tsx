@@ -36,10 +36,10 @@ export default function AdminTurmas() {
       if (!turmaSelecionada) return;
   
       try {
-        await deleteTurma(turmaSelecionada.idCurso);
+        await deleteTurma(turmaSelecionada.idTurma);
   
         setTurmas((prev) =>
-          prev.filter((c) => c.idCurso !== turmaSelecionada.idCurso),
+          prev.filter((c) => c.idTurma !== turmaSelecionada.idTurma),
         );
   
         setTurmaSelecionada(null);
