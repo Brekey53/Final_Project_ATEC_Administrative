@@ -193,7 +193,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (aulasFuturasMarcadas)
             {
-                return BadRequest(new { message = "Não é possível eliminar o formador pois ele está tem aulas agendadas para o futuro." });
+                return BadRequest(new { message = "Não é possível eliminar a turma pois está com aulas agendadas para o futuro." });
             }
 
             turma.Ativo = false;
