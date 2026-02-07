@@ -69,7 +69,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) 
+            if (userIdClaim == null)
                 return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
@@ -102,25 +102,30 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (user.IdTipoUtilizador == 3 && user.Formandos.Any())
             {
                 var f = user.Formandos.First();
-                return Ok(new { 
-                    baseInfo = perfilBase, 
-                    extra = new { 
-                        f.IdFormando, 
-                        Escolaridade = f.IdEscolaridadeNavigation.Nivel 
-                    } 
+                return Ok(new
+                {
+                    baseInfo = perfilBase,
+                    extra = new
+                    {
+                        f.IdFormando,
+                        Escolaridade = f.IdEscolaridadeNavigation.Nivel
+                    }
                 });
             }
 
             if (user.IdTipoUtilizador == 2 && user.Formadores.Any())
             {
                 var f = user.Formadores.First();
-                return Ok(new { 
-                    baseInfo = perfilBase, 
-                    extra = new { 
-                        f.IdFormador, 
-                        f.Iban, 
-                        f.Qualificacoes 
-                    } });
+                return Ok(new
+                {
+                    baseInfo = perfilBase,
+                    extra = new
+                    {
+                        f.IdFormador,
+                        f.Iban,
+                        f.Qualificacoes
+                    }
+                });
             }
 
             return Ok(perfilBase);
@@ -159,26 +164,89 @@ namespace ProjetoAdministracaoEscola.Controllers
         // PUT: api/Utilizadores/5
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto)
-        {
-            var user = await _context.Utilizadores.FindAsync(id);
-            if (user == null) return NotFound();
+        public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto) { 
+  
+            var utilizador = await _context.Utilizadores.FindAsync(id);
+            if (utilizador == null)
+                return NotFound();
 
-            user.Nome = dto.Nome;
-            user.Nif = dto.Nif;
-            user.Telefone = dto.Telefone;
-            user.Morada = dto.Morada;
-            user.Sexo = dto.Sexo;
-            user.DataNascimento = dto.DataNascimento;
-            user.IdTipoUtilizador = dto.IdTipoUtilizador;
-            user.Ativo = dto.Ativo;
+            // Guardar estado anterior
+            var tipoAntigo = utilizador.IdTipoUtilizador;
+            var ativoAntigo = utilizador.Ativo;
+
+            // Atualizar utilizador
+            utilizador.Nome = dto.Nome;
+            utilizador.Nif = dto.Nif;
+            utilizador.Telefone = dto.Telefone;
+            utilizador.Morada = dto.Morada;
+            utilizador.Sexo = dto.Sexo;
+            utilizador.DataNascimento = dto.DataNascimento;
+            utilizador.IdTipoUtilizador = dto.IdTipoUtilizador;
+            utilizador.Ativo = dto.Ativo;
+
+            // Se mudou o ATIVO
+            if (ativoAntigo != dto.Ativo)
+            {
+                // Atualizar na tabela formandos
+                var formando = await _context.Formandos
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formando != null)
+                    formando.Ativo = dto.Ativo;
+
+                // // Atualizar na tabela Formador
+                var formador = await _context.Formadores
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formador != null)
+                    formador.Ativo = dto.Ativo;
+            }
+
+            // Se mudou o TIPO DE UTILIZADOR
+            if (tipoAntigo != dto.IdTipoUtilizador)
+            {
+                // Desativar em ambas
+                var formando = await _context.Formandos
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formando != null)
+                    formando.Ativo = false;
+
+                var formador = await _context.Formadores
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formador != null)
+                    formador.Ativo = false;
+
+                // Ativar na tabela correspondente
+                if (dto.IdTipoUtilizador == 3) // Formando
+                {
+                    if (formando != null)
+                        formando.Ativo = true;
+                    else
+                        _context.Formandos.Add(new Formando
+                        {
+                            IdUtilizador = id,
+                            Ativo = true
+                        });
+                }
+
+                if (dto.IdTipoUtilizador == 2) // Formador
+                {
+                    if (formador != null)
+                        formador.Ativo = true;
+                    else
+                        _context.Formadores.Add(new Formador
+                        {
+                            IdUtilizador = id,
+                            Ativo = true
+                        });
+                }
+            }
 
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
+
         // POST: api/Utilizadores/new-user
-        [HttpPost ("new-user")]
+        [HttpPost("new-user")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
         {
             // Verificar se email j? existe
@@ -293,7 +361,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (formando != null)
             {
-                // Verificar se existe alguma insci??o associada
+                // Verificar se existe alguma inscrição associada
                 bool temAulasFuturas = await _context.Inscricoes
                     .Where(i => i.IdFormando == id)
                     .AnyAsync(i => _context.Horarios.Any(h =>
@@ -333,7 +401,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> GetUserDetails(string email)
         {
             var user = await _context.Utilizadores
-                .Select(u => new {
+                .Select(u => new
+                {
                     u.Email,
                     u.Nome,
                     u.Nif,
@@ -354,7 +423,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> GetUserName(string email)
         {
             var user = await _context.Utilizadores
-                .Select(u => new {
+                .Select(u => new
+                {
                     u.Email,
                     u.Nome,
                 })

@@ -19,7 +19,7 @@ export default function EditUser() {
     telefone: "",
     IdTipoUtilizador: 0,
     dataNascimento: "",
-    sexo: "",
+    sexo: "Masculino",
     morada: "",
     ativo: true,
   });
@@ -41,7 +41,7 @@ export default function EditUser() {
           telefone: u.telefone ?? "",
           IdTipoUtilizador: Number(u.idTipoUtilizador),
           dataNascimento: u.dataNascimento?.split("T")[0] ?? "",
-          sexo: u.sexo,
+          sexo: u.sexo ?? "Masculino",
           morada: u.morada ?? "",
           ativo: u.ativo,
         });
@@ -84,7 +84,7 @@ export default function EditUser() {
     data.append("DataNascimento", formData.dataNascimento);
     data.append("Sexo", formData.sexo);
     data.append("Morada", formData.morada);
-    data.append("Status", formData.ativo ? "true" : "false");
+    data.append("Ativo", formData.ativo ? "true" : "false");
 
     try {
       await updateUtilizador(id, data);
@@ -212,17 +212,16 @@ export default function EditUser() {
                 <select
                   name="ativo"
                   className="form-select"
-                  value={formData.ativo ? "ativo" : "inativo"}
+                  value={formData.ativo.toString()}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
                       ativo: e.target.value === "true",
                     }))
                   }
-                  required
                 >
-                  <option value="inativo">Desativada</option>
-                  <option value="ativo">Ativa</option>
+                  <option value="false">Desativada</option>
+                  <option value="true">Ativa</option>
                 </select>
               </div>
 
