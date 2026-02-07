@@ -61,8 +61,8 @@ export default function ManageUsers() {
 
     const matchEstado =
       estadoFiltro === "todos" ||
-      (estadoFiltro === "ativo" && u.status) ||
-      (estadoFiltro === "inativo" && !u.status);
+      (estadoFiltro === "ativo" && u.ativo) ||
+      (estadoFiltro === "inativo" && !u.ativo);
 
     return matchTexto && matchTipo && matchEstado;
   });
@@ -209,7 +209,7 @@ export default function ManageUsers() {
                 <div className="text-muted">{u.telefone || "-"}</div>{" "}
                 <div className="text-muted">{u.tipoUtilizador || "-"}</div>{" "}
                 <div className="text-muted">
-                  {u.status ? "Ativo" : "Inativo"}
+                  {u.ativo ? "Ativo" : "Inativo"}
                 </div>
                 <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link
