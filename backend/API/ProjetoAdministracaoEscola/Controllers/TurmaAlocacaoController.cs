@@ -103,8 +103,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                     Estado = estado
                 };
             })
-            .OrderBy(t => t.NomeTurma)
-            .ThenBy(t => t.NomeModulo)
+            .OrderBy(t => t.NomeTurma.Trim(), StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(t => t.NomeModulo.Trim(), StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
             return Ok(resultado);

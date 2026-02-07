@@ -7,6 +7,7 @@ import {
 } from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Search } from "lucide-react";
+import { Tooltip } from "bootstrap";
 
 export default function FormadorTurmas() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,25 +51,35 @@ export default function FormadorTurmas() {
       return matchPesquisa && matchArea;
     })
     .sort((a, b) => {
-      // Ordenar por nome caso vazio
       if (ordenacao === "") {
-        const nomeA = a.nomeModulo ? normalizarTexto(a.nomeModulo) : "";
-        const nomeB = b.nomeModulo ? normalizarTexto(b.nomeModulo) : "";
-        return nomeA.localeCompare(nomeB);
+        const turmaA = normalizarTexto(a.nomeTurma);
+        const turmaB = normalizarTexto(b.nomeTurma);
+
+        if (turmaA !== turmaB) {
+          return turmaA.localeCompare(turmaB, "pt-PT");
+        }
+
+        const moduloA = normalizarTexto(a.nomeModulo);
+        const moduloB = normalizarTexto(b.nomeModulo);
+
+        return moduloA.localeCompare(moduloB, "pt-PT");
       }
 
-      let valorA = Number(a.horasDadas) || 0;
-      let valorB = Number(b.horasDadas) || 0;
+      const progressoA =
+        a.horasTotaisModulo > 0
+          ? (a.horasDadas / a.horasTotaisModulo) * 100
+          : 0;
 
-      valorA = (Number(a.horasTotaisModulo) * 100) / Number(a.horasDadas);
-      valorB = (Number(b.horasTotaisModulo) * 100) / Number(b.horasDadas);
+      const progressoB =
+        b.horasTotaisModulo > 0
+          ? (b.horasDadas / b.horasTotaisModulo) * 100
+          : 0;
 
-      // Ordenar por horas
-      if (ordenacao === "asc") {
-        return valorB - valorA;
-      } else {
-        return valorA - valorB;
+      if (ordenacao === "desc") {
+        return progressoB - progressoA; // mais horas primeiro
       }
+
+      return progressoA - progressoB; // menos horas primeiro
     });
 
   useEffect(() => {
@@ -80,9 +91,24 @@ export default function FormadorTurmas() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const turmasPaginadas = turmasFiltradas.slice(startIndex, endIndex);
 
+  
+  useEffect(() => {
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]',
+    );
+    
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el),
+    );
+    
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [turmasPaginadas]);
+  
   if (loading) return <p>A carregar…</p>;
   if (error) return <p>{error}</p>;
-
+  
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       {/* HEADER */}
@@ -198,7 +224,10 @@ export default function FormadorTurmas() {
                 <div className="d-flex justify-content-end">
                   <Link
                     to={`/avaliar/${t.idTurma}/${t.idModulo}`}
-                    className="btn rounded-pill px-1"
+                    className="action-icon"
+                    title="Editar Avaliações Turma"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
                   >
                     <Pencil size={18} />
                   </Link>
