@@ -3,9 +3,9 @@ import { authService } from "../auth/AuthService";
 
 export default function PrivateRoute() {
   const location = useLocation();
-  const token = authService.decodeToken();
+  const user = authService.decodeToken();
 
-  if (!token) {
+  if (!user) {
     return (
       <Navigate
         to="/login"
