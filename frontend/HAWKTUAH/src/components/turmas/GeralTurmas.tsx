@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import "../../css/layoutTabelas.css";
 import { toast } from "react-hot-toast";
-import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
+import {
+  getTurmasGeralDashboard,
+  type Turma,
+} from "../../services/turmas/TurmasService";
 
 export default function GeralTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -13,7 +16,7 @@ export default function GeralTurmas() {
   useEffect(() => {
     async function fetchTurmas() {
       try {
-        const data = await getTurmas();
+        const data = await getTurmasGeralDashboard();
         if (!data) return;
         setTurmas(data);
       } catch (err: any) {
@@ -45,10 +48,7 @@ export default function GeralTurmas() {
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Verificar Turmas</h2>
-          <p className="text-muted mb-0">
-            {/* TODO:  ALTERAR O GET PARA MOSTRAR APENAS TURMAS PARA COMEÇAR???*/}
-            Verificar turmas para começar
-          </p>
+          <p className="text-muted mb-0">Verificar turmas para começar</p>
         </div>
       </div>
 
@@ -98,19 +98,9 @@ export default function GeralTurmas() {
                 <div className="text-muted">{t.dataFim || "-"}</div>
 
                 {/* Estado */}
-                <div className="text-muted">
-                  <span
-                    className={`badge ${
-                      t.estado === "Para começar"
-                        ? "bg-secondary"
-                        : t.estado === "A decorrer"
-                          ? "bg-primary"
-                          : "bg-success"
-                    }`}
-                  >
-                    {t.estado}
-                  </span>
-                </div>
+                <span className="badge bg-secondary rounded-pill py-1">
+                  Em Breve
+                </span>
               </div>
             ))
           ) : (

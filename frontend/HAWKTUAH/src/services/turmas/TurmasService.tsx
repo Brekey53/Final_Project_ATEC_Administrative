@@ -17,6 +17,13 @@ export async function getTurmas() {
   return res.data;
 }
 
+export async function getTurmasGeralDashboard() {
+  const res = await axios.get(`${API_BASE_URL}/turmas/proximasturmas`);
+
+  return res.data;
+}
+
+
 export async function getTurma(idTurma: string) {
   const res = await axios.get(`${API_BASE_URL}/turmas/${idTurma}`);
 
