@@ -9,6 +9,7 @@ CREATE TABLE areas (
     nome VARCHAR(50) NOT NULL
 );
 
+-- Tabela para ter salas para tipos de matérias
 CREATE TABLE tipo_salas (
     id_tipo_sala INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL
@@ -28,6 +29,15 @@ CREATE TABLE escolaridades (
 CREATE TABLE tipo_materias (
     id_tipo_materia INT AUTO_INCREMENT PRIMARY KEY,
     tipo VARCHAR(100) NOT NULL
+);
+
+-- Tabela de ligação: Que tipos de matéria funcionam em que tipos de sala
+CREATE TABLE materia_sala_compatibilidade (
+    id_tipo_materia INT NOT NULL,
+    id_tipo_sala INT NOT NULL,
+    PRIMARY KEY (id_tipo_materia, id_tipo_sala),
+    FOREIGN KEY (id_tipo_materia) REFERENCES tipo_materias(id_tipo_materia),
+    FOREIGN KEY (id_tipo_sala) REFERENCES tipo_salas(id_tipo_sala)
 );
 
 -- UTILIZADORES (SOFT DELETE)
@@ -93,6 +103,15 @@ CREATE TABLE cursos_modulos (
     FOREIGN KEY (id_modulo) REFERENCES modulos(id_modulo)
 );
 
+CREATE TABLE metodologias_horarios (
+    id_metodologia INT AUTO_INCREMENT PRIMARY KEY,
+    nome ENUM('Diurno', 'Pós-Laboral') NOT NULL,
+    horario_inicio TIME NOT NULL,
+    horario_fim TIME NOT NULL,
+    pausa_refeicao_inicio TIME NOT NULL,
+    pausa_refeicao_fim TIME NOT NULL
+);
+
 -- TURMAS (SOFT DELETE)
 CREATE TABLE turmas (
     id_turma INT AUTO_INCREMENT PRIMARY KEY,
@@ -102,7 +121,9 @@ CREATE TABLE turmas (
     data_fim DATE NOT NULL,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     data_desativacao DATETIME NULL,
-    FOREIGN KEY (id_curso) REFERENCES cursos(id_curso)
+    id_metodologia INT NOT NULL,
+    FOREIGN KEY (id_curso) REFERENCES cursos(id_curso),
+    FOREIGN KEY (id_metodologia) REFERENCES metodologias_horarios(id_metodologia)
 );
 
 -- FORMADORES (SOFT DELETE)
@@ -225,7 +246,6 @@ INSERT INTO tipo_salas (nome) VALUES
 ('Ginásio'),
 ('Online');
 
-
 -- TIPOS DE UTILIZADOR
 INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES
 ('admin'),
@@ -253,8 +273,26 @@ INSERT INTO tipo_materias (tipo) VALUES
 ('Cloud & DevOps'),
 ('IA & Data Science'),
 ('Design & Multimédia'),
-('Governança & Qualidade');
+('Governança & Qualidade'),
+('Gerais (ex: Linguas, Matemática)');
 
+INSERT INTO metodologias_horarios (nome, horario_inicio, horario_fim, pausa_refeicao_inicio, pausa_refeicao_fim) VALUES
+('Diurno', '09:00:00', '16:00:00', '12:00:00', '13:00:00'),
+('Pós-Laboral', '16:00:00', '23:00:00', '19:00:00', '20:00:00');
+
+-- Ligaçao tipos de materia com tipos de sala
+INSERT INTO materia_sala_compatibilidade (id_tipo_materia, id_tipo_sala) VALUES
+(1, 1), (1, 10),
+(2, 1), (2, 2), (2, 10),
+(3, 1), (3, 10),
+(4, 1), (4, 10),
+(5, 1), (5, 2), (5, 10),
+(6, 3), (6, 5), (6, 6), (6, 8), (6, 10),
+(7, 1), (7, 10),
+(8, 1), (8, 10),
+(9, 1), (9, 5), (9, 10),
+(10, 3), (10, 5), (10, 7), (10, 8), (10, 10),
+(11, 3), (11 , 10);
 
 
 -- UTILIZADORES (5 para Formadores, 5 para Formandos)
@@ -544,10 +582,10 @@ INSERT INTO cursos_modulos (id_curso, id_modulo, prioridade) VALUES
 
 
 -- TURMAS
-INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim) VALUES 
-(1, 'TPSI-PAL-0525', '2025-11-03', '2026-07-15'), (1, 'TPSI-PAL-0626', '2026-01-10', '2026-09-20'),
-(2, 'CIBER-2025', '2025-09-01', '2026-06-30'), (3, 'MEC-01', '2026-02-01', '2026-12-15'),
-(4, 'ELET-01', '2025-10-01', '2026-05-30');
+INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim, id_metodologia) VALUES 
+(1, 'TPSI-PAL-0525', '2025-11-03', '2026-07-15', 1), (1, 'TPSI-PAL-0626', '2026-01-10', '2026-09-20', 1),
+(2, 'CIBER-2025', '2025-09-01', '2026-06-30', 1), (3, 'MEC-01', '2026-02-01', '2026-12-15', 1),
+(4, 'ELET-01', '2025-10-01', '2026-05-30', 1);
 
 -- SALAS
 INSERT INTO salas (descricao, num_max_alunos, id_tipo_sala) VALUES 

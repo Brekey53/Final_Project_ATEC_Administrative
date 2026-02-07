@@ -38,22 +38,23 @@ public partial class SistemaGestaoContext : DbContext
 
     public virtual DbSet<Inscrico> Inscricoes { get; set; }
 
+    public virtual DbSet<MetodologiasHorario> MetodologiasHorarios { get; set; }
+
     public virtual DbSet<Modulo> Modulos { get; set; }
 
     public virtual DbSet<Sala> Salas { get; set; }
+
     public virtual DbSet<TipoMateria> TipoMaterias { get; set; }
 
-    public virtual DbSet<TipoUtilizadore> TipoUtilizadores { get; set; }
-
     public virtual DbSet<TipoSala> TipoSala { get; set; }
+
+    public virtual DbSet<TipoUtilizadore> TipoUtilizadores { get; set; }
 
     public virtual DbSet<Turma> Turmas { get; set; }
 
     public virtual DbSet<TurmaAlocaco> TurmaAlocacoes { get; set; }
 
     public virtual DbSet<Utilizador> Utilizadores { get; set; }
-
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -111,6 +112,13 @@ public partial class SistemaGestaoContext : DbContext
             entity.HasIndex(e => e.IdArea, "id_area");
 
             entity.Property(e => e.IdCurso).HasColumnName("id_curso");
+            entity.Property(e => e.Ativo)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("ativo");
+            entity.Property(e => e.DataDesativacao)
+                .HasColumnType("datetime")
+                .HasColumnName("data_desativacao");
             entity.Property(e => e.Descricao)
                 .HasMaxLength(255)
                 .HasColumnName("descricao");
@@ -123,13 +131,6 @@ public partial class SistemaGestaoContext : DbContext
                 .HasForeignKey(d => d.IdArea)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("cursos_ibfk_1");
-            entity.Property(e => e.Ativo)
-                .HasDefaultValueSql("true")
-                .HasColumnName("ativo");
-
-            entity.Property(e => e.DataDesativacao)
-                .HasColumnName("data_desativacao");
-
         });
 
         modelBuilder.Entity<CursosModulo>(entity =>
@@ -206,6 +207,13 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.AnexoFicheiro)
                 .HasColumnType("mediumblob")
                 .HasColumnName("anexo_ficheiro");
+            entity.Property(e => e.Ativo)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("ativo");
+            entity.Property(e => e.DataDesativacao)
+                .HasColumnType("datetime")
+                .HasColumnName("data_desativacao");
             entity.Property(e => e.Fotografia)
                 .HasColumnType("mediumblob")
                 .HasColumnName("fotografia");
@@ -221,13 +229,6 @@ public partial class SistemaGestaoContext : DbContext
                 .HasForeignKey(d => d.IdUtilizador)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("formadores_ibfk_1");
-            entity.Property(e => e.Ativo)
-                .HasDefaultValueSql("true")
-                .HasColumnName("ativo");
-
-            entity.Property(e => e.DataDesativacao)
-                .HasColumnName("data_desativacao");
-
         });
 
         modelBuilder.Entity<FormadorTipoMateria>(entity =>
@@ -251,7 +252,6 @@ public partial class SistemaGestaoContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-
         modelBuilder.Entity<Formando>(entity =>
         {
             entity.HasKey(e => e.IdFormando).HasName("PRIMARY");
@@ -266,6 +266,13 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.AnexoFicheiro)
                 .HasColumnType("mediumblob")
                 .HasColumnName("anexo_ficheiro");
+            entity.Property(e => e.Ativo)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("ativo");
+            entity.Property(e => e.DataDesativacao)
+                .HasColumnType("datetime")
+                .HasColumnName("data_desativacao");
             entity.Property(e => e.Fotografia)
                 .HasColumnType("mediumblob")
                 .HasColumnName("fotografia");
@@ -280,13 +287,6 @@ public partial class SistemaGestaoContext : DbContext
                 .HasForeignKey(d => d.IdUtilizador)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("formandos_ibfk_1");
-            entity.Property(e => e.Ativo)
-                .HasDefaultValueSql("true")
-                .HasColumnName("ativo");
-
-            entity.Property(e => e.DataDesativacao)
-                .HasColumnName("data_desativacao");
-
         });
 
         modelBuilder.Entity<Horario>(entity =>
@@ -372,6 +372,30 @@ public partial class SistemaGestaoContext : DbContext
                 .HasConstraintName("inscricoes_ibfk_2");
         });
 
+        modelBuilder.Entity<MetodologiasHorario>(entity =>
+        {
+            entity.HasKey(e => e.IdMetodologia).HasName("PRIMARY");
+
+            entity.ToTable("metodologias_horarios");
+
+            entity.Property(e => e.IdMetodologia).HasColumnName("id_metodologia");
+            entity.Property(e => e.HorarioFim)
+                .HasColumnType("time")
+                .HasColumnName("horario_fim");
+            entity.Property(e => e.HorarioInicio)
+                .HasColumnType("time")
+                .HasColumnName("horario_inicio");
+            entity.Property(e => e.Nome)
+                .HasColumnType("enum('Diurno','Pós-Laboral')")
+                .HasColumnName("nome");
+            entity.Property(e => e.PausaRefeicaoFim)
+                .HasColumnType("time")
+                .HasColumnName("pausa_refeicao_fim");
+            entity.Property(e => e.PausaRefeicaoInicio)
+                .HasColumnType("time")
+                .HasColumnName("pausa_refeicao_inicio");
+        });
+
         modelBuilder.Entity<Modulo>(entity =>
         {
             entity.HasKey(e => e.IdModulo).HasName("PRIMARY");
@@ -380,33 +404,32 @@ public partial class SistemaGestaoContext : DbContext
 
             entity.HasIndex(e => e.CodigoIdentificacao, "codigo_identificacao").IsUnique();
 
+            entity.HasIndex(e => e.IdTipoMateria, "id_tipo_materia");
+
             entity.Property(e => e.IdModulo).HasColumnName("id_modulo");
+            entity.Property(e => e.Ativo)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("ativo");
             entity.Property(e => e.CodigoIdentificacao)
                 .HasMaxLength(20)
                 .HasColumnName("codigo_identificacao");
             entity.Property(e => e.Creditos)
                 .HasPrecision(4, 2)
                 .HasColumnName("creditos");
+            entity.Property(e => e.DataDesativacao)
+                .HasColumnType("datetime")
+                .HasColumnName("data_desativacao");
             entity.Property(e => e.HorasTotais).HasColumnName("horas_totais");
+            entity.Property(e => e.IdTipoMateria).HasColumnName("id_tipo_materia");
             entity.Property(e => e.Nome)
                 .HasMaxLength(100)
                 .HasColumnName("nome");
-            entity.Property(e => e.IdTipoMateria)
-                .HasColumnName("id_tipo_materia");
 
-            entity.Property(e => e.Ativo)
-                .HasDefaultValueSql("true")
-                .HasColumnName("ativo");
-
-            entity.Property(e => e.DataDesativacao)
-                .HasColumnName("data_desativacao");
-
-            entity.HasOne(d => d.IdTipoMateriaNavigation)
-                .WithMany(p => p.Modulos)
+            entity.HasOne(d => d.IdTipoMateriaNavigation).WithMany(p => p.Modulos)
                 .HasForeignKey(d => d.IdTipoMateria)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("modulos_ibfk_tipo_materia");
-
+                .HasConstraintName("modulos_ibfk_1");
         });
 
         modelBuilder.Entity<Sala>(entity =>
@@ -415,26 +438,19 @@ public partial class SistemaGestaoContext : DbContext
 
             entity.ToTable("salas");
 
-            entity.Property(e => e.IdSala)
-                .HasColumnName("id_sala");
+            entity.HasIndex(e => e.IdTipoSala, "id_tipo_sala");
 
+            entity.Property(e => e.IdSala).HasColumnName("id_sala");
             entity.Property(e => e.Descricao)
                 .HasMaxLength(50)
                 .HasColumnName("descricao");
+            entity.Property(e => e.IdTipoSala).HasColumnName("id_tipo_sala");
+            entity.Property(e => e.NumMaxAlunos).HasColumnName("num_max_alunos");
 
-            entity.Property(e => e.NumMaxAlunos)
-                .HasColumnName("num_max_alunos");
-
-            entity.Property(e => e.IdTipoSala)
-                .HasColumnName("id_tipo_sala");
-
-            entity.HasIndex(e => e.IdTipoSala, "idx_sala_tipo_sala");
-
-            entity.HasOne(s => s.IdTipoSalaNavigation)
-                .WithMany(ts => ts.Salas)
-                .HasForeignKey(s => s.IdTipoSala)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("salas_ibfk_tipo_sala");
+            entity.HasOne(d => d.IdTipoSalaNavigation).WithMany(p => p.Salas)
+                .HasForeignKey(d => d.IdTipoSala)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("salas_ibfk_1");
         });
 
         modelBuilder.Entity<TipoMateria>(entity =>
@@ -447,8 +463,41 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.Tipo)
                 .HasMaxLength(100)
                 .HasColumnName("tipo");
+
+            entity.HasMany(d => d.IdTipoSalas).WithMany(p => p.IdTipoMateria)
+                .UsingEntity<Dictionary<string, object>>(
+                    "MateriaSalaCompatibilidade",
+                    r => r.HasOne<TipoSala>().WithMany()
+                        .HasForeignKey("IdTipoSala")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("materia_sala_compatibilidade_ibfk_2"),
+                    l => l.HasOne<TipoMateria>().WithMany()
+                        .HasForeignKey("IdTipoMateria")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("materia_sala_compatibilidade_ibfk_1"),
+                    j =>
+                    {
+                        j.HasKey("IdTipoMateria", "IdTipoSala")
+                            .HasName("PRIMARY")
+                            .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                        j.ToTable("materia_sala_compatibilidade");
+                        j.HasIndex(new[] { "IdTipoSala" }, "id_tipo_sala");
+                        j.IndexerProperty<int>("IdTipoMateria").HasColumnName("id_tipo_materia");
+                        j.IndexerProperty<int>("IdTipoSala").HasColumnName("id_tipo_sala");
+                    });
         });
 
+        modelBuilder.Entity<TipoSala>(entity =>
+        {
+            entity.HasKey(e => e.IdTipoSala).HasName("PRIMARY");
+
+            entity.ToTable("tipo_salas");
+
+            entity.Property(e => e.IdTipoSala).HasColumnName("id_tipo_sala");
+            entity.Property(e => e.Nome)
+                .HasMaxLength(50)
+                .HasColumnName("nome");
+        });
 
         modelBuilder.Entity<TipoUtilizadore>(entity =>
         {
@@ -462,21 +511,6 @@ public partial class SistemaGestaoContext : DbContext
                 .HasColumnName("tipo_utilizador");
         });
 
-        modelBuilder.Entity<TipoSala>(entity =>
-        {
-            entity.ToTable("tipo_salas");
-
-            entity.HasKey(e => e.IdTipoSala).HasName("PRIMARY");
-
-            entity.Property(e => e.IdTipoSala)
-                .HasColumnName("id_tipo_sala");
-
-            entity.Property(e => e.Nome)
-                .IsRequired()
-                .HasMaxLength(50)
-                .HasColumnName("nome");
-        });
-
         modelBuilder.Entity<Turma>(entity =>
         {
             entity.HasKey(e => e.IdTurma).HasName("PRIMARY");
@@ -485,10 +519,20 @@ public partial class SistemaGestaoContext : DbContext
 
             entity.HasIndex(e => e.IdCurso, "id_curso");
 
+            entity.HasIndex(e => e.IdMetodologia, "id_metodologia");
+
             entity.Property(e => e.IdTurma).HasColumnName("id_turma");
+            entity.Property(e => e.Ativo)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("ativo");
+            entity.Property(e => e.DataDesativacao)
+                .HasColumnType("datetime")
+                .HasColumnName("data_desativacao");
             entity.Property(e => e.DataFim).HasColumnName("data_fim");
             entity.Property(e => e.DataInicio).HasColumnName("data_inicio");
             entity.Property(e => e.IdCurso).HasColumnName("id_curso");
+            entity.Property(e => e.IdMetodologia).HasColumnName("id_metodologia");
             entity.Property(e => e.NomeTurma)
                 .HasMaxLength(50)
                 .HasColumnName("nome_turma");
@@ -497,13 +541,11 @@ public partial class SistemaGestaoContext : DbContext
                 .HasForeignKey(d => d.IdCurso)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("turmas_ibfk_1");
-            entity.Property(e => e.Ativo)
-                .HasDefaultValueSql("true")
-                .HasColumnName("ativo");
 
-            entity.Property(e => e.DataDesativacao)
-                .HasColumnName("data_desativacao");
-
+            entity.HasOne(d => d.IdMetodologiaNavigation).WithMany(p => p.Turmas)
+                .HasForeignKey(d => d.IdMetodologia)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("turmas_ibfk_2");
         });
 
         modelBuilder.Entity<TurmaAlocaco>(entity =>
@@ -552,6 +594,13 @@ public partial class SistemaGestaoContext : DbContext
             entity.HasIndex(e => e.Nif, "nif").IsUnique();
 
             entity.Property(e => e.IdUtilizador).HasColumnName("id_utilizador");
+            entity.Property(e => e.Ativo)
+                .IsRequired()
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("ativo");
+            entity.Property(e => e.DataDesativacao)
+                .HasColumnType("datetime")
+                .HasColumnName("data_desativacao");
             entity.Property(e => e.DataNascimento).HasColumnName("data_nascimento");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
@@ -577,6 +626,9 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
+            entity.Property(e => e.Sexo)
+                .HasColumnType("enum('Masculino','Feminino')")
+                .HasColumnName("sexo");
             entity.Property(e => e.StatusAtivacao)
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("status_ativacao");
@@ -586,26 +638,12 @@ public partial class SistemaGestaoContext : DbContext
             entity.Property(e => e.TokenAtivacao)
                 .HasMaxLength(255)
                 .HasColumnName("token_ativacao");
-            entity.Property(e => e.Ativo)
-                .HasDefaultValueSql("true")
-                .HasColumnName("ativo");
-
-            entity.Property(e => e.DataDesativacao)
-                .HasColumnName("data_desativacao");
 
             entity.HasOne(d => d.IdTipoUtilizadorNavigation).WithMany(p => p.Utilizadores)
                 .HasForeignKey(d => d.IdTipoUtilizador)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("utilizadores_ibfk_1");
-
         });
-
-        //modelBuilder.Entity<Utilizador>().HasQueryFilter(e => e.Ativo);
-        modelBuilder.Entity<Formador>().HasQueryFilter(e => e.Ativo);
-        modelBuilder.Entity<Formando>().HasQueryFilter(e => e.Ativo);
-        modelBuilder.Entity<Curso>().HasQueryFilter(e => e.Ativo);
-        modelBuilder.Entity<Modulo>().HasQueryFilter(e => e.Ativo);
-        modelBuilder.Entity<Turma>().HasQueryFilter(e => e.Ativo);
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -74,7 +74,7 @@ namespace ProjetoAdministracaoEscola.Services
                     if (horasRestantes >= 3)
                     {
                         // Conflito de sala
-                        var salaManha = EncontrarSalaLivre(salas, horariosOcupados, cursorData, inicioManha, fimManha);
+                        var salaManha = EncontrarSalaLivre(salas, horariosOcupados, modulo, cursorData, inicioManha, fimManha);
                         var turmaDisponivelManha = TurmaDisponivel(turma.IdTurma, horariosOcupados, cursorData, inicioManha, fimManha);
                         var formadorDisponivelManha = FormadorDisponivel(formadorModulo.IdFormador, horariosOcupados, cursorData, inicioManha, fimManha);
 
@@ -93,7 +93,7 @@ namespace ProjetoAdministracaoEscola.Services
                     if (horasRestantes >= 3)
                     {
                         // Conflito de sala
-                        var salaTarde = EncontrarSalaLivre(salas, horariosOcupados, cursorData, inicioTarde, fimTarde);
+                        var salaTarde = EncontrarSalaLivre(salas, horariosOcupados, modulo, cursorData, inicioTarde, fimTarde);
                         var turmaDisponivelTarde = TurmaDisponivel(turma.IdTurma, horariosOcupados, cursorData, inicioTarde, fimTarde);
                         var formadorDisponivelTarde = FormadorDisponivel(formadorModulo.IdFormador, horariosOcupados, cursorData, inicioTarde, fimTarde);
 
@@ -119,7 +119,7 @@ namespace ProjetoAdministracaoEscola.Services
         }
 
         // Função para encontrar uma sala livre, considerando os horários ocupados
-        private Sala? EncontrarSalaLivre(List<Sala> salas, HashSet<Horario> horariosOcupados, DateOnly dia, TimeOnly inicio, TimeOnly fim)
+        private Sala? EncontrarSalaLivre(List<Sala> salas, HashSet<Horario> horariosOcupados, CursosModulo cursosModulo, DateOnly dia, TimeOnly inicio, TimeOnly fim)
         {
 
             var IdSalasOcupada = horariosOcupados
@@ -127,7 +127,9 @@ namespace ProjetoAdministracaoEscola.Services
                 .Select(h => h.IdSala)
                 .ToHashSet();
 
-            return salas.FirstOrDefault(s => !IdSalasOcupada.Contains(s.IdSala)); // TODO: Melhorar lógica para escolher sala, para que filtre a area do modulo e tipo de sala
+            var tipoSalasPermitidas = cursosModulo.IdModuloNavigation.IdTipoMateriaNavigation.IdTipoSalas;
+
+            return salas.FirstOrDefault(s => !IdSalasOcupada.Contains(s.IdSala) && tipoSalasPermitidas.Any(tsp  =>  tsp.IdTipoSala == s.IdTipoSala)); 
         }
 
         // Função para verificar se o formador está disponível, considerando os horários ocupados

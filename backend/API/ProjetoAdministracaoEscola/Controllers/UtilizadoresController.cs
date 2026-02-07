@@ -47,7 +47,6 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
-
         // GET: api/Utilizadores/5
         //TODO: Pode só ir buscar os UTILIZADOR DTO 
         //todo: METER POLICY ADMIN ADMINISTRATIVO ACIMA
