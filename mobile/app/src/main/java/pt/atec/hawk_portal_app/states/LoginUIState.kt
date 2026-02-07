@@ -1,4 +1,4 @@
-package pt.atec.hawk_portal_app.ui.states
+package pt.atec.hawk_portal_app.states
 
 data class LoginUIState(
     val isLoading: Boolean = false,
