@@ -51,7 +51,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Utilizador>> GetUtilizador(int id)
         {
-            var utilizador = await _context.Utilizadores.FindAsync(id);
+            var utilizador = await _context.Utilizadores
+                .FindAsync(id);
 
             if (utilizador == null)
             {
@@ -155,7 +156,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         // PUT: api/Utilizadores/5
         [HttpPut("{id}")]
-        [Consumes("multipart/form-data")]
+        [Consumes("multipart/form-data")] // TODO:
         public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto)
         {
             var user = await _context.Utilizadores.FindAsync(id);
@@ -181,7 +182,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .AnyAsync(u => u.Email == dto.Email);
 
             if (emailExists)
-                return BadRequest(new { message = "Email j? registado." });
+                return BadRequest(new { message = "Email já registado." });
 
             // Criar utilizador
             var user = new Utilizador
@@ -216,7 +217,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult> PostUtilizador(UtilizadorRegisterDTO dto)
         {
             if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
-                return Conflict("Email j? registado");
+                return Conflict("Email já registado");
 
             var newUser = new Utilizador
             {
@@ -245,7 +246,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (currentUserId != null && currentUserId == id.ToString())
             {
-                return BadRequest(new { message = "N?o pode eliminar a sua pr?pria conta." });
+                return BadRequest(new { message = "Não pode eliminar a sua própria conta." });
             }
 
 
@@ -255,7 +256,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (utilizador == null)
             {
-                return NotFound(new { message = "Utilizador n?o encontrado." });
+                return NotFound(new { message = "Utilizador não encontrado." });
             }
 
 
@@ -275,7 +276,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
                 if (aulasFuturasMarcadas)
                 {
-                    return BadRequest(new { message = "N?o ? poss?vel eliminar o formador pois ele est? tem aulas agendadas para o futuro." });
+                    return BadRequest(new { message = "Não é possível eliminar o formador pois ele tem aulas agendadas para o futuro." });
                 }
 
                 formador.Ativo = false;
@@ -288,7 +289,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (formando != null)
             {
-                // Verificar se existe alguma insci??o associada
+                // Verificar se existe alguma inscrição associada
                 bool temAulasFuturas = await _context.Inscricoes
                     .Where(i => i.IdFormando == id)
                     .AnyAsync(i => _context.Horarios.Any(h =>
@@ -298,7 +299,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
                 if (temAulasFuturas)
                 {
-                    return BadRequest(new { message = "N?o ? poss?vel eliminar o formando pois ele est? inscrito numa turma com aulas agendadas para o futuro." });
+                    return BadRequest(new { message = "Não é possível eliminar o formando pois ele está inscrito numa turma com aulas agendadas para o futuro." });
                 }
 
 

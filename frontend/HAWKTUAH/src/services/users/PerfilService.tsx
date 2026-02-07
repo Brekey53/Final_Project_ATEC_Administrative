@@ -24,8 +24,9 @@ export interface PerfilFormador {
   qualificacoes?: string;
 }
 
-export type Perfil = PerfilBase & Partial<PerfilFormando> & Partial<PerfilFormador>;
-
+export type Perfil = PerfilBase &
+  Partial<PerfilFormando> &
+  Partial<PerfilFormador>;
 
 export async function getMyPerfil(): Promise<Perfil> {
   const res = await axios.get(`${API_BASE_URL}/utilizadores/perfil`, {
@@ -48,22 +49,17 @@ export async function getMyPerfil(): Promise<Perfil> {
   };
 }
 
-
 export async function getFotoPerfil(): Promise<string> {
-  const res = await axios.get(
-    `${API_BASE_URL}/utilizadores/perfil/foto`,
-    {
-      responseType: "blob",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    }
-  );
+  const res = await axios.get(`${API_BASE_URL}/utilizadores/perfil/foto`, {
+    responseType: "blob",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
 
   if (!res.data || res.data.size === 0) {
-    return null;
+    return "";
   }
 
   return URL.createObjectURL(res.data);
 }
-
