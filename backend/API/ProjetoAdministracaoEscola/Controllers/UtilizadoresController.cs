@@ -170,6 +170,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (utilizador == null)
                 return NotFound();
 
+            // Tipo do utilizador que envia pedido
+            var tipoClaim = User.Claims
+                .FirstOrDefault(c => c.Type == "tipoUtilizador")
+                ?.Value;
+
+            if (!int.TryParse(tipoClaim, out int tipoLogado))
+                return Forbid("Token inválido.");
+
+            // Proibir administrativos de mudar para admin
+            if (dto.IdTipoUtilizador == 1 && tipoLogado != 1)
+                return Forbid("Não tem permissões para atribuir perfil de Administrador.");
+
             // Guardar estado anterior
             var tipoAntigo = utilizador.IdTipoUtilizador;
             var ativoAntigo = utilizador.Ativo;

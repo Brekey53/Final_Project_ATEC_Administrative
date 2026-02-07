@@ -7,10 +7,13 @@ import {
   updateUtilizador,
   type EditUtilizador,
 } from "../../services/users/UserService";
+import { authService } from "../../auth/AuthService";
 
 export default function EditUser() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const user = authService.decodeToken();
+  const isAdmin = Number(user?.tipoUtilizador) === 1;
 
   const [formData, setFormData] = useState<EditUtilizador>({
     email: "",
@@ -199,7 +202,8 @@ export default function EditUser() {
                   onChange={handleChange}
                   required
                 >
-                  <option value={1}>Admin</option>
+                  {isAdmin && <option value={1}>Admin</option>}
+
                   <option value={2}>Formador</option>
                   <option value={3}>Formando</option>
                   <option value={4}>Administrativo</option>
