@@ -13,9 +13,11 @@ export interface Formando {
   email: string;
   turma: string;
   idEscolaridade: string;
+  estado: string;
   fotografia: File | null;
   anexoFicheiro: File | null;
 }
+
 
 // Obter todos os formandos
 export async function getFormandos(): Promise<Formando[]> {

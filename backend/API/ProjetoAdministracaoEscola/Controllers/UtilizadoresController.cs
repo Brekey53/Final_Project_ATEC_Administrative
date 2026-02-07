@@ -40,7 +40,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     Telefone = u.Telefone,
                     Nif = u.Nif,
                     TipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador, // Admin, Formador, Formando, Administrativo, Geral,
-                    Status = u.Ativo
+                    Ativo = u.Ativo
                 })
                 .OrderBy(u => u.Nome)
                 .ToListAsync();
