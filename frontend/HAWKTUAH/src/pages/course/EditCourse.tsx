@@ -124,7 +124,7 @@ export default function EditCourse() {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="row">
+      <form onSubmit={handleSubmit} className="row align-items-start">
         {/* COLUNA ESQUERDA  */}
         <div className="col-lg-4 d-none d-lg-block">
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light h-100">
@@ -135,7 +135,7 @@ export default function EditCourse() {
             </p>
 
             <hr />
-
+    
             <p className="small mb-1">
               <strong>ID Curso:</strong> {curso.idCurso}
             </p>
@@ -146,6 +146,7 @@ export default function EditCourse() {
         </div>
 
         {/* COLUNA DIREITA */}
+
         <div className="col-lg-8">
           <div className="card p-4 shadow-sm border-0 rounded-4">
             <h5 className="text-primary mb-4">Detalhes do Curso</h5>
