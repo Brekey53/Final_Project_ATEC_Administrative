@@ -14,7 +14,8 @@ import { getFormadores } from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
 import { Search, ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
-import toast  from "react-hot-toast";
+import toast from "react-hot-toast";
+import FormadorDisponibilidadePreview from "../../components/FormadorDisponibilidadePreview";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -50,7 +51,7 @@ export default function NewSchedule() {
   });
 
   // --- Estados das listas ---
-  const [turmasRaw, setTurmasRaw] = useState<any[]>([]); // Lista crua da API
+  const [turmasRaw, setTurmasRaw] = useState<any[]>([]);
   const [formadores, setFormadores] = useState<any[]>([]);
   const [salasDisponiveis, setSalasDisponiveis] = useState<any[]>([]);
 
@@ -944,6 +945,23 @@ export default function NewSchedule() {
                         ))}
                       </select>
                     </div>
+                  </div>
+
+                  <div className="col-md-12 mt-4">
+                    <h6 className="fw-bold text-success mb-2">
+                      Disponibilidade na semana
+                    </h6>
+                    {newHorario.idFormador && newHorario.data ? (
+                      <FormadorDisponibilidadePreview
+                        data={newHorario.data}
+                        idFormador={newHorario.idFormador}
+                      />
+                    ) : (
+                      <div className="text-muted small mt-4">
+                        Selecione um formador e uma data para ver
+                        disponibilidade
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="modal-footer border-0">
