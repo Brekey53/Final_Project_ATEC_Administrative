@@ -55,7 +55,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     Nome = c.Nome,
                     NomeArea = c.IdAreaNavigation.Nome,
                     Modulos = c.CursosModulos
-                        .OrderBy(cm => cm.Prioridade)
+                        .OrderBy(cm => cm.IdModuloNavigation.Nome)
                         .Select(cm => new ModuloDTO
                         {
                             IdModulo = cm.IdModuloNavigation.IdModulo,
@@ -79,7 +79,6 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCurso(int id, UpdateCursoDTO dto)
         {
-            //Buscar curso e modulos
             var curso = await _context.Cursos
                 .Include(c => c.CursosModulos)
                 .FirstOrDefaultAsync(c => c.IdCurso == id);
@@ -87,52 +86,57 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (curso == null)
                 return NotFound(new { message = "Curso não encontrado." });
 
-            bool areaExiste = await _context.Areas.AnyAsync(a => a.IdArea == dto.IdArea);
-            if (!areaExiste)
+            if (!await _context.Areas.AnyAsync(a => a.IdArea == dto.IdArea))
                 return BadRequest(new { message = "Área inválida." });
 
-            // Atualizar Campos nome e área
             curso.Nome = dto.Nome;
             curso.IdArea = dto.IdArea;
 
-            // Validar modulos 
+            // validar módulos
+            var idsDto = dto.Modulos.Select(m => m.IdModulo).ToList();
+
             var modulosValidos = await _context.Modulos
-                .Where(m => dto.ModuloIds.Contains(m.IdModulo))
+                .Where(m => idsDto.Contains(m.IdModulo))
                 .Select(m => m.IdModulo)
                 .ToListAsync();
 
-            if (modulosValidos.Count != dto.ModuloIds.Count)
+            if (modulosValidos.Count != idsDto.Count)
                 return BadRequest(new { message = "Um ou mais módulos são inválidos." });
 
-            // Remover Modulos 
+            // remover módulos que já não vêm
             var aRemover = curso.CursosModulos
-                .Where(cm => !dto.ModuloIds.Contains(cm.IdModulo))
+                .Where(cm => !idsDto.Contains(cm.IdModulo))
                 .ToList();
 
             _context.CursosModulos.RemoveRange(aRemover);
 
-            // Adicionar Modulos
-            var existentes = curso.CursosModulos
-                .Select(cm => cm.IdModulo)
-                .ToHashSet();
-
-            foreach (var idModulo in dto.ModuloIds)
+            // atualizar / adicionar
+            foreach (var moduloDto in dto.Modulos)
             {
-                if (!existentes.Contains(idModulo))
+                var existente = curso.CursosModulos
+                    .FirstOrDefault(cm => cm.IdModulo == moduloDto.IdModulo);
+
+                if (existente != null)
                 {
+                    // atualizar prioridade
+                    existente.Prioridade = moduloDto.Prioridade;
+                }
+                else
+                {
+                    // adicionar novo
                     curso.CursosModulos.Add(new CursosModulo
                     {
                         IdCurso = curso.IdCurso,
-                        IdModulo = idModulo,
-                        Prioridade = 0
+                        IdModulo = moduloDto.IdModulo,
+                        Prioridade = moduloDto.Prioridade
                     });
                 }
             }
 
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
+
 
 
 

@@ -4,6 +4,6 @@
     {
         public string Nome { get; set; } = null!;
         public int IdArea { get; set; }
-        public List<int> ModuloIds { get; set; } = new();
+        public List<CursoModuloUpdateDTO> Modulos { get; set; }
     }
 }

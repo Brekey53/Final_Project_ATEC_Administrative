@@ -46,7 +46,10 @@ export async function updateCurso(
   data: {
     nome: string;
     idArea: number;
-    moduloIds: number[];
+    modulos: {
+      idModulo: number;
+      prioridade: number;
+    }[];
   },
 ) {
   const res = await axios.put(`${API_BASE_URL}/cursos/${idCurso}`, data);
