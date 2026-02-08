@@ -16,17 +16,27 @@ namespace ProjetoAdministracaoEscola.Services
          * 
          */
 
-        // TODO: disponibilidade formadores, para já só tem em conta os horários ocupados, mas pode haver outras razões para um formador não estar disponível (ex: férias, doença, etc)
-        // TODO: Melhorar lógica de escolha de sala, para que filtre a area do modulo e tipo de sala
-        // TODO:
-        // CursoModulos tem de conter .Include(IdTipoSala)
-        // turmaAlocacao tem de conter .Include(IdFormadorNavigation).ThenInclude(DisponibilidadeFormadores)
-        // turmas tem de conter .Include(IdMetodologiaNavigation) para ter acesso ao horário da metodologia (ex: se tem pausa para refeição ou não, para gerar os slots possíveis)
+        /// <summary>
+        /// Para a função gerar hórarios sem conflitos, é necessário:
+        /// CursoModulos -> tem de conter .Include(cm => cm.IdModuloNavigation).ThenInclude(m => m.IdTipoMateriaNavigation).ThenInclude(tm => tm.IdTipoSalas) e .OrderBy(x => x.Prioridade)
+        /// TurmaAlocacao -> tem de conter .Include(ta => ta.IdFormadorNavigation).ThenInclude(f => f.DisponibilidadeFormadores)
+        /// Turma -> tem de conter .Include(t => t.IdMetodologiaNavigation)
+        /// </summary>
+        /// <returns>
+        /// Gera o horário de uma turma, encaixando os módulos de acordo com a disponibilidade dos formadores e salas,
+        ///  e respeitando a metodologia (diurno ou pós-laboral) da turma
+        /// </returns>
         public async Task<List<Horario>> GerarHorario(Turma turma, List<CursosModulo> cursoModulos, List<TurmaAlocaco> turmaAlocacao, List<Sala> salas, HashSet<Horario> horariosOcupados) 
         {
 
-            // Ordendar modulos
-            var cursomodulosOrdenadosPrioridade = cursoModulos.OrderBy(mo => mo.Prioridade).ToList();
+            //// Ordendar modulos
+            //var cursomodulosOrdenadosPrioridade = cursoModulos.OrderBy(mo => mo.Prioridade).ToList();
+
+            // Criamos uma fila (queue) com os modulos ordenados por prioridade, quando retirar um da fila o seguinte fica como "Ativo"
+            var filaModulosPendentes = new Queue<CursosModulo>(cursoModulos.OrderBy(mo => mo.Prioridade));
+
+            // Dicionario para controlar as horas restantes de cada módulo
+            var horasRestantesPorModulo = cursoModulos.ToDictionary(cm => cm.IdCursoModulo, cm => cm.IdModuloNavigation.HorasTotais);
 
             // Cursor dataInicio
             DateOnly cursorData = turma.DataInicio;
@@ -42,86 +52,124 @@ namespace ProjetoAdministracaoEscola.Services
             int maxBloco = 3; 
             int minBloco = 1; // minimo aceitavel para uma aula
 
+            int maxModulosSimultaneos = 3; // Para evitar tentar alocar muitos módulos ao mesmo tempo.
+            List<CursosModulo> modulosAtivos = new List<CursosModulo>();
 
-            // Loop de modulos por cada curso
-            foreach (var modulo in cursomodulosOrdenadosPrioridade)
+
+            AtualizarModulosAtivos(modulosAtivos, maxModulosSimultaneos, filaModulosPendentes);
+
+
+            while (modulosAtivos.Count > 0) // Enquanto houver módulos ativos para alocar
             {
-                // Horas totais de cada modulo
-                int horasRestantes = modulo.IdModuloNavigation.HorasTotais;
-
-                // Formador alocado na turma para o modulo do loop
-                var formadorModulo = turmaAlocacao.FirstOrDefault(ta => ta.IdModulo == modulo.IdModulo);
-                // Se não houver formador atribuido devolve erro
-                if (formadorModulo == null)
-                {
-                    Console.WriteLine($"Erro: Módulo {modulo.IdModuloNavigation.Nome} sem formador.");
-                    break;
+                // Validar fim de semana
+                if (cursorData.DayOfWeek == DayOfWeek.Saturday || cursorData.DayOfWeek == DayOfWeek.Sunday)
+                 {
+                    cursorData = cursorData.AddDays(1);
+                    continue;
                 }
 
-                while (horasRestantes > 0) // enquanto houver horas para alocar
+                // Obter blocos de horario do Dia
+                var slotsDoDia = GerarSlotsPossiveis(metodologia, maxBloco);
+
+                foreach (var slot in slotsDoDia)
                 {
-                    // Validar fim de semana
-                    if (cursorData.DayOfWeek == DayOfWeek.Sunday || cursorData.DayOfWeek == DayOfWeek.Saturday)
+                    if (modulosAtivos.Count == 0)
                     {
-                        cursorData = cursorData.AddDays(1);
-                        continue; // volta ao início do loop para validar a nova data
+                        break; // Se já não houver nada para alocar, paramos
                     }
 
+                    bool conseguiuAgendarNesteSlot = false;
 
-                    // Obter slots possíveis para o dia atual, de acordo com a metodologia da turma
-                    var slotsPossiveis = GerarSlotsPossiveis(metodologia, maxBloco); // Gerar slots para o número de horas restantes, limitado ao maxBloco
+                    // Percorremos os módulos ativos para tentar encaixar um neste slot.
+                    // .ToList() para poder alterar a lista original se necessário dentro do loop (remoção)
 
-                    foreach(var slot in slotsPossiveis)
+                    foreach (var modulo in modulosAtivos.ToList())
                     {
-                        if (horasRestantes == 0)
+                        int horasFaltam = horasRestantesPorModulo[modulo.IdModulo];
+
+                        // Se o módulo já acabou (por alguma razão de iteração anterior), remove e avança
+                        if (horasFaltam <= 0)
                         {
-                            break; // Se já alocou todas as horas necessárias, sai do loop de slots
+                            modulosAtivos.Remove(modulo);
+                            AtualizarModulosAtivos(modulosAtivos, maxModulosSimultaneos, filaModulosPendentes); // Vai buscar o próximo
+                            continue;
+                        }
+
+                        // Obter formador
+                        var formadorAlocado = turmaAlocacao.FirstOrDefault(ta => ta.IdModulo == modulo.IdModulo);
+                        if (formadorAlocado == null)
+                        {
+                            Console.WriteLine($"Erro: Módulo {modulo.IdModulo} - {modulo.IdModuloNavigation.Nome} sem formador.");
+                            modulosAtivos.Remove(modulo); // Remove para não bloquear o loop
+                            continue;
                         }
 
                         // Qual é o máximo que posso agendar AGORA?
                         // É o menor valor entre: 
-                        // A) O que falta do módulo (ex: falta 1h, não vou marcar 3h)
-                        // B) O tamanho do slot (ex: 3h)
+                        // A) O que falta do módulo (ex: falta 1h, não vou marcar 3h) -  B) O tamanho do slot (ex: 3h)
 
                         int duracaoSlot = (slot.Fim - slot.Inicio).Hours;
-                        int tetoTentativa = Math.Min(horasRestantes, Math.Min(duracaoSlot, maxBloco));
+                        int tetoTentativa = Math.Min(horasFaltam, Math.Min(duracaoSlot, maxBloco));
 
-                        // Tentar alocar o maior bloco possível dentro do slot, se não conseguir tentar um bloco menor, até chegar ao minBloco
                         for (int duracao = tetoTentativa; duracao >= minBloco; duracao--)
                         {
                             TimeOnly inicio = slot.Inicio;
                             TimeOnly fimCalculado = slot.Inicio.AddHours(duracao);
 
-                            // Validar tudo com este tamanho de bloco
                             var salaLivre = EncontrarSalaLivre(salas, horariosOcupados, modulo, cursorData, inicio, fimCalculado);
-                            var turmaDisponivel = TurmaDisponivel(turma.IdTurma, horariosOcupados, cursorData, inicio, fimCalculado);
-                            var formadorDisponivel = FormadorDisponivel(formadorModulo, horariosOcupados, cursorData, inicio, fimCalculado);
+                            bool turmaLivre = TurmaDisponivel(turma.IdTurma, horariosOcupados, cursorData, inicio, fimCalculado);
+                            bool formadorLivre = FormadorDisponivel(formadorAlocado, horariosOcupados, cursorData, inicio, fimCalculado);
 
-                            if(salaLivre != null && turmaDisponivel && formadorDisponivel)
+                            if (salaLivre != null && turmaLivre && formadorLivre)
                             {
-                                var novoBlocoHorario = CriarHorario(turma.IdTurma, modulo.IdCursoModulo, formadorModulo.IdFormador, salaLivre.IdSala, cursorData, inicio, fimCalculado);
+                                // SUCESSO!
+                                var novoBlocoHorario = CriarHorario(turma.IdTurma, modulo.IdCursoModulo, formadorAlocado.IdFormador, salaLivre.IdSala, cursorData, inicio, fimCalculado);
 
                                 novosHorarios.Add(novoBlocoHorario);
-                                horariosOcupados.Add(novoBlocoHorario); // atualiza horarios ocupados para próximas iterações
-                                horasRestantes -= duracao;
-                            
-                                break; // seja qual for o resultado, não tenta blocos menores dentro do mesmo slot, para evitar fragmentação (ex: marcar 1h num slot de 3h, e depois não conseguir marcar as outras 2h restantes do módulo em nenhum outro slot)
-                            }
+                                horariosOcupados.Add(novoBlocoHorario);
 
-                            // Se falhar o loop roda denovo para tentar o próximo slot possível no mesmo dia, para tentar evitar passar dias sem marcar nada, caso haja disponibilidade
+                                // Atualiza as horas restantes no Dicionário
+                                horasRestantesPorModulo[modulo.IdModulo] -= duracao;
+
+                                // Flag de sucesso
+                                conseguiuAgendarNesteSlot = true;
+
+                                // Movemos este módulo para o fim da lista de ativos.
+                                // Assim, no próximo slot (Tarde), o algoritmo vai tentar PRIMEIRO o outro módulo.
+                                // Isto garante: Manhã=Mod A, Tarde=Mod B.
+                                modulosAtivos.Remove(modulo);
+
+                                // Se ainda sobrarem horas, volta para a fila de ativos (no fim)
+                                if (horasRestantesPorModulo[modulo.IdModulo] > 0)
+                                {
+                                    modulosAtivos.Add(modulo);
+                                }
+                                else
+                                {
+                                    // Se acabou, vai buscar um novo à fila principal (ex: P3)
+                                    AtualizarModulosAtivos(modulosAtivos, maxModulosSimultaneos, filaModulosPendentes);
+                                }
+
+                                break; // Sai do loop de duração (já agendou)
+                            }
                         }
 
+                        // Se conseguiu agendar um módulo neste slot, paramos de procurar OUTROS módulos para ESTE MESMO slot.
+                        // (Não podemos ter duas aulas ao mesmo tempo na mesma turma)
+                        if (conseguiuAgendarNesteSlot) break;
                     }
-
-
-                    // passar para o próximo dia
-                    cursorData = cursorData.AddDays(1);
-
                 }
+
+                // Avançar Dia
+                cursorData = cursorData.AddDays(1);
+
+                // Proteção contra loop infinito (caso acabem as datas ou erro lógico)
+                if (cursorData > turma.DataInicio.AddYears(2)) break;
             }
 
             return novosHorarios;
         }
+
 
         // Função para encontrar uma sala livre, considerando os horários ocupados
         private Sala? EncontrarSalaLivre(List<Sala> salas, HashSet<Horario> horariosOcupados, CursosModulo cursosModulo, DateOnly dia, TimeOnly inicio, TimeOnly fim)
@@ -139,6 +187,7 @@ namespace ProjetoAdministracaoEscola.Services
             return salas.FirstOrDefault(s => !IdSalasOcupada.Contains(s.IdSala) && // sala livre
             (tiposPermitidos == null || !tiposPermitidos.Any() || tiposPermitidos.Any(tsp => tsp.IdTipoSala == s.IdTipoSala))); // Compatibilidade para caso de null
         }
+
 
         // Função para verificar se o formador está disponível, considerando os horários ocupados
         private bool FormadorDisponivel(TurmaAlocaco formadorModulo, HashSet<Horario> horariosOcupados, DateOnly dia, TimeOnly inicio, TimeOnly fim)
@@ -210,6 +259,16 @@ namespace ProjetoAdministracaoEscola.Services
             }
 
             return slots;
+        }
+
+        // Função para atualizar a lista de módulos ativos, retirando da fila de pendentes e adicionando à lista de ativos, respeitando o limite máximo de simultaneidade
+        void AtualizarModulosAtivos(List<CursosModulo> modulosAtivos, int maxModulosSimultaneos, Queue<CursosModulo> filaModulosPendentes)
+        {
+            // Enquanto houver espaço na janela de ativos E houver módulos na fila de espera
+            while (modulosAtivos.Count < maxModulosSimultaneos && filaModulosPendentes.Count > 0)
+            {
+                modulosAtivos.Add(filaModulosPendentes.Dequeue());
+            }
         }
     }
 }
