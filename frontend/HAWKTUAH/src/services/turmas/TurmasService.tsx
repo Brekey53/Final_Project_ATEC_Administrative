@@ -9,6 +9,7 @@ export interface Turma {
   dataFim: string;
   nomeCurso: string;
   estado: "Para começar" | "A decorrer" | "Terminado";
+  idMetodologia: number;
 }
 
 export async function getTurmas() {
@@ -40,6 +41,13 @@ export async function getCursos() {
   const res = await axios.get(`${API_BASE_URL}/cursos`);
   return res.data;
 }
+
+export async function getMetodologias() {
+  const res = await axios.get(`${API_BASE_URL}/turmas/metodologias`);
+  return res.data;
+}
+
+
 
 export type TurmaFormadorDTO = {
   idTurma: number;
