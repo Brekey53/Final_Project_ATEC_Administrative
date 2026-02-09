@@ -13,7 +13,7 @@ public partial class Curso
 
     public string? Descricao { get; set; }
 
-    public bool? Ativo { get; set; }
+    public bool Ativo { get; set; }
 
     public DateTime? DataDesativacao { get; set; }
 

@@ -35,7 +35,6 @@ export default function AddNewTurma() {
           getMetodologias(),
         ]);
 
-
         setCursos(cursosRes);
         setMetedologia(metedologiaRes);
       } catch (err) {
@@ -89,7 +88,6 @@ export default function AddNewTurma() {
     data.append("NomeCurso", formData.nomeCurso || "");
     data.append("Estado", formData.estado || "A decorrer");
     data.append("IdMetodologia", formData.idMetodologia.toString());
-
 
     try {
       await postNewTurma(data);
@@ -222,7 +220,9 @@ export default function AddNewTurma() {
               </div>
 
               <div className="col-md-4 mb-3">
-                <label className="form-label fw-semibold">Metedologia turma</label>
+                <label className="form-label fw-semibold">
+                  Metodologia turma
+                </label>
                 <select
                   name="idMetodologia"
                   className="form-control form-select-sg"
@@ -230,15 +230,14 @@ export default function AddNewTurma() {
                   onChange={handleChange}
                   required
                 >
-                <option value="">Selecione uma metodologia...</option>
-                {metedologia.map((m) => (
-                  <option key={m.idMetodologia} value={m.idMetodologia}>
-                    {m.nome}
-                  </option>
-                ))}
+                  <option value="">Selecione uma metodologia...</option>
+                  {metedologia.map((m) => (
+                    <option key={m.idMetodologia} value={m.idMetodologia}>
+                      {m.nome}
+                    </option>
+                  ))}
                 </select>
               </div>
-
             </div>
 
             {/* Ações */}

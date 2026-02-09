@@ -16,7 +16,7 @@ import {
 import { getSalasDisponiveis } from "../../services/rooms/SalasService";
 import { getFormadores } from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
-import { Search, ChevronLeft, ChevronRight, XCircle } from "lucide-react";
+import { Search, XCircle } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
 import toast from "react-hot-toast";
 import FormadorDisponibilidadePreview from "../../components/FormadorDisponibilidadePreview";
@@ -340,7 +340,7 @@ export default function NewSchedule() {
       await autoGenerateSchedule(Number(autoGenData.idTurma));
 
       // Mesmo que a API responda em 100ms, o spinner fica mais tempo
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast.success("Horário gerado com sucesso!");
       await fetchHorarios();
@@ -697,27 +697,25 @@ export default function NewSchedule() {
 
                   {/* PAGINAÇÃO */}
                   {totalPages > 1 && (
-                    <div className="d-flex justify-content-center align-items-center gap-3 mt-4 pt-3 border-top">
+                    <div className="d-flex justify-content-center align-items-center gap-3 py-4 border-top">
                       <button
-                        className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                        className="btn btn-outline-secondary"
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage((p) => p - 1)}
-                        style={{ width: "40px", height: "40px" }}
                       >
-                        <ChevronLeft size={20} />
+                        Anterior
                       </button>
 
-                      <span className="fw-semibold text-muted">
+                      <span className="text-muted">
                         Página {currentPage} de {totalPages}
                       </span>
 
                       <button
-                        className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                        className="btn btn-outline-secondary"
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage((p) => p + 1)}
-                        style={{ width: "40px", height: "40px" }}
                       >
-                        <ChevronRight size={20} />
+                        Seguinte
                       </button>
                     </div>
                   )}
@@ -1089,7 +1087,7 @@ export default function NewSchedule() {
               style={{ width: "3rem", height: "3rem" }}
               role="status"
             ></div>
-            <h5 className="fw-bold">A Gerar Horário Inteligente...</h5>
+            <h5 className="fw-bold">A Gerar Horário...</h5>
             <p className="text-muted mb-0">
               Isto pode demorar alguns segundos.
             </p>

@@ -31,17 +31,20 @@ export default function ManageUsers() {
       try {
         const data = await getUtilizadores();
         setUtilizadores(data);
-      } catch (err) {
-        toast.error("Erro ao carregar utilizadores", {
-          id: "erro-utilizadores",
-        });
+      } catch (err : any) {
+        toast.error(
+          err.response?.data?.message || "Erro ao carregar utilizadores",
+          {
+            id: "erro-utilizadores",
+          },
+        );
       } finally {
         setLoading(false);
       }
     }
 
     fetchUtilizadores();
-  }, []);
+  },[utilizadores.length]);
 
   const filteredUtilizadores = utilizadores.filter((u) => {
     const term = normalizarTexto(searchTerm);

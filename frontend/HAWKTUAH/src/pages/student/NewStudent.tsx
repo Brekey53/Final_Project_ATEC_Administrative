@@ -35,7 +35,7 @@ export default function NewStudent() {
       }
     }
     fetchFormandos();
-  }, []);
+  }, [formandos.length]);
 
   const formandosFiltrados = formandos.filter(
     (f) =>
@@ -51,17 +51,17 @@ export default function NewStudent() {
   const formandosPaginados = formandosFiltrados.slice(startIndex, endIndex);
 
   useEffect(() => {
-    // 1. Procurar os elementos
+    // Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // 2. Inicializar
+    // Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
 
-    // 3. Limpeza
+    // Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };

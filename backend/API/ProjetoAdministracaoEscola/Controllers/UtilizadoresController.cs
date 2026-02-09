@@ -258,12 +258,15 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost("new-user")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
         {
-            // Verificar se email j? existe
-            var emailExists = await _context.Utilizadores
-                .AnyAsync(u => u.Email == dto.Email);
+            // Verificar se email já existe
+            if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
+                return Conflict(new { message = "Email já registado" });
 
-            if (emailExists)
-                return BadRequest(new { message = "Email já registado." });
+            // Verificar se o NIF já se encontra na BD
+            if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
+            {
+                return Conflict(new { message = "NIF já em uso" });
+            }
 
             // Criar utilizador
             var user = new Utilizador
@@ -298,7 +301,12 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult> PostUtilizador(UtilizadorRegisterDTO dto)
         {
             if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
-                return Conflict("Email já registado");
+                return Conflict(new { message = "Email já registado" });
+            
+            if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
+            {
+                return Conflict(new { message = "NIF já em uso" });
+            }
 
             var newUser = new Utilizador
             {
@@ -340,10 +348,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return NotFound(new { message = "Utilizador não encontrado." });
             }
 
-
-            // Soft Delete
-            utilizador.Ativo = false;
-            utilizador.DataDesativacao = DateTime.Now;
 
             // Caso seja formador desativa
             var formador = await _context.Formadores
@@ -387,6 +391,12 @@ namespace ProjetoAdministracaoEscola.Controllers
                 formando.Ativo = false;
                 formando.DataDesativacao = DateTime.Now;
             }
+
+
+            // Soft Delete
+            utilizador.Ativo = false;
+            utilizador.DataDesativacao = DateTime.Now;
+
 
 
             await _context.SaveChangesAsync();

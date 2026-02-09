@@ -15,7 +15,7 @@ public partial class Turma
 
     public DateOnly DataFim { get; set; }
 
-    public bool? Ativo { get; set; }
+    public bool Ativo { get; set; }
 
     public DateTime? DataDesativacao { get; set; }
 

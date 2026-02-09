@@ -15,7 +15,7 @@ public partial class Formando
 
     public byte[]? AnexoFicheiro { get; set; }
 
-    public bool? Ativo { get; set; }
+    public bool Ativo { get; set; }
 
     public DateTime? DataDesativacao { get; set; }
 

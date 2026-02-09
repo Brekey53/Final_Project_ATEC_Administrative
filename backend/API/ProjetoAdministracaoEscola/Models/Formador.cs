@@ -17,7 +17,7 @@ public partial class Formador
 
     public byte[]? AnexoFicheiro { get; set; }
 
-    public bool? Ativo { get; set; }
+    public bool Ativo { get; set; }
 
     public DateTime? DataDesativacao { get; set; }
 

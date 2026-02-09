@@ -17,7 +17,7 @@ public partial class Modulo
 
     public int IdTipoMateria { get; set; }
 
-    public bool? Ativo { get; set; }
+    public bool Ativo { get; set; }
 
     public DateTime? DataDesativacao { get; set; }
 

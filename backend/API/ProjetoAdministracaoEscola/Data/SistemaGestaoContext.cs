@@ -645,6 +645,13 @@ public partial class SistemaGestaoContext : DbContext
                 .HasConstraintName("utilizadores_ibfk_1");
         });
 
+        //modelBuilder.Entity<Utilizador>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Formador>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Formando>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Curso>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Modulo>().HasQueryFilter(e => e.Ativo);
+        modelBuilder.Entity<Turma>().HasQueryFilter(e => e.Ativo);
+
         OnModelCreatingPartial(modelBuilder);
     }
 
