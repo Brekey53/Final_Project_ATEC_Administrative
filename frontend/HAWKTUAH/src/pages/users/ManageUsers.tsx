@@ -157,7 +157,7 @@ export default function ManageUsers() {
               value={tipoFiltro}
               onChange={(e) => setTipoFiltro(e.target.value)}
             >
-              <option value="todos">Todos</option>
+              <option value="todos">Todos os Tipos de Utilizador</option>
               <option value="administrativo">Administrativo</option>
               <option value="formador">Formador</option>
               <option value="formando">Formando</option>
@@ -171,7 +171,7 @@ export default function ManageUsers() {
               value={estadoFiltro}
               onChange={(e) => setEstadoFiltro(e.target.value)}
             >
-              <option value="todos">Todos</option>
+              <option value="todos">Todos os Estados</option>
               <option value="ativo">Ativo</option>
               <option value="inativo">Inativo</option>
             </select>
