@@ -36,7 +36,11 @@ export default function Perfil() {
   useEffect(() => {
     async function loadFoto() {
       const url = await getFotoPerfil();
-      setFotoUrl(url); // pode ser null
+      if(!url) {
+        setFotoUrl(FotoPlaceholder)
+      }
+      else
+        setFotoUrl(url);
     }
 
     loadFoto();
