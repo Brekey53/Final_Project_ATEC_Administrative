@@ -5,12 +5,14 @@ import {
   postNewTurma,
   type Turma,
   getCursos,
+  getMetodologias,
 } from "../../services/turmas/TurmasService";
 import type { Curso } from "../../services/cursos/CursosService";
 
 export default function AddNewTurma() {
   const navigate = useNavigate();
   const [cursos, setCursos] = useState<Curso[]>([]);
+  const [metedologia, setMetedologia] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
@@ -22,13 +24,20 @@ export default function AddNewTurma() {
     dataFim: "",
     nomeCurso: "",
     estado: "A decorrer", // Valor ficticio pois é trarado no backend
+    idMetodologia: 0,
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const cursosRes = await getCursos();
+        const [cursosRes, metedologiaRes] = await Promise.all([
+          getCursos(),
+          getMetodologias(),
+        ]);
+
+
         setCursos(cursosRes);
+        setMetedologia(metedologiaRes);
       } catch (err) {
         toast.error("Erro ao carregar dados da turma.");
         navigate("/turmas");
@@ -79,6 +88,8 @@ export default function AddNewTurma() {
     data.append("DataFim", formData.dataFim);
     data.append("NomeCurso", formData.nomeCurso || "");
     data.append("Estado", formData.estado || "A decorrer");
+    data.append("IdMetodologia", formData.idMetodologia.toString());
+
 
     try {
       await postNewTurma(data);
@@ -186,7 +197,7 @@ export default function AddNewTurma() {
               </div>
 
               {/* Datas */}
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label fw-semibold">Data de Início</label>
                 <input
                   type="date"
@@ -198,7 +209,7 @@ export default function AddNewTurma() {
                 />
               </div>
 
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label fw-semibold">Data de Fim</label>
                 <input
                   type="date"
@@ -209,6 +220,25 @@ export default function AddNewTurma() {
                   required
                 />
               </div>
+
+              <div className="col-md-4 mb-3">
+                <label className="form-label fw-semibold">Metedologia turma</label>
+                <select
+                  name="idMetodologia"
+                  className="form-control form-select-sg"
+                  value={formData.idMetodologia}
+                  onChange={handleChange}
+                  required
+                >
+                <option value="">Selecione uma metodologia...</option>
+                {metedologia.map((m) => (
+                  <option key={m.idMetodologia} value={m.idMetodologia}>
+                    {m.nome}
+                  </option>
+                ))}
+                </select>
+              </div>
+
             </div>
 
             {/* Ações */}
