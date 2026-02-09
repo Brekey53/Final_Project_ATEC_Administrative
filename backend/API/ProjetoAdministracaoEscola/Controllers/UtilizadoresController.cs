@@ -159,25 +159,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
-
-
-
         // PUT: api/Utilizadores/5
         [HttpPut("{id}")]
-        [Consumes("multipart/form-data")] // TODO:
-        public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto)
-        {
-            var user = await _context.Utilizadores.FindAsync(id);
-            if (user == null) return NotFound();
-
-            user.Nome = dto.Nome;
-            user.Nif = dto.Nif;
-            user.Telefone = dto.Telefone;
-            user.Morada = dto.Morada;
-            user.Sexo = dto.Sexo;
-            user.DataNascimento = dto.DataNascimento;
-            user.IdTipoUtilizador = dto.IdTipoUtilizador;
-            user.Ativo = dto.Ativo;
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto) { 
   
