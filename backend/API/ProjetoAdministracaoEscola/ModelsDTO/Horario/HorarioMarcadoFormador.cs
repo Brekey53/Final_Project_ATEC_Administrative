@@ -2,7 +2,7 @@
 {
     public class HorarioMarcadoFormador
     {
-        public string Data { get; set; }
+        public DateOnly Data { get; set; }
         public string HoraInicio { get; set; }
         public string HoraFim { get; set; }
 

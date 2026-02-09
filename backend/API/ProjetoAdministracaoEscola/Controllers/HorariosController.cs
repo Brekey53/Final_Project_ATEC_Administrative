@@ -572,13 +572,14 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             var horarios = horariosDb.Select(h => new HorarioMarcadoFormador
             {
-                Data = h.Data.ToString("dd-MM-yyyy"),
+                Data = h.Data, 
                 HoraInicio = h.HoraInicio.ToString(@"hh\:mm"),
                 HoraFim = h.HoraFim.ToString(@"hh\:mm"),
                 NomeTurma = h.IdCursoModuloNavigation.IdCursoNavigation.Nome,
                 NomeSala = h.IdSalaNavigation.Descricao
             })
             .ToList();
+
 
             return Ok(horarios);
         }
