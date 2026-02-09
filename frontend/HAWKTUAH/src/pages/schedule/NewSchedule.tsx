@@ -29,6 +29,7 @@ export default function NewSchedule() {
   const [dataSelecionada, setDataSelecionada] = useState<Value>(new Date());
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingGenerator, setLoadingGenerator] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [autoGenData, setAutoGenData] = useState({
     idTurma: "",
@@ -332,15 +333,22 @@ export default function NewSchedule() {
       return;
     }
 
+    setShowAutoGenerateModal(false);
+    setLoadingGenerator(true);
+
     try {
       await autoGenerateSchedule(Number(autoGenData.idTurma));
+
+      // Mesmo que a API responda em 100ms, o spinner fica mais tempo
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       toast.success("Horário gerado com sucesso!");
       await fetchHorarios();
     } catch (err) {
       console.error(err);
       toast.error("Erro ao gerar horário.");
     } finally {
-      setShowAutoGenerateModal(false);
+      setLoadingGenerator(false);
     }
   };
 
@@ -1061,6 +1069,34 @@ export default function NewSchedule() {
         </div>
       )}
 
+      {/* --- Loading Page ---*/}
+      {loadingGenerator && (
+        <div
+          className="modal fade show d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.6)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 2000, // Garante que fica acima de qualquer outro modal
+          }}
+        >
+          <div className="text-center bg-white p-5 rounded-4 shadow-lg">
+            <div
+              className="spinner-border text-success mb-3"
+              style={{ width: "3rem", height: "3rem" }}
+              role="status"
+            ></div>
+            <h5 className="fw-bold">A Gerar Horário Inteligente...</h5>
+            <p className="text-muted mb-0">
+              Isto pode demorar alguns segundos.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* --- Modal Gerador Automatico --- */}
       {showAutoGenerateModal && (
         <div
@@ -1125,8 +1161,9 @@ export default function NewSchedule() {
                   <button
                     type="submit"
                     className="btn btn-primary rounded-pill px-4 text-white"
+                    disabled={loadingGenerator}
                   >
-                    Criar
+                    {loadingGenerator ? "A gerar..." : "Criar"}
                   </button>
                 </div>
               </form>
