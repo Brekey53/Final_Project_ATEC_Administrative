@@ -24,7 +24,7 @@ export default function Perfil() {
         const data = await getMyPerfil();
         setPerfil(data);
       } catch {
-        toast.error("Erro ao carregar perfil", {id: "loadPerfil"});
+        toast.error("Erro ao carregar perfil", { id: "loadPerfil" });
       } finally {
         setLoading(false);
       }
@@ -36,11 +36,9 @@ export default function Perfil() {
   useEffect(() => {
     async function loadFoto() {
       const url = await getFotoPerfil();
-      if(!url) {
-        setFotoUrl(FotoPlaceholder)
-      }
-      else
-        setFotoUrl(url);
+      if (!url) {
+        setFotoUrl(FotoPlaceholder);
+      } else setFotoUrl(url);
     }
 
     loadFoto();
