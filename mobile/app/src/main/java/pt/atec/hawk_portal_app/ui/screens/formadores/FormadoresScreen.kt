@@ -1,16 +1,24 @@
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
@@ -23,16 +31,17 @@ import pt.atec.hawk_portal_app.R
 
 
 @Composable
-fun FormadoresScreen(
-    viewModel: FormadoresViewModel = viewModel()
-) {
+fun FormadoresScreen(viewModel: FormadoresViewModel = viewModel()) {
     if (viewModel.isLoading.value) {
-        Text("A carregar formadores...")
+        Text(
+            text = "A carregar formadores…",
+            modifier = Modifier.padding(16.dp)
+        )
     } else {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(viewModel.formadores.value) { formador ->
                 FormadorItem(formador)
@@ -44,31 +53,57 @@ fun FormadoresScreen(
 @Composable
 fun FormadorItem(formador: Formador) {
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-
-        // FOTO DO FORMADOR
-        AsyncImage(
-            model = formador.fotoUrl,
-            contentDescription = "Foto do formador",
+        Row(
             modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape),
-            placeholder = painterResource(R.drawable.ic_user_placeholder),
-            error = painterResource(R.drawable.ic_user_placeholder)
-        )
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-        Spacer(modifier = Modifier.width(12.dp))
+            AsyncImage(
+                model = formador.fotoUrl,
+                contentDescription = "Foto do formador",
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape),
+                placeholder = painterResource(R.drawable.ic_user_placeholder),
+                error = painterResource(R.drawable.ic_user_placeholder)
+            )
 
-        // DADOS
-        Column {
-            Text(text = formador.nome ?: "Nome não disponível")
-            Text(text = formador.email ?: "-")
-            Text(text = formador.qualificacoes ?: "")
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                Text(
+                    text = formador.nome ?: "Nome não disponível",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = formador.email ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (!formador.qualificacoes.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = formador.qualificacoes,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
         }
     }
 }
+
 

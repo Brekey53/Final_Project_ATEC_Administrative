@@ -10,12 +10,22 @@ import retrofit2.http.POST
 
 interface ApiService {
 
+    /**
+     * Autentica um utilizador e devolve os dados de sessão.
+     *
+     * @param request Dados de login (email e password)
+     * @return Response com o LoginResponse ou erro HTTP
+     */
     @POST("auth/login")
     suspend fun login(
-        @Body request: LoginRequest
-    ): Response<LoginResponse>
+        @Body request: LoginRequest): Response<LoginResponse>
 
-    @GET("formadores")
+    /**
+     * Obtém a lista de formadores e fotografia.
+     *
+     * @return Response com a lista de formadores
+     */
+    @GET("formadores/com-foto")
     suspend fun getFormadores(): Response<List<Formador>>
-
 }
+
