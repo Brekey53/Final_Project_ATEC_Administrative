@@ -73,6 +73,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             var formador = await _context.Formadores
                 .Include(f => f.IdUtilizadorNavigation)
+                .Include(f => f.FormadoresTipoMaterias)
+                    .ThenInclude(ft => ft.TipoMateria)
                 .FirstOrDefaultAsync(f => f.IdFormador == id);
 
             if (formador == null) return NotFound(new { message = "Formador não encontrado." });
@@ -90,15 +92,35 @@ namespace ProjetoAdministracaoEscola.Controllers
                 Telefone = formador.IdUtilizadorNavigation.Telefone,
                 Sexo = formador.IdUtilizadorNavigation.Sexo,
                 Email = formador.IdUtilizadorNavigation.Email,
+
                 Fotografia = formador.Fotografia != null
                     ? $"data:image/jpeg;base64,{Convert.ToBase64String(formador.Fotografia)}"
                     : null,
-                AnexoFicheiro = formador.AnexoFicheiro != null
+
+                            AnexoFicheiro = formador.AnexoFicheiro != null
                     ? $"data:application/pdf;base64,{Convert.ToBase64String(formador.AnexoFicheiro)}"
-                    : null
+                    : null,
+
+                       
+                TiposMateria = formador.FormadoresTipoMaterias
+                    .Select(tm => new
+                    {
+                        tm.IdTipoMateria,
+                        tm.TipoMateria.Tipo
+                    })
+                    .ToList()
             };
 
+
             return Ok(resposta);
+        }
+
+        [HttpGet("tiposmateria")]
+        public async Task<IActionResult> GetTiposMateria()
+        {
+            var tiposMateria = await _context.TipoMaterias.ToListAsync();
+
+            return Ok(tiposMateria);
         }
 
         // GET: api/Formadores/5{id}/download-ficha
@@ -397,19 +419,22 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             var formador = await _context.Formadores
                 .Include(f => f.IdUtilizadorNavigation)
+                .Include(f => f.FormadoresTipoMaterias)
                 .FirstOrDefaultAsync(f => f.IdFormador == id);
 
-            if (formador == null) return NotFound(new { message = "Formador não encontrado." });
+            if (formador == null)
+                return NotFound(new { message = "Formador não encontrado." });
 
-            // Validar se o NIF/Email já existe em outro utilizador
-            bool nifEmUso = await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif && u.IdUtilizador != formador.IdUtilizador);
-            if (nifEmUso) return Conflict(new { message = "O NIF introduzido já pertence a outro utilizador." });
+            bool nifEmUso = await _context.Utilizadores.AnyAsync(u =>
+                u.Nif == dto.Nif && u.IdUtilizador != formador.IdUtilizador);
+
+            if (nifEmUso)
+                return Conflict(new { message = "O NIF introduzido já pertence a outro utilizador." });
 
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                // Atualizar Utilizador
                 var u = formador.IdUtilizadorNavigation;
                 u.Nome = dto.Nome;
                 u.Nif = dto.Nif;
@@ -418,11 +443,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 u.DataNascimento = dto.DataNascimento;
                 u.Sexo = dto.Sexo;
 
-                // Atualizar Formador
                 formador.Iban = dto.Iban;
                 formador.Qualificacoes = dto.Qualificacoes;
 
-                // Atualizar Ficheiros apenas se enviados
                 if (dto.Fotografia != null)
                 {
                     using var ms = new MemoryStream();
@@ -437,8 +460,24 @@ namespace ProjetoAdministracaoEscola.Controllers
                     formador.AnexoFicheiro = ms.ToArray();
                 }
 
+                // remover todas as associações antigas
+                _context.FormadoresTipoMaterias.RemoveRange(
+                    formador.FormadoresTipoMaterias
+                );
+
+                // inserir as novas
+                foreach (var idTipo in dto.TiposMateria.Distinct())
+                {
+                    _context.FormadoresTipoMaterias.Add(new FormadorTipoMateria
+                    {
+                        IdFormador = id,
+                        IdTipoMateria = idTipo
+                    });
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
                 return Ok(new { message = "Perfil atualizado com sucesso!" });
             }
             catch (Exception ex)
@@ -447,6 +486,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "Erro ao atualizar: " + ex.Message });
             }
         }
+
 
         /// <summary>
         /// Remove um formador do sistema.

@@ -189,7 +189,7 @@ p {
   color: red;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .banner-login {
     display: none;
   }
@@ -202,22 +202,15 @@ p {
     font-size: 0.5rem;
   }
 }
-@media (max-width: 1470px) {
+
+@media (max-width: 1400px) {
   .banner-login {
     padding: 2.4rem 1.5rem;
   }
 
   p {
     white-space: normal;
-    font-size: 1.2rem;
-  }
-}
-
-/* PARA LAPTOP */
-
-@media (max-height: 1024px) {
-  .title-login {
-    font-size: 2.8rem;
+    font-size: 1rem;
   }
 }
 

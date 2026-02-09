@@ -34,6 +34,8 @@ namespace ProjetoAdministracaoEscola.ModelsDTO.Formando
         public int? IdEscolaridade { get; set; }
 
         public int? IdTurma { get; set; }
+
+        public string Estado { get; set; }
         public IFormFile? Fotografia { get; set; }
         public IFormFile? Documento { get; set; }
     }

@@ -24,7 +24,7 @@ export interface UtilizadorListItem {
   telefone?: string;
   nif: string;
   tipoUtilizador: string;
-  status: boolean;
+  ativo: boolean;
 }
 
 export interface EditUtilizador {

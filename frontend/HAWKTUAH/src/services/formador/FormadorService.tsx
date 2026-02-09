@@ -42,6 +42,13 @@ export async function updateFormador(idFormador: string, data: any) {
   return res.data;
 }
 
+
+export async function getTiposMateria(){
+  const res = await axios.get(`${API_BASE_URL}/formadores/tiposmateria`);
+
+  return res.data;
+}
+
 export async function checkEmail(email: string) {
   const res = await axios.get(`${API_BASE_URL}/utilizadores/details-by-email?email=${email}`);
   

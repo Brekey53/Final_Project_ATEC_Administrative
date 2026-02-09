@@ -69,7 +69,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return NotFound(new { message = "Formando não encontrado!" });
 
             // Identificar a inscrição ativa para extrair os dados da turma
-            var inscricaoAtiva = formando.Inscricos.FirstOrDefault(i => i.Estado == "Ativo");
+            var inscricao = formando.Inscricos
+                .OrderByDescending(i => i.DataInscricao)
+                .FirstOrDefault();
 
             var resposta = new
             {
@@ -84,9 +86,11 @@ namespace ProjetoAdministracaoEscola.Controllers
                 Email = formando.IdUtilizadorNavigation.Email,
                 IdEscolaridade = formando.IdEscolaridade,
                 EscolaridadeNivel = formando.IdEscolaridadeNavigation?.Nivel,
+                //Estado Inscrição
+                Estado = inscricao?.Estado ?? "Suspenso",
                 // Dados da Turma
-                IdTurma = inscricaoAtiva?.IdTurma,
-                NomeTurma = inscricaoAtiva?.IdTurmaNavigation?.NomeTurma ?? "Sem Turma",
+                IdTurma = inscricao?.IdTurma,
+                NomeTurma = inscricao?.IdTurmaNavigation?.NomeTurma ?? "Sem Turma",
                 // Ficheiros
                 Fotografia = formando.Fotografia != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(formando.Fotografia)}" : null,
                 AnexoFicheiro = formando.AnexoFicheiro != null ? $"data:application/pdf;base64,{Convert.ToBase64String(formando.AnexoFicheiro)}" : null
@@ -94,6 +98,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(resposta);
         }
+
 
         // GET: api/Formandos/5{id}/download-ficha
         [HttpGet("{id}/download-ficha")]
@@ -393,13 +398,15 @@ namespace ProjetoAdministracaoEscola.Controllers
                 }
 
                 // Gestão de Inscrição
-                var inscricaoAtual = await _context.Inscricoes
-                    .FirstOrDefaultAsync(i => i.IdFormando == id && i.Estado == "Ativo");
+                var inscricao = await _context.Inscricoes
+                    .FirstOrDefaultAsync(i => i.IdFormando == id);
 
+                // Se foi atribuída uma turma
                 if (dto.IdTurma.HasValue && dto.IdTurma > 0)
                 {
-                    if (inscricaoAtual == null)
+                    if (inscricao == null)
                     {
+                        // Criar nova inscrição ativa
                         _context.Inscricoes.Add(new Inscrico
                         {
                             IdFormando = id,
@@ -408,15 +415,30 @@ namespace ProjetoAdministracaoEscola.Controllers
                             Estado = "Ativo"
                         });
                     }
-                    else if (inscricaoAtual.IdTurma != dto.IdTurma.Value)
+                    else
                     {
-                        inscricaoAtual.IdTurma = dto.IdTurma.Value;
+                        // Se mudou de turma
+                        if (inscricao.IdTurma != dto.IdTurma.Value)
+                        {
+                            inscricao.IdTurma = dto.IdTurma.Value;
+                            inscricao.Estado = "Ativo";
+                        }
+                        else if (!string.IsNullOrEmpty(dto.Estado))
+                        {
+                            // Atualiza estado mesmo mantendo a turma
+                            inscricao.Estado = dto.Estado;
+                        }
                     }
                 }
-                else if (inscricaoAtual != null)
+                else
                 {
-                    inscricaoAtual.Estado = "Suspenso";
+                    // apenas atualizar estado
+                    if (inscricao != null && !string.IsNullOrEmpty(dto.Estado))
+                    {
+                        inscricao.Estado = dto.Estado;
+                    }
                 }
+
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

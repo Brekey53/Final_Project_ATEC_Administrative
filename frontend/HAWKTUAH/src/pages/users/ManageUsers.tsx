@@ -61,8 +61,8 @@ export default function ManageUsers() {
 
     const matchEstado =
       estadoFiltro === "todos" ||
-      (estadoFiltro === "ativo" && u.status) ||
-      (estadoFiltro === "inativo" && !u.status);
+      (estadoFiltro === "ativo" && u.ativo) ||
+      (estadoFiltro === "inativo" && !u.ativo);
 
     return matchTexto && matchTipo && matchEstado;
   });
@@ -157,7 +157,7 @@ export default function ManageUsers() {
               value={tipoFiltro}
               onChange={(e) => setTipoFiltro(e.target.value)}
             >
-              <option value="todos">Todos</option>
+              <option value="todos">Todos os Tipos de Utilizador</option>
               <option value="administrativo">Administrativo</option>
               <option value="formador">Formador</option>
               <option value="formando">Formando</option>
@@ -171,7 +171,7 @@ export default function ManageUsers() {
               value={estadoFiltro}
               onChange={(e) => setEstadoFiltro(e.target.value)}
             >
-              <option value="todos">Todos</option>
+              <option value="todos">Todos os Estados</option>
               <option value="ativo">Ativo</option>
               <option value="inativo">Inativo</option>
             </select>
@@ -209,7 +209,7 @@ export default function ManageUsers() {
                 <div className="text-muted">{u.telefone || "-"}</div>{" "}
                 <div className="text-muted">{u.tipoUtilizador || "-"}</div>{" "}
                 <div className="text-muted">
-                  {u.status ? "Ativo" : "Inativo"}
+                  {u.ativo ? "Ativo" : "Inativo"}
                 </div>
                 <div className="d-flex justify-content-end gap-3 align-items-center">
                   <Link

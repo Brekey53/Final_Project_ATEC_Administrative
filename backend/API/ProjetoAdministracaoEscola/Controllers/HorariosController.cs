@@ -529,5 +529,58 @@ namespace ProjetoAdministracaoEscola.Controllers
             return _context.Horarios.Any(e => e.IdHorario == id);
         }
 
+        [HttpGet("{idFormador}/disponibilidade")]
+        public async Task<ActionResult<IEnumerable<DisponibilidadeFormadorMarcarHorarios>>> GetDisponibilidadeFormador(int idFormador)
+        {
+            var existe = await _context.Formadores.AnyAsync(f => f.IdFormador == idFormador);
+            if (!existe)
+                return NotFound(new { message = "Formador não encontrado." });
+
+            var dispDb = await _context.DisponibilidadeFormadores
+                .Where(d => d.IdFormador == idFormador)
+                .OrderBy(d => d.DataDisponivel)
+                .ThenBy(d => d.HoraInicio)
+                .ToListAsync();
+
+            var disponibilidade = dispDb.Select(d => new DisponibilidadeFormadorMarcarHorarios
+            {
+                Data = d.DataDisponivel.ToDateTime(TimeOnly.MinValue),
+                HoraInicio = d.HoraInicio.ToTimeSpan(),
+                HoraFim = d.HoraFim.ToTimeSpan(),
+            })
+            .ToList();
+
+            return Ok(disponibilidade);
+        }
+
+        [HttpGet("{idFormador}/marcados")]
+        public async Task<ActionResult<IEnumerable<HorarioMarcadoFormador>>> GetHorariosFormador(int idFormador)
+        {
+            var existe = await _context.Formadores.AnyAsync(f => f.IdFormador == idFormador);
+            if (!existe)
+                return NotFound(new { message = "Formador não encontrado." });
+
+
+            var horariosDb = await _context.Horarios
+            .Where(h => h.IdFormador == idFormador)
+            .Include(h => h.IdSalaNavigation)
+            .Include(h => h.IdCursoModuloNavigation)
+                .ThenInclude(cm => cm.IdCursoNavigation)
+            .OrderBy(h => h.Data)
+            .ThenBy(h => h.HoraInicio)
+            .ToListAsync();
+
+            var horarios = horariosDb.Select(h => new HorarioMarcadoFormador
+            {
+                Data = h.Data.ToString("dd-MM-yyyy"),
+                HoraInicio = h.HoraInicio.ToString(@"hh\:mm"),
+                HoraFim = h.HoraFim.ToString(@"hh\:mm"),
+                NomeTurma = h.IdCursoModuloNavigation.IdCursoNavigation.Nome,
+                NomeSala = h.IdSalaNavigation.Descricao
+            })
+            .ToList();
+
+            return Ok(horarios);
+        }
     }
 }
