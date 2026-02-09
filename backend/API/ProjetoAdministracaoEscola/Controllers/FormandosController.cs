@@ -239,6 +239,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 var utilizadorExistente = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == dto.Email);
                 int userId;
 
+
                 if (utilizadorExistente == null)
                 {
                     // Validação nif unico
@@ -315,12 +316,17 @@ namespace ProjetoAdministracaoEscola.Controllers
                     novoFormando.AnexoFicheiro = ms.ToArray();
                 }
 
+                // adicionar o formando ao contexto para gerar o IdFormando necessário para a inscrição
+                _context.Formandos.Add(novoFormando);
+
                 // Inscrição em Turma
                 if (dto.IdTurma.HasValue && dto.IdTurma > 0)
                 {
                     _context.Inscricoes.Add(new Inscrico
                     {
-                        IdFormando = novoFormando.IdFormando,
+                        // EM VEZ DE: IdFormando = novoFormando.IdFormando (que é 0) usar a navegação
+                        IdFormandoNavigation = novoFormando,
+
                         IdTurma = dto.IdTurma.Value,
                         DataInscricao = DateOnly.FromDateTime(DateTime.Now),
                         Estado = "Ativo"
@@ -328,7 +334,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                _context.Formandos.Add(novoFormando);
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
