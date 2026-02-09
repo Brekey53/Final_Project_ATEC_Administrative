@@ -85,6 +85,8 @@ builder.Services.AddScoped<JWTService>();
 
 builder.Services.AddMemoryCache();
 
+builder.Services.AddScoped<HorarioGeradorService>();
+
 var app = builder.Build();
 
 
