@@ -35,7 +35,7 @@ namespace ProjetoAdministracaoEscola.ModelsDTO.Formando
 
         public int? IdTurma { get; set; }
 
-        public string Estado { get; set; }
+        public string? Estado { get; set; }
         public IFormFile? Fotografia { get; set; }
         public IFormFile? Documento { get; set; }
     }

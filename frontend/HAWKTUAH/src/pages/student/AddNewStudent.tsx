@@ -82,7 +82,6 @@ export default function AddNewStudent() {
 
     setVerificandoEmail(true);
     try {
-      // O seu serviço já retorna res.data, então 'res' aqui já é o objeto do utilizador
       const res = await checkEmail(formData.email);
 
       if (res.existe) {

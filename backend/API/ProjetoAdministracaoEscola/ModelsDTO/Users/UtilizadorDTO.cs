@@ -12,7 +12,7 @@
 
         public string? Nif { get; set; }
 
-        public bool Ativo { get; set; }
+        public bool? Ativo { get; set; }
     }
 
 }
