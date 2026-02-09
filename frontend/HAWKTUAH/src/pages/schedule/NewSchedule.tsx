@@ -6,15 +6,19 @@ import {
   updateHorario,
   getHorariosById,
   postHorario,
+  autoGenerateSchedule,
   type Horario,
 } from "../../services/shedules/HorariosService";
-import { getTurmasFormadorHorario } from "../../services/turmas/TurmasService";
+import {
+  getTurmasFormadorHorario,
+  getTurmas,
+} from "../../services/turmas/TurmasService";
 import { getSalasDisponiveis } from "../../services/rooms/SalasService";
 import { getFormadores } from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
 import { Search, ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
-import toast  from "react-hot-toast";
+import toast from "react-hot-toast";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -25,6 +29,10 @@ export default function NewSchedule() {
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [autoGenData, setAutoGenData] = useState({
+    idTurma: "",
+    dataInicio: "",
+  });
 
   // --- Estados para filtro e paginação
   const [startDate, setStartDate] = useState("");
@@ -33,8 +41,9 @@ export default function NewSchedule() {
   const ITEMS_PER_PAGE = 10;
 
   // --- Estados dos modal ---
-  const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAutoGenerateModal, setShowAutoGenerateModal] = useState(false);
   const [selectedHorario, setSelectedHorario] = useState<Horario | null>(null);
 
   // --- Estado do Novo Horario ---
@@ -53,6 +62,7 @@ export default function NewSchedule() {
   const [turmasRaw, setTurmasRaw] = useState<any[]>([]); // Lista crua da API
   const [formadores, setFormadores] = useState<any[]>([]);
   const [salasDisponiveis, setSalasDisponiveis] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<any[]>([]);
 
   // --- HELPER ---
   const formatarData = (data: any) => {
@@ -149,6 +159,22 @@ export default function NewSchedule() {
       idTurma: e.target.value,
       idModulo: "", // Resetar módulo ao trocar turma
       idCursoModulo: "",
+    });
+  };
+
+  const handleTurmaAutoGenerateChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const idTurma = e.target.value;
+    const turmaSelecionada = turmas.find(
+      (t) => t.idTurma.toString() === idTurma,
+    );
+
+    setAutoGenData({
+      idTurma: idTurma,
+      dataInicio: turmaSelecionada?.dataInicio
+        ? turmaSelecionada.dataInicio.split("T")[0]
+        : "",
     });
   };
 
@@ -253,11 +279,11 @@ export default function NewSchedule() {
 
   const handleOpenModal = (horario: Horario) => {
     setSelectedHorario({ ...horario });
-    setShowModal(true);
+    setShowEditModal(true);
   };
 
   const handleCloseModal = () => {
-    setShowModal(false);
+    setShowEditModal(false);
     setSelectedHorario(null);
   };
 
@@ -280,6 +306,40 @@ export default function NewSchedule() {
         horaFim: "",
       });
       setShowCreateModal(true);
+    }
+  };
+
+  const handleAutoGenerateModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAutoGenData({ idTurma: "", dataInicio: "" }); // Reset inicial
+    setShowAutoGenerateModal(true);
+
+    try {
+      const res = await getTurmas();
+      setTurmas(res);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao carregar turmas.");
+    }
+  };
+
+  const handleAutoGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!autoGenData.idTurma) {
+      toast.error("Selecione uma turma válida.");
+      return;
+    }
+
+    try {
+      await autoGenerateSchedule(Number(autoGenData.idTurma));
+      toast.success("Horário gerado com sucesso!");
+      await fetchHorarios();
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar horário.");
+    } finally {
+      setShowAutoGenerateModal(false);
     }
   };
 
@@ -435,12 +495,23 @@ export default function NewSchedule() {
             Inserir, alterar, eliminar e consultar horários.
           </p>
         </div>
-        <div
-          className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
-          onClick={handleOpenCreateModal}
-          style={{ cursor: "pointer" }}
-        >
-          + Novo Horário
+
+        <div className="d-flex gap-2">
+          <div
+            className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
+            onClick={handleAutoGenerateModal}
+            style={{ cursor: "pointer" }}
+          >
+            Criar Horário automatico para turma
+          </div>
+
+          <div
+            className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
+            onClick={handleOpenCreateModal}
+            style={{ cursor: "pointer" }}
+          >
+            + Novo Horário
+          </div>
         </div>
       </div>
 
@@ -662,7 +733,7 @@ export default function NewSchedule() {
       </div>
 
       {/* --- MODAL EDITAR (UPDATE) --- */}
-      {showModal && selectedHorario && (
+      {showEditModal && selectedHorario && (
         <div
           className="modal fade show d-block"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
@@ -962,6 +1033,80 @@ export default function NewSchedule() {
                       conflitos.turmaOcupada ||
                       conflitos.erroHoras
                     }
+                  >
+                    Criar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Modal Gerador Automatico --- */}
+      {showAutoGenerateModal && (
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content rounded-4 border-0 shadow">
+              <div className="modal-header border-0 pb-0">
+                <h4 className="fw-bold text-primary">
+                  Gerar Horário Para Turma
+                </h4>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowAutoGenerateModal(false)}
+                ></button>
+              </div>
+              <form onSubmit={handleAutoGenerate}>
+                <div className="modal-body p-4">
+                  <div className="row g-3">
+                    {/* TURMA */}
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold">Turma</label>
+                      <select
+                        className={`form-select shadow-none`}
+                        value={autoGenData.idTurma}
+                        onChange={handleTurmaAutoGenerateChange}
+                        required
+                      >
+                        <option value="">{"Selecionar Turma..."}</option>
+                        {turmas.map((t: any) => (
+                          <option key={t.idTurma} value={t.idTurma}>
+                            {t.nomeTurma}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* DATA */}
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold">
+                        Data de início de curso
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control shadow-none"
+                        value={autoGenData.dataInicio}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer border-0">
+                  <button
+                    type="button"
+                    className="btn btn-light rounded-pill px-4"
+                    onClick={() => setShowAutoGenerateModal(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary rounded-pill px-4 text-white"
                   >
                     Criar
                   </button>
