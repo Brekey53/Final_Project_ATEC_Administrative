@@ -39,6 +39,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             return await _context.Turmas
                 .Include(t => t.IdCursoNavigation)
+                .Include(t => t.IdMetodologiaNavigation)
                 .Select(t => new TurmaDTO
                 {
                     IdTurma = t.IdTurma,
@@ -47,7 +48,25 @@ namespace ProjetoAdministracaoEscola.Controllers
                     DataFim = t.DataFim,
                     IdCurso = t.IdCurso,
                     NomeCurso = t.IdCursoNavigation.Nome,
-                    Estado = CalcularEstadoTurma(t.DataInicio, t.DataFim)
+                    Estado = CalcularEstadoTurma(t.DataInicio, t.DataFim),
+                    IdMetodologia = t.IdMetodologia,
+                    NomeMetodologia = t.IdMetodologiaNavigation.Nome
+                })
+                .ToListAsync();
+        }
+
+        [HttpGet("metodologias")]
+        public async Task<ActionResult<IEnumerable<MetodologiaDTO>>> GetMetodologias()
+        {
+            return await _context.MetodologiasHorarios
+                .Select(mh => new MetodologiaDTO
+                {
+                     IdMetodologia = mh.IdMetodologia,
+                     Nome = mh.Nome,
+                     HorarioInicio = mh.HorarioInicio,
+                     HorarioFim = mh.HorarioFim,
+                     PausaRefeicaoInicio = mh.PausaRefeicaoInicio,
+                     PausaRefeicaoFim = mh.PausaRefeicaoFim
                 })
                 .ToListAsync();
         }
@@ -74,7 +93,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                     DataInicio = t.DataInicio,
                     DataFim = t.DataFim,
                     IdCurso = t.IdCurso,
-                    NomeCurso = t.IdCursoNavigation.Nome
+                    NomeCurso = t.IdCursoNavigation.Nome,
+                    IdMetodologia = t.IdMetodologia,
+                    NomeMetodologia = t.IdMetodologiaNavigation.Nome
                 })
                 .ToListAsync();
         }
@@ -121,7 +142,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             turma.NomeTurma = turmadto.NomeTurma;
             turma.DataInicio = turmadto.DataInicio;
             turma.DataFim = turmadto.DataFim;
-            turma.IdCurso = turmadto.IdCurso;            
+            turma.IdCurso = turmadto.IdCurso;
+            turma.IdMetodologia = turmadto.IdMetodologia;
 
             await _context.SaveChangesAsync();
 
@@ -156,6 +178,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     DataInicio = turmadto.DataInicio,
                     DataFim = turmadto.DataFim,
                     IdCurso = turmadto.IdCurso,
+                    IdMetodologia = turmadto.IdMetodologia
                     //NomeCurso = turmadto.NomeCurso
                 };
 
