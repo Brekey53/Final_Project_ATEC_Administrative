@@ -36,7 +36,7 @@ namespace ProjetoAdministracaoEscola.Services
             var filaModulosPendentes = new Queue<CursosModulo>(cursoModulos.OrderBy(mo => mo.Prioridade));
 
             // Dicionario para controlar as horas restantes de cada módulo
-            var horasRestantesPorModulo = cursoModulos.ToDictionary(cm => cm.IdCursoModulo, cm => cm.IdModuloNavigation.HorasTotais);
+            var horasRestantesPorModulo = cursoModulos.ToDictionary(cm => cm.IdModulo, cm => cm.IdModuloNavigation.HorasTotais);
 
             // Cursor dataInicio
             DateOnly cursorData = turma.DataInicio;
