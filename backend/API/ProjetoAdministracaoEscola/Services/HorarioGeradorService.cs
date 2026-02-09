@@ -58,15 +58,33 @@ namespace ProjetoAdministracaoEscola.Services
 
             AtualizarModulosAtivos(modulosAtivos, maxModulosSimultaneos, filaModulosPendentes);
 
+            // Feriados para os anos que a turma vai decorrer
+            int anoInicio = turma.DataInicio.Year;
+            int anoFim = turma.DataFim.Year;
+
+            var feriados = GetFeriados(anoInicio);
+            if(anoFim > anoInicio)
+            {
+                feriados.UnionWith(GetFeriados(anoFim));
+            }
 
             while (modulosAtivos.Count > 0) // Enquanto houver módulos ativos para alocar
             {
-                // Validar fim de semana
+                // Validar fim de semana e passa o dia à frente
                 if (cursorData.DayOfWeek == DayOfWeek.Saturday || cursorData.DayOfWeek == DayOfWeek.Sunday)
                  {
                     cursorData = cursorData.AddDays(1);
                     continue;
                 }
+
+                // Validar feriados e passa o dia à frente
+                if (feriados.Contains(cursorData))
+                {
+                    cursorData = cursorData.AddDays(1);
+                    continue;
+                }
+
+
 
                 // Obter blocos de horario do Dia
                 var slotsDoDia = GerarSlotsPossiveis(metodologia, maxBloco);
@@ -270,5 +288,25 @@ namespace ProjetoAdministracaoEscola.Services
                 modulosAtivos.Add(filaModulosPendentes.Dequeue());
             }
         }
+
+        public static HashSet<DateOnly> GetFeriados(int ano)
+        {
+            var feriados = new HashSet<DateOnly>
+        {
+            new(ano, 1, 1),   // Ano Novo
+            new(ano, 4, 25),  // 25 de Abril
+            new(ano, 5, 1),   // Dia do Trabalhador
+            new(ano, 6, 10),  // Dia de Portugal
+            new(ano, 8, 15),  // Assunção de Nossa Senhora
+            new(ano, 10, 5),  // Implantação da República
+            new(ano, 11, 1),  // Todos os Santos
+            new(ano, 12, 1),  // Restauração da Independência
+            new(ano, 12, 8),  // Imaculada Conceição
+            new(ano, 12, 25)  // Natal
+        };
+
+            return feriados;
+        }
+
     }
 }
