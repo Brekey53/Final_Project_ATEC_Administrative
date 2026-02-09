@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
+using ProjetoAdministracaoEscola.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,10 +20,12 @@ namespace ProjetoAdministracaoEscola.Controllers
     public class HorariosController : ControllerBase
     {
         private readonly SistemaGestaoContext _context;
+        private readonly HorarioGeradorService _horarioGeradorService;
 
-        public HorariosController(SistemaGestaoContext context)
+        public HorariosController(SistemaGestaoContext context, HorarioGeradorService horarioGeradorService)
         {
             _context = context;
+            _horarioGeradorService = horarioGeradorService;
         }
 
         // GET: api/Horarios
@@ -305,6 +308,109 @@ namespace ProjetoAdministracaoEscola.Controllers
             return CreatedAtAction("GetHorario", new { id = novoHorario.IdHorario }, novoHorario);
         }
 
+        [HttpPost("gerar-automatico/{idTurma}")]
+        public async Task<IActionResult> GerarHorarioAutomatico(int idTurma)
+        {
+            // para segurança iniciar uma transação e só confirmar se tudo correr bem, caso contrário reverter
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var turma = await _context.Turmas
+                    .Include(t => t.IdMetodologiaNavigation)
+                    .Include(t => t.IdCursoNavigation)
+                    .FirstOrDefaultAsync(t => t.IdTurma == idTurma);
+
+                if (turma == null)
+                {
+                    return NotFound(new { message = "Turma não encontrada." });
+                }
+
+                var cursoModulos = await _context.CursosModulos
+                    .Include(cm => cm.IdModuloNavigation)
+                        .ThenInclude(m => m.IdTipoMateriaNavigation)
+                            .ThenInclude(tm => tm.IdTipoSalas)
+                    .OrderBy(cm => cm.Prioridade)
+                    .Where(cm => cm.IdCurso == turma.IdCurso)
+                    .ToListAsync();
+
+                if (!cursoModulos.Any())
+                {
+                    return BadRequest(new { message = "Este curso não tem módulos associados." });
+                }
+
+                var turmaAlocacoes = await _context.TurmaAlocacoes
+                    .Include(ta => ta.IdFormadorNavigation)
+                        .ThenInclude(f => f.DisponibilidadeFormadores)
+                    .Where(ta => ta.IdTurma == idTurma)
+                    .ToListAsync();
+
+                if (!turmaAlocacoes.Any())
+                {
+                    return BadRequest(new { message = "Esta turma não tem formadores alocados." });
+                }
+
+                var salas = await _context.Salas
+                    .Include(s => s.IdTipoSalaNavigation)
+                    .ToListAsync();
+
+                if (!salas.Any())
+                {
+                    return BadRequest(new { message = "Não existem salas disponíveis." });
+                }
+
+                // para blacklist de horários já ocupados (para evitar gerar sobreposições)
+                // buscar apenas horarios que coincidam com o horário da turma para não carregar horarios antigos que não interessam
+                var listaHorariosOcupados = await _context.Horarios
+                    .Where(h => h.Data >= turma.DataInicio && h.Data <= turma.DataFim)
+                    .ToListAsync();
+
+                // Converter os horarios em HashSet para pesquisa mais rápida (e é o que está a ser esperado na função)
+                var horariosHashSet = new HashSet<Horario>(listaHorariosOcupados);
+
+                // Executar o serviço de geração automática
+                var novosHorarios = await _horarioGeradorService.GerarHorario(
+                    turma,
+                    cursoModulos,
+                    turmaAlocacoes,
+                    salas,
+                    horariosHashSet
+                    );
+
+                if (novosHorarios.Count == 0)
+                {
+                    return BadRequest(new { message = "Não foi possível gerar um horário automático com as condições atuais." });
+                }
+
+                // Apagar horários antigos desta turma
+                var horariosAntigos = await _context.Horarios.Where(h => h.IdTurma == idTurma).ToListAsync();
+                _context.Horarios.RemoveRange(horariosAntigos);
+
+                // Adicionar os novos
+                await _context.Horarios.AddRangeAsync(novosHorarios);
+                await _context.SaveChangesAsync();
+
+                // Confirmar a transação
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    Mensagem = "Horário gerado com sucesso!",
+                    TotalAulasAgendadas = novosHorarios.Count,
+                    DataInicio = novosHorarios.Min(h => h.Data),
+                    DataFim = novosHorarios.Max(h => h.Data)
+                });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                // Logar o erro real na consola para tu veres
+                Console.WriteLine(ex.ToString());
+                return StatusCode(500, $"Erro interno ao gerar horário: {ex.Message}");
+            }
+        }
+        
+
         // DELETE: api/Horarios/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHorario(int id)
@@ -321,10 +427,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             return NoContent();
         }
 
-        private bool HorarioExists(int id)
-        {
-            return _context.Horarios.Any(e => e.IdHorario == id);
-        }
+        
 
         /* 
          * METODOS AUXILIARES DE VALIDAÇÃO:
@@ -420,5 +523,11 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return null; // Tudo OK
         }
+
+        private bool HorarioExists(int id)
+        {
+            return _context.Horarios.Any(e => e.IdHorario == id);
+        }
+
     }
 }
