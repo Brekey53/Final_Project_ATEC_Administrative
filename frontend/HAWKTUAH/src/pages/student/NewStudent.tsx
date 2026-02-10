@@ -9,7 +9,7 @@ import {
 import "../../css/newStudent.css";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash, Download } from "lucide-react";
+import { Pencil, Trash, Download, Search } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
 export default function NewStudent() {
@@ -18,10 +18,16 @@ export default function NewStudent() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formandoSelecionado, setFormandoSelecionado] =
     useState<Formando | null>(null);
+  const [turmaFilter, setTurmaFilter] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
   const ITEMS_PER_PAGE = 10;
+
+  const turmasDisponiveis = Array.from(
+    new Set(formandos.map((f) => f.turma || "Sem Turma")),
+  ).sort();
 
   useEffect(() => {
     async function fetchFormandos() {
@@ -37,12 +43,20 @@ export default function NewStudent() {
     fetchFormandos();
   }, [formandos.length]);
 
-  const formandosFiltrados = formandos.filter(
-    (f) =>
-      normalizarTexto(f.nome).includes(normalizarTexto(searchTerm)) ||
-      normalizarTexto(f.email).includes(normalizarTexto(searchTerm)) ||
-      normalizarTexto(f.nif).includes(normalizarTexto(searchTerm)),
-  );
+  const formandosFiltrados = formandos.filter((f) => {
+    const termo = normalizarTexto(searchTerm);
+
+    const matchPesquisa =
+      normalizarTexto(f.nome).includes(termo) ||
+      normalizarTexto(f.email || "").includes(termo) ||
+      normalizarTexto(f.nif).includes(termo);
+
+    const matchTurma =
+      turmaFilter === "" ||
+      normalizarTexto(f.turma || "Sem Turma") === normalizarTexto(turmaFilter);
+
+    return matchPesquisa && matchTurma;
+  });
 
   const totalPages = Math.ceil(formandosFiltrados.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -110,13 +124,41 @@ export default function NewStudent() {
       {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg rounded-3"
-            placeholder="Pesquisar por nome ou NIF…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="row g-3 align-items-center">
+            {/* INPUT PESQUISA */}
+            <div className="col-md-8">
+              <div className="input-group input-group-lg">
+                <span className="input-group-text bg-white border-0">
+                  <Search size={20} className="text-muted" />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border-0 shadow-none"
+                  placeholder="Pesquisar por nome, email ou NIF..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* FILTRO TURMA */}
+            <div className="col-md-4">
+              <div className="input-group input-group-lg">
+                <select
+                  className="form-select border-0 shadow-none"
+                  value={turmaFilter}
+                  onChange={(e) => setTurmaFilter(e.target.value)}
+                >
+                  <option value="">Todas as Turmas</option>
+                  {turmasDisponiveis.map((turma) => (
+                    <option key={turma} value={turma}>
+                      {turma}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

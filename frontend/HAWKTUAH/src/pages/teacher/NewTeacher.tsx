@@ -8,7 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash, Download } from "lucide-react";
+import { Pencil, Trash, Download, Search } from "lucide-react";
 import { Tooltip } from 'bootstrap';
 import "../../css/formadores.css"
 
@@ -113,13 +113,23 @@ export default function NewTeacher() {
       {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar por nome ou NIF…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="row g-3 align-items-center">
+            {/* INPUT PESQUISA */}
+            <div className="col-md-12">
+              <div className="input-group input-group-lg">
+                <span className="input-group-text bg-white border-0">
+                  <Search size={20} className="text-muted" />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border-0 shadow-none"
+                  placeholder="Pesquisar por nome, email ou NIF..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
