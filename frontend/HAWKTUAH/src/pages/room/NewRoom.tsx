@@ -113,46 +113,49 @@ export default function NewRoom() {
         </Link>
       </div>
 
+      {/* PESQUISA */}
       <div className="row mb-4">
         <div className="col-12">
-          <div className="card shadow-sm border-0 rounded-4">
+          <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
             <div className="card-body">
               <div className="row g-3 align-items-center">
-                {/* PESQUISA */}
+                {/* INPUT PESQUISA */}
                 <div className="col-md-8">
-                  <div className="input-group input-group-custom">
+                  <div className="input-group input-group-custom px-2">
                     <span className="input-group-text bg-white border-0">
                       <Search size={20} className="text-muted" />
                     </span>
                     <input
                       type="text"
-                      className="form-control form-control-lg border-0 shadow-none"
-                      placeholder="Pesquisar salas..."
+                      className="form-control border-0 shadow-none"
+                      placeholder="Pesquisar Salas..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
                 </div>
 
-                {/* FILTRO TIPO SALA */}
+                {/* SELECT FILTRO */}
                 <div className="col-md-4">
-                  <select
-                    className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
-                    value={tipoSalaFilter}
-                    onChange={(e) =>
-                      setTipoSalaFilter(
-                        e.target.value === "" ? "" : Number(e.target.value),
-                      )
-                    }
-                  >
-                    <option value="">Filtrar Tipo Sala</option>
+                  <div className="input-group input-group-custom px-2">
+                    <select
+                      className="form-select border-0 shadow-none bg-white"
+                      value={tipoSalaFilter}
+                      onChange={(e) =>
+                        setTipoSalaFilter(
+                          e.target.value === "" ? "" : Number(e.target.value),
+                        )
+                      }
+                    >
+                      <option value="">Filtrar Tipo Sala</option>
 
-                    {tiposSala.map((tipo) => (
-                      <option key={tipo.idTipoSala} value={tipo.idTipoSala}>
-                        {tipo.nome}
-                      </option>
-                    ))}
-                  </select>
+                      {tiposSala.map((tipo) => (
+                        <option key={tipo.idTipoSala} value={tipo.idTipoSala}>
+                          {tipo.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
