@@ -12,8 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pt.atec.hawk_portal_app.ui.screens.dashboard.DashboardScreen
-import pt.atec.hawk_portal_app.ui.screens.login.LoginScreen
 import pt.atec.hawk_portal_app.ui.screens.formadores.FormadoresScreen
+import pt.atec.hawk_portal_app.ui.screens.formando.FormandoScreen
+import pt.atec.hawk_portal_app.ui.screens.login.LoginScreen
 import pt.atec.hawk_portal_app.ui.screens.twoFactorAuth.TwoFactorAuthScreen
 
 
@@ -31,9 +32,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    AppNavigation()
-                }
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                AppNavigation()
+            }
         }
     }
 }
@@ -46,7 +50,7 @@ fun AppNavigation() {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Routes.TWO_FACTOR){
+                    navController.navigate(Routes.TWO_FACTOR) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
@@ -68,6 +72,10 @@ fun AppNavigation() {
 
         composable(Routes.FORMADORES) {
             FormadoresScreen()
+        }
+
+        composable(Routes.FORMANDOS) {
+            FormandoScreen()
         }
 
         composable(Routes.TWO_FACTOR) {

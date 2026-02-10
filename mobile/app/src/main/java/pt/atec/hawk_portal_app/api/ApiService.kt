@@ -1,6 +1,7 @@
 package pt.atec.hawk_portal_app.api
 
 import pt.atec.hawk_portal_app.model.Formador
+import pt.atec.hawk_portal_app.model.Formando
 import pt.atec.hawk_portal_app.model.LoginRequest
 import pt.atec.hawk_portal_app.model.LoginResponse
 import pt.atec.hawk_portal_app.model.Verify2FARequest
@@ -18,8 +19,9 @@ interface ApiService {
      * @return Response com o LoginResponse ou erro HTTP
      */
     @POST("auth/login")
-    fun login(
-        @Body request: LoginRequest): Response<LoginResponse>
+    suspend fun login(
+        @Body request: LoginRequest
+    ): Response<LoginResponse>
 
     /**
      * Obtém a lista de formadores e fotografia.
@@ -27,14 +29,23 @@ interface ApiService {
      * @return Response com a lista de formadores
      */
     @GET("formadores/com-foto")
-    fun getFormadores(): Response<List<Formador>>
+    suspend fun getFormadores(): Response<List<Formador>>
+
+    /**
+     * Obtém a lista de formandos e fotografia.
+     *
+     * @return Response com a lista de formandos
+     */
+    @GET("formandos/com-foto")
+    suspend fun getFormandos(): Response<List<Formando>>
 
     /**
      * Valida o código de 6 dígitos enviado por e-mail.
      * FALTA VALIDAR O CODIGO LOL
      */
     @POST("auth/verify-2fa")
-    fun verify2FA(
-        @Body request: Verify2FARequest): Response<LoginResponse>
+    suspend fun verify2FA(
+        @Body request: Verify2FARequest
+    ): Response<LoginResponse>
 }
 

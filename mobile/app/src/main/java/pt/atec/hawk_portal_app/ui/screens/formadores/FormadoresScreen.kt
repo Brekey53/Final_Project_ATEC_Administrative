@@ -32,10 +32,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import pt.atec.hawk_portal_app.model.Formador
-import pt.atec.hawk_portal_app.viewmodel.FormadoresViewModel
 import coil.compose.AsyncImage
 import pt.atec.hawk_portal_app.R
+import pt.atec.hawk_portal_app.model.Formador
+import pt.atec.hawk_portal_app.viewmodel.FormadoresViewModel
 
 
 @Composable
@@ -76,7 +76,9 @@ fun FormadoresScreen(viewModel: FormadoresViewModel = viewModel()) {
     ) { paddingValues ->
         if (viewModel.isLoading.value) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = Color.White)
@@ -145,13 +147,11 @@ fun FormadorItem(formador: Formador) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                if (!formador.qualificacoes.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = formador.qualificacoes,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = formador.qualificacoes ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
