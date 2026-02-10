@@ -123,15 +123,15 @@ export default function NewCourse() {
           <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
             <div className="card-body">
               <div className="row g-3 align-items-center">
-                {/* PESQUISA */}
+                {/* INPUT PESQUISA */}
                 <div className="col-md-8">
                   <div className="input-group input-group-custom px-2">
-                    <span className="input-group-text bg-white border-0">
+                    <span className="input-group-text bg-white border-0 py-2">
                       <Search size={20} className="text-muted" />
                     </span>
                     <input
                       type="text"
-                      className="form-control form-control-lg border-0 shadow-none py-2"
+                      className="form-control border-0 shadow-none"
                       placeholder="Pesquisar curso por nome ou código..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -139,21 +139,22 @@ export default function NewCourse() {
                   </div>
                 </div>
 
-                {/* FILTRO TIPO SALA */}
+                {/* FILTRO ÁREA */}
                 <div className="col-md-4">
-                  <select
-                    className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
-                    value={areaCursosFilter}
-                    onChange={(e) => setAreaCursosFilter(e.target.value)}
-                  >
-                    <option value="">Filtrar Área</option>
-
-                    {areaCursos.map((area) => (
-                      <option key={area.idArea} value={String(area.idArea)}>
-                        {area.nome}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="input-group input-group-custom px-2">
+                    <select
+                      className="form-select border-0 shadow-none bg-white"
+                      value={areaCursosFilter}
+                      onChange={(e) => setAreaCursosFilter(e.target.value)}
+                    >
+                      <option value="">Filtrar Área</option>
+                      {areaCursos.map((area) => (
+                        <option key={area.idArea} value={String(area.idArea)}>
+                          {area.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

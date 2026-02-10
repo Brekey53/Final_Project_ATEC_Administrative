@@ -61,39 +61,48 @@ export default function Cursos() {
           <p className="text-muted mb-0">Consulta de Cursos Disponíveis</p>
         </div>
       </div>
+      
+      {/* PESQUISA */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div className="card-body">
+              <div className="row g-3 align-items-center">
+                {/* INPUT PESQUISA */}
+                <div className="col-md-8">
+                  <div className="input-group input-group-custom px-2">
+                    <span className="input-group-text bg-white border-0">
+                      <Search size={20} className="text-muted" />
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control border-0 shadow-none"
+                      placeholder="Pesquisar..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
-        <div className="row g-2 align-items-center p-2">
-          {" "}
-          {/* Pesquisa Input*/}
-          <div className="col-md-8">
-            <div className="input-group bg-white rounded-3 border px-2">
-              <span className="input-group-text bg-white border-0">
-                <Search size={18} className="text-muted" />
-              </span>
-              <input
-                type="text"
-                className="form-control border-0 bg-white shadow-none py-2"
-                placeholder="Pesquisar..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+                {/* SELECT FILTRO */}
+                <div className="col-md-4">
+                  <div className="input-group input-group-custom px-2">
+                    <select
+                      className="form-select border-0 shadow-none bg-white"
+                      value={areaFiltro}
+                      onChange={(e) => setAreaFiltro(e.target.value)}
+                    >
+                      <option value="">Filtrar por Área</option>
+                      {cursos.map((c) => (
+                        <option key={c.idArea} value={c.nomeArea}>
+                          {c.nomeArea}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          {/* Select Estado da Turma */}
-          <div className="col-md-4">
-            <select
-              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
-              value={areaFiltro}
-              onChange={(e) => setAreaFiltro(e.target.value)}
-            >
-              <option value="">Filtrar por Área</option>
-              {cursos.map((c) => (
-                <option key={c.idArea} value={c.nomeArea}>
-                  {c.nomeArea}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
       </div>
