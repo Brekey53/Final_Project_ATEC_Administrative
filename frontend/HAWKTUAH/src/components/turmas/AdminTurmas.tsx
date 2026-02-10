@@ -86,19 +86,16 @@ export default function AdminTurmas() {
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
-
     // Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
-
     // Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
-  }, [turmasPaginadas]); // Re-executa quando a lista carrega
+  }, [turmasPaginadas]); 
 
-  /* sempre que pesquisa muda → volta à página 1 */
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
