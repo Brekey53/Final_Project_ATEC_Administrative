@@ -66,4 +66,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     //fotos
     implementation(libs.coil.compose)
+
+
+    // Datastore para token
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }

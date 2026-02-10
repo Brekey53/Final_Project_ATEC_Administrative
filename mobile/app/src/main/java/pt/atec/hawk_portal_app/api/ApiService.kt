@@ -5,6 +5,7 @@ import pt.atec.hawk_portal_app.model.Formando
 import pt.atec.hawk_portal_app.model.LoginRequest
 import pt.atec.hawk_portal_app.model.LoginResponse
 import pt.atec.hawk_portal_app.model.Verify2FARequest
+import pt.atec.hawk_portal_app.model.Verify2FAResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -41,11 +42,11 @@ interface ApiService {
 
     /**
      * Valida o código de 6 dígitos enviado por e-mail.
-     * FALTA VALIDAR O CODIGO LOL
      */
     @POST("auth/verify-2fa")
     suspend fun verify2FA(
         @Body request: Verify2FARequest
-    ): Response<LoginResponse>
+    ): Response<Verify2FAResponse>
+
 }
 
