@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getCursos,
   deleteCurso,
   type Curso,
+  getAreaCursos,
+  type AreaCurso,
 } from "../../services/cursos/CursosService";
 import "../../css/cursos.css";
 import toast from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
 export default function NewCourse() {
@@ -16,26 +18,32 @@ export default function NewCourse() {
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [cursoSelecionado, setCursoSelecionado] = useState<Curso | null>(null);
-  const [search, setSearch] = useState("");
-  const [areaFiltro, setAreaFiltro] = useState("todas");
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [areaCursos, setAreaCursos] = useState<AreaCurso[]>([]);
+  const [areaCursosFilter, setAreaCursosFilter] = useState("");
 
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
-    async function fetchCursos() {
+    async function loadAll() {
       try {
-        const data = await getCursos();
-        setCursos(data);
-      } catch (error) {
-        console.error("Erro ao carregar cursos", error);
-        setCursos([]);
+        const [cursosData, areasData] = await Promise.all([
+          getCursos(),
+          getAreaCursos(),
+        ]);
+
+        setCursos(cursosData);
+        setAreaCursos(areasData);
+      } catch (err) {
+        toast.error("Erro ao carregar dados");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchCursos();
+    loadAll();
   }, []);
 
   async function handleDeleteCurso() {
@@ -60,14 +68,14 @@ export default function NewCourse() {
   const cursosFiltrados = loading
     ? []
     : cursos.filter((c) => {
-        const termo = normalizarTexto(search);
+        const termo = normalizarTexto(searchTerm);
 
         const matchPesquisa =
           normalizarTexto(c.nome).includes(termo) ||
           normalizarTexto(String(c.idCurso)).includes(termo);
 
         const matchArea =
-          areaFiltro === "todas" || String(c.idArea) === areaFiltro;
+          areaCursosFilter === "" || String(c.idArea) === areaCursosFilter;
 
         return matchPesquisa && matchArea;
       });
@@ -79,26 +87,21 @@ export default function NewCourse() {
   const cursosPaginados = cursosFiltrados.slice(startIndex, endIndex);
 
   useEffect(() => {
-    // Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
-
-    // Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
-  }, [cursosPaginados, loading]); // Re-executa quando a lista carrega
+  }, [cursosPaginados, loading]);
 
-  // Quando pesquisa muda → voltar à página 1
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [searchTerm, areaCursosFilter]);
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -114,33 +117,45 @@ export default function NewCourse() {
         </Link>
       </div>
 
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <div className="row g-3 align-items-center">
-            {/* PESQUISA */}
-            <div className="col-12 col-md-8">
-              <input
-                type="text"
-                className="form-control form-control-lg"
-                placeholder="Pesquisar curso por nome ou código..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+      {/* PESQUISA*/}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+            <div className="card-body">
+              <div className="row g-3 align-items-center">
+                {/* PESQUISA */}
+                <div className="col-md-8">
+                  <div className="input-group input-group-custom px-2">
+                    <span className="input-group-text bg-white border-0">
+                      <Search size={20} className="text-muted" />
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg border-0 shadow-none py-2"
+                      placeholder="Pesquisar curso por nome ou código..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-            {/* FILTRO ÁREA */}
-            <div className="col-12 col-md-4">
-              <select
-                className="form-select form-select-lg"
-                value={areaFiltro}
-                onChange={(e) => setAreaFiltro(e.target.value)}
-              >
-                {/*TODO: ISTO ESTÁ HARDCODED */}
-                <option value="todas">Todas as áreas</option>
-                <option value="1">Informática</option>
-                <option value="2">Mecânica</option>
-                <option value="3">Eletrónica</option>
-              </select>
+                {/* FILTRO TIPO SALA */}
+                <div className="col-md-4">
+                  <select
+                    className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
+                    value={areaCursosFilter}
+                    onChange={(e) => setAreaCursosFilter(e.target.value)}
+                  >
+                    <option value="">Filtrar Área</option>
+
+                    {areaCursos.map((area) => (
+                      <option key={area.idArea} value={String(area.idArea)}>
+                        {area.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
