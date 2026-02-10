@@ -156,7 +156,7 @@ export default function ManageUsers() {
           {/* Select Tipo Utilizador  */}
           <div className="col-md-3">
             <select
-              className="form-select border-1 bg-white rounded-3 shadow-none py-2"
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
               value={tipoFiltro}
               onChange={(e) => setTipoFiltro(e.target.value)}
             >
@@ -170,7 +170,7 @@ export default function ManageUsers() {
           {/* Select para ordenar por status*/}
           <div className="col-md-3">
             <select
-              className="form-select border-1 bg-white rounded-3 shadow-none py-2"
+              className="form-select border-1 bg-white rounded-3 shadow-none py-2 input-group"
               value={estadoFiltro}
               onChange={(e) => setEstadoFiltro(e.target.value)}
             >
