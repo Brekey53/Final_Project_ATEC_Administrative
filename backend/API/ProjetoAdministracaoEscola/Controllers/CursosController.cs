@@ -1,3 +1,4 @@
+using iText.StyledXmlParser.Jsoup.Nodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +42,24 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(cursos);
         }
+
+        // GET: api/Cursos/areaCursos
+        [HttpGet("areacursos")]
+        public async Task<ActionResult<IEnumerable<AreaCursoDto>>> GetAreaCursos()
+        {
+            var areas = await _context.Areas
+                .Select(c => new AreaCursoDto
+                {
+                    IdArea = c.IdArea,
+                    Nome = c.Nome
+                })
+                .OrderBy(c => c.Nome)
+                .ToListAsync();
+
+            return Ok(areas);
+        }
+
+
 
         // GET: api/Cursos/5
         [HttpGet("{id}")]
