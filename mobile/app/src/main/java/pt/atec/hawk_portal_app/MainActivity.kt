@@ -1,6 +1,5 @@
 package pt.atec.hawk_portal_app
 
-import FormadoresScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,10 +13,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pt.atec.hawk_portal_app.ui.screens.dashboard.DashboardScreen
 import pt.atec.hawk_portal_app.ui.screens.login.LoginScreen
+import pt.atec.hawk_portal_app.ui.screens.formadores.FormadoresScreen
+import pt.atec.hawk_portal_app.ui.screens.twoFactorAuth.TwoFactorAuthScreen
 
 
 object Routes {
     const val LOGIN = "login"
+    const val TWO_FACTOR = "2fa"
     const val DASHBOARD = "dashboard"
     const val CURSOS = "cursos"
     const val FORMADORES = "formadores"
@@ -44,7 +46,7 @@ fun AppNavigation() {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Routes.DASHBOARD) {
+                    navController.navigate(Routes.TWO_FACTOR){
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
@@ -56,12 +58,29 @@ fun AppNavigation() {
                 onFormandos = { navController.navigate(Routes.FORMANDOS) },
                 onFormadores = { navController.navigate(Routes.FORMADORES) },
                 onSalas = { navController.navigate(Routes.DISPONIBILIDADE_SALAS) },
-                onLogout = { /* logout */ }
+                onLogout = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.DASHBOARD) { inclusive = true }
+                    }
+                }
             )
         }
 
         composable(Routes.FORMADORES) {
             FormadoresScreen()
+        }
+
+        composable(Routes.TWO_FACTOR) {
+            TwoFactorAuthScreen(
+                onVerifySuccess = {
+                    navController.navigate(Routes.DASHBOARD) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
+                onBackToLogin = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

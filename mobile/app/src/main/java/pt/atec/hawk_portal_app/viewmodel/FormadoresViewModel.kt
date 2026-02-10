@@ -1,4 +1,4 @@
-package pt.atec.hawk_portal_app.states
+package pt.atec.hawk_portal_app.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

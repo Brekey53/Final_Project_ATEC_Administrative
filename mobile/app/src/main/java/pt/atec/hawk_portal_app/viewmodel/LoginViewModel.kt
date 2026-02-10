@@ -7,13 +7,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.model.LoginRequest
-import pt.atec.hawk_portal_app.states.LoginUIState
+import pt.atec.hawk_portal_app.states.LoginUiState
 
 
 class LoginViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LoginUIState())
-    val uiState: StateFlow<LoginUIState> = _uiState
+    private val _uiState = MutableStateFlow(LoginUiState())
+    val uiState: StateFlow<LoginUiState> = _uiState
 
     fun login(email: String, password: String) {
         viewModelScope.launch {

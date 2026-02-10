@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import pt.atec.hawk_portal_app.ui.theme.GreenApp
 
@@ -26,10 +27,10 @@ private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40,
-    background = GreenApp,
-    onBackground = GreenApp,
-    onSurface = GreenApp,
-    surface = GreenApp,
+    background = Color(0xFFF6F8F8), // Fundo claro para os Cards saltarem à vista
+    surface = Color.White,          // Cor dos Cards
+    onBackground = GreenApp,        // Texto principal no tom de verde
+    onSurface = Color.Black
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
