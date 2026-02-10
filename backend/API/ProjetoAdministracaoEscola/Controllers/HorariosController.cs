@@ -524,11 +524,6 @@ namespace ProjetoAdministracaoEscola.Controllers
             return null; // Tudo OK
         }
 
-        private bool HorarioExists(int id)
-        {
-            return _context.Horarios.Any(e => e.IdHorario == id);
-        }
-
         [HttpGet("{idFormador}/disponibilidade")]
         public async Task<ActionResult<IEnumerable<DisponibilidadeFormadorMarcarHorarios>>> GetDisponibilidadeFormador(int idFormador)
         {
@@ -583,5 +578,6 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(horarios);
         }
+
     }
 }
