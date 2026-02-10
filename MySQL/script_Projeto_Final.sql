@@ -294,65 +294,67 @@ INSERT INTO materia_sala_compatibilidade (id_tipo_materia, id_tipo_sala) VALUES
 (10, 3), (10, 5), (10, 7), (10, 8), (10, 10),
 (11, 3), (11 , 10);
 
--- UTILIZADORES 
+-- UTILIZADORES (passe é 123)
 INSERT INTO utilizadores
 (nome, nif, data_nascimento, morada, telefone, sexo, email, password_hash, id_google, id_facebook, id_tipo_utilizador, status_ativacao, token_ativacao, ativo, data_desativacao)
 VALUES
-('Carlos Professor','111222333','1975-03-10','Palmela','912300001','Masculino','carlos@atec.pt','hash123',NULL,NULL,2,1,'tok_001',TRUE,NULL),
-('Ana Docente','222333444','1982-07-22','Setúbal','912300002','Feminino','ana@atec.pt','hash123',NULL,NULL,2,1,'tok_002',TRUE,NULL),
-('Leonor Joaquim','333444555','1978-11-05','Lisboa','912300003','Feminino','bruno@atec.pt','hash123',NULL,NULL,2,1,'tok_003',TRUE,NULL),
-('Daniela Instrutora','444555666','1985-01-30','Azeitão','912300004','Feminino','daniela@atec.pt','hash123',NULL,NULL,2,1,'tok_004',TRUE,NULL),
-('Eduardo Formador','555666777','1980-12-12','Pinhal Novo','912300005','Masculino','eduardo@atec.pt','hash123',NULL,NULL,2,1,'tok_005',TRUE,NULL),
-('Maria Aluna','999888777','2001-05-20','Palmela','913400001','Feminino','maria@student.pt','hash123',NULL,NULL,3,1,'tok_006',TRUE,NULL),
-('José Silva','888777666','2000-09-15','Moita','913400002','Masculino','jose@student.pt','hash123',NULL,NULL,3,1,'tok_007',TRUE,NULL),
-('Sara Santos','777666555','1999-02-28','Montijo','913400003','Feminino','sara@student.pt','hash123',NULL,NULL,3,1,'tok_008',TRUE,NULL),
-('Pedro Rocha','666555444','2002-11-11','Palmela','913400004','Masculino','pedro@student.pt','hash123',NULL,NULL,3,1,'tok_009',TRUE,NULL),
-('Inês Costa','555444333','2001-08-05','Setúbal','913400005','Feminino','ines@student.pt','hash123',NULL,NULL,3,1,'tok_010',TRUE,NULL),
-('André Ferreira','700000001','2002-01-01','Setúbal','913400006','Masculino','andre.1@student.pt','hash123',NULL,NULL,3,1,'tok_011',TRUE,NULL),
-('Beatriz Gomes','700000002','2001-02-02','Moita','913400007','Feminino','beatriz.2@student.pt','hash123',NULL,NULL,3,1,'tok_012',TRUE,NULL),
-('Cláudio Lima','700000003','2000-03-03','Montijo','913400008','Masculino','claudio.3@student.pt','hash123',NULL,NULL,3,1,'tok_013',TRUE,NULL),
-('Diana Santos','700000004','2002-04-04','Barreiro','913400009','Feminino','diana.4@student.pt','hash123',NULL,NULL,3,1,'tok_014',TRUE,NULL),
-('Eduardo Silva','700000005','2001-05-05','Almada','913400010','Masculino','eduardo.5@student.pt','hash123',NULL,NULL,3,1,'tok_015',TRUE,NULL),
-('Francisca Costa','700000006','2000-06-06','Seixal','913400011','Feminino','francisca.6@student.pt','hash123',NULL,NULL,3,1,'tok_016',TRUE,NULL),
-('Gabriel Rodrigues','700000007','2002-07-07','Setúbal','913400012','Masculino','gabriel.7@student.pt','hash123',NULL,NULL,3,1,'tok_017',TRUE,NULL),
-('Helena Martins','700000008','2001-08-08','Moita','913400013','Feminino','helena.8@student.pt','hash123',NULL,NULL,3,1,'tok_018',TRUE,NULL),
-('Igor Pereira','700000009','2000-09-09','Montijo','913400014','Masculino','igor.9@student.pt','hash123',NULL,NULL,3,1,'tok_019',TRUE,NULL),
-('Joana Alves','700000010','2002-10-10','Barreiro','913400015','Feminino','joana.10@student.pt','hash123',NULL,NULL,3,1,'tok_020',TRUE,NULL),
-('Kevin Sousa','700000011','2001-11-11','Almada','913400016','Masculino','kevin.11@student.pt','hash123',NULL,NULL,3,1,'tok_021',TRUE,NULL),
-('Laura Fernandes','700000012','2000-12-12','Seixal','913400017','Feminino','laura.12@student.pt','hash123',NULL,NULL,3,1,'tok_022',TRUE,NULL),
-('Miguel Oliveira','700000013','2002-01-13','Setúbal','913400018','Masculino','miguel.13@student.pt','hash123',NULL,NULL,3,1,'tok_023',TRUE,NULL),
-('Nádia Ribeiro','700000014','2001-02-14','Moita','913400019','Feminino','nadia.14@student.pt','hash123',NULL,NULL,3,1,'tok_024',TRUE,NULL),
-('Orlando Carvalho','700000015','2000-03-15','Montijo','913400020','Masculino','orlando.15@student.pt','hash123',NULL,NULL,3,1,'tok_025',TRUE,NULL),
-('Paula Teixeira','700000016','2002-04-16','Barreiro','913400021','Feminino','paula.16@student.pt','hash123',NULL,NULL,3,1,'tok_026',TRUE,NULL),
-('Quintino Lopes','700000017','2001-05-17','Almada','913400022','Masculino','quintino.17@student.pt','hash123',NULL,NULL,3,1,'tok_027',TRUE,NULL),
-('Rita Mendes','700000018','2000-06-18','Seixal','913400023','Feminino','rita.18@student.pt','hash123',NULL,NULL,3,1,'tok_028',TRUE,NULL),
-('Sérgio Pinto','700000019','2002-07-19','Setúbal','913400024','Masculino','sergio.19@student.pt','hash123',NULL,NULL,3,1,'tok_029',TRUE,NULL),
-('Tatiana Moreira','700000020','2001-08-20','Moita','913400025','Feminino','tatiana.20@student.pt','hash123',NULL,NULL,3,1,'tok_030',TRUE,NULL),
-('Ulisses Nunes','700000021','2000-09-21','Montijo','913400026','Masculino','ulisses.21@student.pt','hash123',NULL,NULL,3,1,'tok_031',TRUE,NULL),
-('Vera Correia','700000022','2002-10-22','Barreiro','913400027','Feminino','vera.22@student.pt','hash123',NULL,NULL,3,1,'tok_032',TRUE,NULL),
-('Wagner Dias','700000023','2001-11-23','Almada','913400028','Masculino','wagner.23@student.pt','hash123',NULL,NULL,3,1,'tok_033',TRUE,NULL),
-('Xavier Barros','700000024','2000-12-24','Seixal','913400029','Masculino','xavier.24@student.pt','hash123',NULL,NULL,3,1,'tok_034',TRUE,NULL),
-('Yara Azevedo','700000025','2002-01-25','Setúbal','913400030','Feminino','yara.25@student.pt','hash123',NULL,NULL,3,1,'tok_035',TRUE,NULL),
-('Zélia Campos','700000026','2001-02-26','Moita','913400031','Feminino','zelia.26@student.pt','hash123',NULL,NULL,3,1,'tok_036',TRUE,NULL),
-('Afonso Ramos','700000027','2000-03-27','Montijo','913400032','Masculino','afonso.27@student.pt','hash123',NULL,NULL,3,1,'tok_037',TRUE,NULL),
-('Bruna Freitas','700000028','2002-04-28','Barreiro','913400033','Feminino','bruna.28@student.pt','hash123',NULL,NULL,3,1,'tok_038',TRUE,NULL),
-('Carlos Machado','700000029','2001-05-29','Almada','913400034','Masculino','carlos.29@student.pt','hash123',NULL,NULL,3,1,'tok_039',TRUE,NULL),
-('Daniela Duarte','700000030','2000-06-30','Seixal','913400035','Feminino','daniela.30@student.pt','hash123',NULL,NULL,3,1,'tok_040',TRUE,NULL),
-('Ernesto Vieira','700000031','2002-07-01','Setúbal','913400036','Masculino','ernesto.31@student.pt','hash123',NULL,NULL,3,1,'tok_041',TRUE,NULL),
-('Fátima Castro','700000032','2001-08-02','Moita','913400037','Feminino','fatima.32@student.pt','hash123',NULL,NULL,3,1,'tok_042',TRUE,NULL),
-('Gonçalo Cunha','700000033','2000-09-03','Montijo','913400038','Masculino','goncalo.33@student.pt','hash123',NULL,NULL,3,1,'tok_043',TRUE,NULL),
-('Hugo Monteiro','700000034','2002-10-04','Barreiro','913400039','Masculino','hugo.34@student.pt','hash123',NULL,NULL,3,1,'tok_044',TRUE,NULL),
-('Inês Marques','700000035','2001-11-05','Almada','913400040','Feminino','ines.35@student.pt','hash123',NULL,NULL,3,1,'tok_045',TRUE,NULL),
-('Jorge Simões','700000036','2000-12-06','Seixal','913400041','Masculino','jorge.36@student.pt','hash123',NULL,NULL,3,1,'tok_046',TRUE,NULL),
-('Karina Batista','700000037','2002-01-07','Setúbal','913400042','Feminino','karina.37@student.pt','hash123',NULL,NULL,3,1,'tok_047',TRUE,NULL),
-('Luís Fonseca','700000038','2001-02-08','Moita','913400043','Masculino','luis.38@student.pt','hash123',NULL,NULL,3,1,'tok_048',TRUE,NULL),
-('Mariana Coelho','700000039','2000-03-09','Montijo','913400044','Feminino','mariana.39@student.pt','hash123',NULL,NULL,3,1,'tok_049',TRUE,NULL),
-('Nelson Pires','700000040','2002-04-10','Barreiro','913400045','Masculino','nelson.40@student.pt','hash123',NULL,NULL,3,1,'tok_050',TRUE,NULL),
-('Rui Matos','666777888','1976-04-12','Lisboa','914500001','Masculino','rui.matos@atec.pt','hash123',NULL,NULL,2,1,'tok_051',TRUE,NULL),
-('Sofia Pacheco','777888999','1984-09-18','Setúbal','914500002','Feminino','sofia.pacheco@atec.pt','hash123',NULL,NULL,2,1,'tok_052',TRUE,NULL),
-('Miguel Correia','888999000','1979-06-25','Almada','914500003','Masculino','miguel.correia@atec.pt','hash123',NULL,NULL,2,1,'tok_053',TRUE,NULL),
-('Patrícia Lopes','999000111','1987-02-14','Barreiro','914500004','Feminino','patricia.lopes@atec.pt','hash123',NULL,NULL,2,1,'tok_054',TRUE,NULL),
-('João Neves','111000222','1974-12-03','Montijo','914500005','Masculino','joao.neves@atec.pt','hash123',NULL,NULL,2,1,'tok_055',TRUE,NULL);
+('Admin1','999666555','1975-03-10','Palmela','999456123','Masculino','admin@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,1,1,'tok_001',TRUE,NULL),
+('Admin2','999666554','1975-03-10','Palmela','999456122','Masculino','admin2@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,1,1,'tok_001',TRUE,NULL),
+('Carlos Professor','111222333','1975-03-10','Palmela','912300001','Masculino','carlos@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_001',TRUE,NULL),
+('Ana Docente','222333444','1982-07-22','Setúbal','912300002','Feminino','ana@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_002',TRUE,NULL),
+('Leonor Joaquim','333444555','1978-11-05','Lisboa','912300003','Feminino','bruno@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_003',TRUE,NULL),
+('Daniela Instrutora','444555666','1985-01-30','Azeitão','912300004','Feminino','daniela@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_004',TRUE,NULL),
+('Eduardo Formador','555666777','1980-12-12','Pinhal Novo','912300005','Masculino','eduardo@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_005',TRUE,NULL),
+('Maria Aluna','999888777','2001-05-20','Palmela','913400001','Feminino','maria@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_006',TRUE,NULL),
+('José Silva','888777666','2000-09-15','Moita','913400002','Masculino','jose@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_007',TRUE,NULL),
+('Sara Santos','777666555','1999-02-28','Montijo','913400003','Feminino','sara@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_008',TRUE,NULL),
+('Pedro Rocha','666555444','2002-11-11','Palmela','913400004','Masculino','pedro@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_009',TRUE,NULL),
+('Inês Costa','555444333','2001-08-05','Setúbal','913400005','Feminino','ines@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_010',TRUE,NULL),
+('André Ferreira','700000001','2002-01-01','Setúbal','913400006','Masculino','andre.1@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_011',TRUE,NULL),
+('Beatriz Gomes','700000002','2001-02-02','Moita','913400007','Feminino','beatriz.2@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_012',TRUE,NULL),
+('Cláudio Lima','700000003','2000-03-03','Montijo','913400008','Masculino','claudio.3@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_013',TRUE,NULL),
+('Diana Santos','700000004','2002-04-04','Barreiro','913400009','Feminino','diana.4@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_014',TRUE,NULL),
+('Eduardo Silva','700000005','2001-05-05','Almada','913400010','Masculino','eduardo.5@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_015',TRUE,NULL),
+('Francisca Costa','700000006','2000-06-06','Seixal','913400011','Feminino','francisca.6@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_016',TRUE,NULL),
+('Gabriel Rodrigues','700000007','2002-07-07','Setúbal','913400012','Masculino','gabriel.7@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_017',TRUE,NULL),
+('Helena Martins','700000008','2001-08-08','Moita','913400013','Feminino','helena.8@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_018',TRUE,NULL),
+('Igor Pereira','700000009','2000-09-09','Montijo','913400014','Masculino','igor.9@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_019',TRUE,NULL),
+('Joana Alves','700000010','2002-10-10','Barreiro','913400015','Feminino','joana.10@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_020',TRUE,NULL),
+('Kevin Sousa','700000011','2001-11-11','Almada','913400016','Masculino','kevin.11@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_021',TRUE,NULL),
+('Laura Fernandes','700000012','2000-12-12','Seixal','913400017','Feminino','laura.12@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_022',TRUE,NULL),
+('Miguel Oliveira','700000013','2002-01-13','Setúbal','913400018','Masculino','miguel.13@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_023',TRUE,NULL),
+('Nádia Ribeiro','700000014','2001-02-14','Moita','913400019','Feminino','nadia.14@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_024',TRUE,NULL),
+('Orlando Carvalho','700000015','2000-03-15','Montijo','913400020','Masculino','orlando.15@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_025',TRUE,NULL),
+('Paula Teixeira','700000016','2002-04-16','Barreiro','913400021','Feminino','paula.16@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_026',TRUE,NULL),
+('Quintino Lopes','700000017','2001-05-17','Almada','913400022','Masculino','quintino.17@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_027',TRUE,NULL),
+('Rita Mendes','700000018','2000-06-18','Seixal','913400023','Feminino','rita.18@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_028',TRUE,NULL),
+('Sérgio Pinto','700000019','2002-07-19','Setúbal','913400024','Masculino','sergio.19@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_029',TRUE,NULL),
+('Tatiana Moreira','700000020','2001-08-20','Moita','913400025','Feminino','tatiana.20@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_030',TRUE,NULL),
+('Ulisses Nunes','700000021','2000-09-21','Montijo','913400026','Masculino','ulisses.21@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_031',TRUE,NULL),
+('Vera Correia','700000022','2002-10-22','Barreiro','913400027','Feminino','vera.22@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_032',TRUE,NULL),
+('Wagner Dias','700000023','2001-11-23','Almada','913400028','Masculino','wagner.23@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_033',TRUE,NULL),
+('Xavier Barros','700000024','2000-12-24','Seixal','913400029','Masculino','xavier.24@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_034',TRUE,NULL),
+('Yara Azevedo','700000025','2002-01-25','Setúbal','913400030','Feminino','yara.25@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_035',TRUE,NULL),
+('Zélia Campos','700000026','2001-02-26','Moita','913400031','Feminino','zelia.26@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_036',TRUE,NULL),
+('Afonso Ramos','700000027','2000-03-27','Montijo','913400032','Masculino','afonso.27@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_037',TRUE,NULL),
+('Bruna Freitas','700000028','2002-04-28','Barreiro','913400033','Feminino','bruna.28@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_038',TRUE,NULL),
+('Carlos Machado','700000029','2001-05-29','Almada','913400034','Masculino','carlos.29@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_039',TRUE,NULL),
+('Daniela Duarte','700000030','2000-06-30','Seixal','913400035','Feminino','daniela.30@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_040',TRUE,NULL),
+('Ernesto Vieira','700000031','2002-07-01','Setúbal','913400036','Masculino','ernesto.31@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_041',TRUE,NULL),
+('Fátima Castro','700000032','2001-08-02','Moita','913400037','Feminino','fatima.32@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_042',TRUE,NULL),
+('Gonçalo Cunha','700000033','2000-09-03','Montijo','913400038','Masculino','goncalo.33@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_043',TRUE,NULL),
+('Hugo Monteiro','700000034','2002-10-04','Barreiro','913400039','Masculino','hugo.34@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_044',TRUE,NULL),
+('Inês Marques','700000035','2001-11-05','Almada','913400040','Feminino','ines.35@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_045',TRUE,NULL),
+('Jorge Simões','700000036','2000-12-06','Seixal','913400041','Masculino','jorge.36@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_046',TRUE,NULL),
+('Karina Batista','700000037','2002-01-07','Setúbal','913400042','Feminino','karina.37@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_047',TRUE,NULL),
+('Luís Fonseca','700000038','2001-02-08','Moita','913400043','Masculino','luis.38@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_048',TRUE,NULL),
+('Mariana Coelho','700000039','2000-03-09','Montijo','913400044','Feminino','mariana.39@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_049',TRUE,NULL),
+('Nelson Pires','700000040','2002-04-10','Barreiro','913400045','Masculino','nelson.40@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_050',TRUE,NULL),
+('Rui Matos','666777888','1976-04-12','Lisboa','914500001','Masculino','rui.matos@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_051',TRUE,NULL), -- 50
+('Sofia Pacheco','777888999','1984-09-18','Setúbal','914500002','Feminino','sofia.pacheco@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_052',TRUE,NULL),
+('Miguel Correia','888999000','1979-06-25','Almada','914500003','Masculino','miguel.correia@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_053',TRUE,NULL),
+('Patrícia Lopes','999000111','1987-02-14','Barreiro','914500004','Feminino','patricia.lopes@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_054',TRUE,NULL),
+('João Neves','111000222','1974-12-03','Montijo','914500005','Masculino','joao.neves@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_055',TRUE,NULL);
 
 
 
@@ -365,13 +367,13 @@ INSERT INTO formadores (id_utilizador, iban, qualificacoes) VALUES
 (5, 'PT500005', 'Certificação Cisco'),
 (6, 'PT500006', 'Licenciado em Informática'),
 (7, 'PT500007', 'Especialista em Bases de Dados'),
-(56, 'PT600001', 'Especialista DevOps'),
-(57, 'PT600002', 'UX/UI Designer'),
-(58, 'PT600003', 'Engenheiro de Software'),
-(59, 'PT600004', 'Especialista Cibersegurança'),
-(60, 'PT600005', 'Administrador de Sistemas');
+(50, 'PT600001', 'Especialista DevOps'),
+(51, 'PT600002', 'UX/UI Designer'),
+(52, 'PT600003', 'Engenheiro de Software'),
+(53, 'PT600004', 'Especialista Cibersegurança'),
+(54, 'PT600005', 'Administrador de Sistemas');
 
--- FORMANDOS (Ligar aos restantes 5 utilizadores)
+-- FORMANDOS
 INSERT INTO formandos (id_utilizador, id_escolaridade) VALUES 
 (8, 2), (9, 2), (10, 3), (11, 2), (12, 4),
 (13, 2), (14, 3), (15, 2), (16, 4), (17, 2),
@@ -381,10 +383,7 @@ INSERT INTO formandos (id_utilizador, id_escolaridade) VALUES
 (33, 2), (34, 3), (35, 2), (36, 4), (37, 2),
 (38, 3), (39, 2), (40, 4), (41, 2), (42, 3),
 (43, 2), (44, 4), (45, 2), (46, 3), (47, 2),
-(48, 4), (49, 2), (50, 3), (51, 2), (52, 4),
-(53, 2), (54, 3), (55, 2), (56, 4), (57, 2),
-(58, 3), (59, 2), (60, 4), (61, 2), (62, 3),
-(63, 2), (64, 4), (65, 2);
+(48, 4), (49, 2);
 
 -- MÓDULOS (UFCDs comuns)
 INSERT INTO modulos (codigo_identificacao, nome, horas_totais, creditos, id_tipo_materia) VALUES
@@ -493,8 +492,11 @@ INSERT INTO formadores_tipo_materias (id_formador, id_tipo_materia) VALUES
 
 -- CURSOS
 INSERT INTO cursos (id_area, nome, descricao) VALUES 
-(1, 'TPSI - Programação', 'Especialista em Tecnologias e Programação'), (1, 'Cibersegurança', 'Gestão de Redes'),
-(2, 'Mecânica Industrial', 'Manutenção Automóvel'), (3, 'Eletrónica Aplicada', 'Circuitos'), (4, 'Gestão Escolar', 'Secretariado');
+(1, 'TPSI - Programação', 'Especialista em Tecnologias e Programação'),
+(1, 'Cibersegurança', 'Gestão de Redes'),
+(2, 'Mecânica Industrial', 'Manutenção Automóvel'), 
+(3, 'Eletrónica Aplicada', 'Circuitos'), 
+(4, 'Gestão Escolar', 'Secretariado');
 
 -- MATRIZ DE CURSOS
 INSERT INTO cursos_modulos (id_curso, id_modulo, prioridade) VALUES 
@@ -622,7 +624,8 @@ INSERT INTO salas (descricao, num_max_alunos, id_tipo_sala) VALUES
 ('Sala Tutoria', 8, 8),
 
 -- Outros
-('Ginásio', 25, 9);
+('Ginásio', 25, 9),
+('Online', 200, 10);
 
 
 -- ALOCAÇÕES (Quem dá o quê em cada turma)
@@ -658,7 +661,7 @@ INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES
 
 -- INSCRIÇÕES
 INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES 
--- Turma 1: TPSI-PAL-0525 (15 formandos)
+-- Turma 1: TPSI-PAL-0525
 (1, 1, '2025-10-01', 'Ativo'),
 (2, 1, '2025-10-02', 'Ativo'),
 (3, 1, '2025-10-03', 'Ativo'),
@@ -669,64 +672,46 @@ INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES
 (8, 1, '2025-10-08', 'Ativo'),
 (9, 1, '2025-10-09', 'Ativo'),
 (10, 1, '2025-10-10', 'Ativo'),
-(11, 1, '2025-10-11', 'Ativo'),
-(12, 1, '2025-10-12', 'Ativo'),
-(13, 1, '2025-10-13', 'Ativo'),
-(14, 1, '2025-10-14', 'Ativo'),
-(15, 1, '2025-10-15', 'Ativo'),
 
--- Turma 2: TPSI-PAL-0626 (12 formandos)
+-- Turma 2: TPSI-PAL-0626
+(11, 2, '2025-10-11', 'Ativo'),
+(12, 2, '2025-10-12', 'Ativo'),
+(13, 2, '2025-10-13', 'Ativo'),
+(14, 2, '2025-10-14', 'Ativo'),
+(15, 2, '2025-10-15', 'Ativo'),
 (16, 2, '2025-12-01', 'Ativo'),
 (17, 2, '2025-12-02', 'Ativo'),
 (18, 2, '2025-12-03', 'Ativo'),
 (19, 2, '2025-12-04', 'Ativo'),
 (20, 2, '2025-12-05', 'Ativo'),
 (21, 2, '2025-12-06', 'Ativo'),
-(22, 2, '2025-12-07', 'Ativo'),
-(23, 2, '2025-12-08', 'Ativo'),
-(24, 2, '2025-12-09', 'Ativo'),
-(25, 2, '2025-12-10', 'Ativo'),
-(26, 2, '2025-12-11', 'Ativo'),
-(27, 2, '2025-12-12', 'Ativo'),
 
--- Turma 3: CIBER-2025 (13 formandos)
+-- Turma 3: CIBER-2025
+(22, 3, '2025-12-07', 'Ativo'),
+(23, 3, '2025-12-08', 'Ativo'),
+(24, 3, '2025-12-09', 'Ativo'),
+(25, 3, '2025-12-10', 'Ativo'),
+(26, 3, '2025-12-11', 'Ativo'),
+(27, 3, '2025-12-12', 'Ativo'),
 (28, 3, '2025-08-01', 'Ativo'),
 (29, 3, '2025-08-02', 'Ativo'),
 (30, 3, '2025-08-03', 'Ativo'),
 (31, 3, '2025-08-04', 'Ativo'),
 (32, 3, '2025-08-05', 'Ativo'),
-(33, 3, '2025-08-06', 'Ativo'),
-(34, 3, '2025-08-07', 'Ativo'),
-(35, 3, '2025-08-08', 'Ativo'),
-(36, 3, '2025-08-09', 'Ativo'),
-(37, 3, '2025-08-10', 'Ativo'),
-(38, 3, '2025-08-11', 'Ativo'),
-(39, 3, '2025-08-12', 'Ativo'),
-(40, 3, '2025-08-13', 'Ativo'),
 
--- Turma 4: MEC-01 (10 formandos)
+-- Turma 4: MEC-01 
+(33, 4, '2025-08-06', 'Ativo'),
+(34, 4, '2025-08-07', 'Ativo'),
+(35, 4, '2025-08-08', 'Ativo'),
+(36, 4, '2025-08-09', 'Ativo'),
+(37, 4, '2025-08-10', 'Ativo'),
+(38, 4, '2025-08-11', 'Ativo'),
+(39, 4, '2025-08-12', 'Ativo'),
+(40, 4, '2025-08-13', 'Ativo'),
 (41, 4, '2026-01-10', 'Ativo'),
-(42, 4, '2026-01-11', 'Ativo'),
-(43, 4, '2026-01-12', 'Ativo'),
-(44, 4, '2026-01-13', 'Ativo'),
-(45, 4, '2026-01-14', 'Ativo'),
-(46, 4, '2026-01-15', 'Ativo'),
-(47, 4, '2026-01-16', 'Ativo'),
-(48, 4, '2026-01-17', 'Ativo'),
-(49, 4, '2026-01-18', 'Ativo'),
-(50, 4, '2026-01-19', 'Ativo'),
+(42, 4, '2026-01-11', 'Ativo');
 
--- Turma 5: ELET-01 (8 formandos)
-(51, 5, '2025-09-15', 'Ativo'),
-(52, 5, '2025-09-16', 'Ativo'),
-(53, 5, '2025-09-17', 'Ativo'),
-(54, 5, '2025-09-18', 'Ativo'),
-(55, 5, '2025-09-19', 'Ativo'),
-(56, 5, '2025-09-20', 'Ativo'),
-(57, 5, '2025-09-21', 'Ativo'),
-(58, 5, '2025-09-22', 'Ativo');
-
--- HORÁRIOS (Aulas marcadas para Janeiro e Fevereiro 2026)
+-- HORÁRIOS
 INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
 -- TURMA 1
 (1, 1, 1, 1, '2026-01-26', '09:00:00', '13:00:00'),
@@ -886,36 +871,9 @@ INSERT INTO avaliacoes (`id_avaliacao`, `id_inscricao`, `id_modulo`, `nota`, `da
 ('82', '32', '2', '17.25', '2025-09-15'),
 ('83', '32', '8', '18.00', '2025-09-20'),
 ('84', '32', '9', '17.75', '2025-09-25'),
-('85', '32', '22', '16.50', '2025-10-05'),
-
--- Turma 5: ELET-01 - Formando 51
-('86', '51', '3', '16.00', '2025-10-15'),
-('87', '51', '4', '17.50', '2025-10-20'),
-('88', '51', '5', '16.75', '2025-10-25'),
-
--- Turma 5: ELET-01 - Formando 52
-('89', '52', '3', '18.50', '2025-10-15'),
-('90', '52', '4', '19.00', '2025-10-20'),
-('91', '52', '5', '18.25', '2025-10-25'),
-
--- Turma 5: ELET-01 - Formando 53
-('92', '53', '3', '15.25', '2025-10-15'),
-('93', '53', '4', '14.75', '2025-10-20'),
-('94', '53', '5', '15.50', '2025-10-25'),
-
--- Turma 5: ELET-01 - Formando 54
-('95', '54', '3', '17.00', '2025-10-15'),
-('96', '54', '4', '16.50', '2025-10-20'),
-('97', '54', '5', '17.25', '2025-10-25'),
-
--- Turma 5: ELET-01 - Formando 55
-('98', '55', '3', '13.50', '2025-10-15'),
-('99', '55', '4', '14.00', '2025-10-20'),
-('100', '55', '5', '13.75', '2025-10-25');
+('85', '32', '22', '16.50', '2025-10-05');
 
 -- DISPONIBILIDADE DE FORMADORES
--- Disponibilidades para Janeiro e Fevereiro 2026
--- Cada formador tem disponibilidade em vários dias e horários
 
 INSERT INTO disponibilidade_formadores (id_formador, data_disponivel, hora_inicio, hora_fim) VALUES 
 -- Formador 1 (Carlos Professor) - Disponível Seg/Qua/Sex manhãs e tardes
