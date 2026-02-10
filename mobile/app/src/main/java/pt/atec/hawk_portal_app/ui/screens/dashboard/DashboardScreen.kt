@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -23,64 +27,97 @@ fun DashboardScreen(
     onSalas: () -> Unit,
     onLogout: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFF014D4E)
     ) {
-
-        Text("Dashboard")
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onCursos,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF014D4E))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Cursos")
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Dashboard",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onFormandos,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF014D4E))
-        ) {
-            Text("Formandos")
-        }
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
+            DashboardButton(
+                text = "Cursos",
+                onClick = onCursos
+            )
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onFormadores,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF014D4E))
-        ) {
-            Text("Formadores")
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
+            DashboardButton(
+                text = "Formandos",
+                onClick = onFormandos
+            )
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onSalas,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF014D4E))
-        ) {
-            Text("Disponibilidade de Salas")
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
+            DashboardButton(
+                text = "Formadores",
+                onClick = onFormadores
+            )
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onLogout,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF014D4E))
-        ) {
-            Text("Logout")
+            Spacer(modifier = Modifier.height(16.dp))
+
+            DashboardButton(
+                text = "Disponibilidade de Salas",
+                onClick = onSalas
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = onLogout,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White.copy(alpha = 0.85f),
+                    contentColor = Color(0xFF014D4E)
+                )
+            ) {
+                Text(
+                    text = "Logout",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
+
+@Composable
+fun DashboardButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Color(0xFF014D4E)
+        )
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
 

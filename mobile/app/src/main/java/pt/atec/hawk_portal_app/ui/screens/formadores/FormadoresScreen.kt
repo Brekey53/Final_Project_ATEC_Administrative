@@ -145,13 +145,11 @@ fun FormadorItem(formador: Formador) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                if (!formador.qualificacoes.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = formador.qualificacoes,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = formador.qualificacoes ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }

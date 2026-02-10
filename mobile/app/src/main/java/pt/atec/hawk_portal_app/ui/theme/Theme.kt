@@ -27,9 +27,9 @@ private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40,
-    background = Color(0xFFF6F8F8), // Fundo claro para os Cards saltarem à vista
-    surface = Color.White,          // Cor dos Cards
-    onBackground = GreenApp,        // Texto principal no tom de verde
+    background = Color(0xFFF6F8F8),
+    surface = Color.White,
+    onBackground = GreenApp,
     onSurface = Color.Black
 
     /* Other default colors to override
