@@ -2,11 +2,13 @@ package pt.atec.hawk_portal_app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.model.Verify2FARequest
+import pt.atec.hawk_portal_app.states.ApiError
 
 class TwoFactorViewModel : ViewModel() {
 
@@ -21,6 +23,7 @@ class TwoFactorViewModel : ViewModel() {
 
     fun verifyCode(email: String, code: String) {
         viewModelScope.launch {
+            val gson = Gson()
             _isLoading.value = true
             _error.value = null
 
@@ -35,8 +38,16 @@ class TwoFactorViewModel : ViewModel() {
                         _error.value = "Resposta inválida do servidor"
                     }
                 } else {
-                    _error.value = response.errorBody()?.string()
-                        ?: "Código inválido"
+
+                    val errorBody = response.errorBody()?.string()
+
+                    _error.value = try {
+                        gson.fromJson(errorBody, ApiError::class.java)?.message ?: "Código inválido"
+                    } catch (e: Exception) {
+                        "Código inválido"
+
+                    }
+
                 }
 
             } catch (e: Exception) {
@@ -45,5 +56,9 @@ class TwoFactorViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }

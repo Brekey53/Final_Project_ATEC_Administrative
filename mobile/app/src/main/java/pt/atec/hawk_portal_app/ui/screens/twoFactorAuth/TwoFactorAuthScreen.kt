@@ -25,7 +25,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.atec.hawk_portal_app.dataStore.TokenDataStore
 import pt.atec.hawk_portal_app.model.AuthSession
@@ -90,7 +93,10 @@ fun TwoFactorAuthScreen(
 
             TextField(
                 value = code,
-                onValueChange = { if (it.length <= 6) code = it },
+                onValueChange = {
+                    if (it.length <= 6) code = it
+                    if (error != null) viewModel.clearError()
+                },
                 label = { Text("Código de 6 dígitos") },
                 singleLine = true,
                 modifier = Modifier
@@ -128,11 +134,21 @@ fun TwoFactorAuthScreen(
             }
 
             if (error != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = error!!,
-                    color = Color(0xFFFFCDD2)
-                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Surface(
+                    color = Color.Red.copy(alpha = 0.1f), // Subtle red background
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = error!!,
+                        color = Color(0xFFFEB2B1),
+                        modifier = Modifier.padding(12.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
