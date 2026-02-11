@@ -1,4 +1,6 @@
 package pt.atec.hawk_portal_app.model
 
-class Modulos {
-}
+data class Modulos(
+    val id: Int,
+    val nome: String
+)
