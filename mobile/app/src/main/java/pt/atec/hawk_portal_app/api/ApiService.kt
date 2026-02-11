@@ -1,5 +1,6 @@
 package pt.atec.hawk_portal_app.api
 
+import pt.atec.hawk_portal_app.model.DisponibilidadeSalas
 import pt.atec.hawk_portal_app.model.Formador
 import pt.atec.hawk_portal_app.model.Formando
 import pt.atec.hawk_portal_app.model.LoginRequest
@@ -10,6 +11,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -47,6 +49,18 @@ interface ApiService {
     suspend fun verify2FA(
         @Body request: Verify2FARequest
     ): Response<Verify2FAResponse>
+
+
+    /**
+     * GET às salas disponiveis
+     */
+    @GET("salas/disponiveis")
+    suspend fun getSalasDisponiveis(
+        @Query("data") data: String,
+        @Query("inicio") inicio: String,
+        @Query("fim") fim: String,
+        @Query("idCursoModulo") idCursoModulo: Int?
+    ): Response<List<DisponibilidadeSalas>>
 
 }
 
