@@ -171,19 +171,19 @@ private fun FiltrosSalas(
 
             CampoFiltro(
                 value = state.dataTexto,
-                onValueChange = viewModel::onDataTextoAlterado,
+                onValueChange = viewModel::DataTextoAlterado,
                 label = "Data (yyyy-MM-dd)"
             )
 
             CampoFiltro(
                 value = state.horaInicioTexto,
-                onValueChange = viewModel::onHoraInicioTextoAlterado,
+                onValueChange = viewModel::HoraInicioTextoAlterado,
                 label = "Hora início (HH:mm)"
             )
 
             CampoFiltro(
                 value = state.horaFimTexto,
-                onValueChange = viewModel::onHoraFimTextoAlterado,
+                onValueChange = viewModel::HoraFimTextoAlterado,
                 label = "Hora fim (HH:mm)"
             )
 
