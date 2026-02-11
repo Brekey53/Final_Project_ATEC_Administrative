@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pt.atec.hawk_portal_app.model.AuthSession
+import pt.atec.hawk_portal_app.ui.screens.cursos.CursosScreen
 import pt.atec.hawk_portal_app.ui.screens.dashboard.DashboardScreen
 import pt.atec.hawk_portal_app.ui.screens.disponibilidadeSalas.DisponibilidadeSalasScreen
 import pt.atec.hawk_portal_app.ui.screens.formadores.FormadoresScreen
@@ -99,6 +100,10 @@ fun AppNavigation() {
 
         composable(Routes.DISPONIBILIDADE_SALAS) {
             DisponibilidadeSalasScreen()
+        }
+
+        composable(Routes.CURSOS) {
+            CursosScreen()
         }
     }
 }
