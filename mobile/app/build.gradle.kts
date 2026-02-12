@@ -67,6 +67,8 @@ dependencies {
     //fotos
     implementation(libs.coil.compose)
 
+    //DataPicker
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
 
     // Datastore para token
     implementation("androidx.datastore:datastore-preferences:1.1.1")
