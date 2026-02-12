@@ -7,7 +7,8 @@
         public TimeOnly HoraInicio { get; set; }
         public TimeOnly HoraFim { get; set; }
 
-        public string NomeCurso { get; set; } = string.Empty;
+        public string NomeTurma { get; set; } = string.Empty;
         public string NomeSala { get; set; } = string.Empty;
+        public string NomeModulo { get; set; } = string.Empty;
     }
 }
