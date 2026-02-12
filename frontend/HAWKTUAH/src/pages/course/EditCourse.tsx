@@ -35,7 +35,9 @@ export default function EditCourse() {
         setModulosDisponiveis(modulosRes);
       })
       .catch(() => {
-        toast.error("Erro ao carregar dados do curso.");
+        toast.error("Erro ao carregar dados do curso.",
+          {id: "error-modulos"}
+        );
         navigate("/gerir-cursos");
       })
       .finally(() => setFetching(false));
@@ -51,7 +53,9 @@ export default function EditCourse() {
     if (!modulo) return;
 
     if (curso.modulos.some((m) => m.idModulo === modulo.idModulo)) {
-      toast.error("Este módulo já está associado.");
+      toast.error("Este módulo já está associado.",
+        {id: "error-modulos-associado"}
+      );
       return;
     }
 
