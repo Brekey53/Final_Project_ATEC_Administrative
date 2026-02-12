@@ -106,6 +106,7 @@ fun LoginScreen(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
                     focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = Color(0xFF014D4E)
                 )
             )
@@ -127,7 +128,7 @@ fun LoginScreen(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
                     focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = Color(0xFF014D4E)
                 )
             )

@@ -109,7 +109,9 @@ fun TwoFactorAuthScreen(
                     unfocusedContainerColor = Color.White.copy(alpha = 0.95f),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color(0xFF014D4E)
+                    cursorColor = Color(0xFF014D4E),
+                    focusedLabelColor = Color(0xFF014D4E),
+                    unfocusedLabelColor = Color(0xFF014D4E)
                 )
             )
 
