@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO;
 using ProjetoAdministracaoEscola.ModelsDTO.Formador;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
+using ProjetoAdministracaoEscola.ModelsDTO.TipoMateria;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
