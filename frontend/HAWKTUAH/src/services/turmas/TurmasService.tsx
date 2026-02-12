@@ -8,7 +8,7 @@ export interface Turma {
   dataInicio: string;
   dataFim: string;
   nomeCurso: string;
-  estado: "Para começar" | "A decorrer" | "Terminado";
+  estado: "Para começar" | "A decorrer" | "Terminada";
   idMetodologia: number;
 }
 
@@ -24,7 +24,6 @@ export async function getTurmasGeralDashboard() {
   return res.data;
 }
 
-
 export async function getTurma(idTurma: string) {
   const res = await axios.get(`${API_BASE_URL}/turmas/${idTurma}`);
 
@@ -35,11 +34,11 @@ export async function deleteTurma(idTurma: number) {
   return axios.delete(`${API_BASE_URL}/turmas/${idTurma}`);
 }
 
-export async function postNewTurma(data: any) {
+export async function postNewTurma(data: CreateTurmaDTO) {
   return axios.post(`${API_BASE_URL}/turmas`, data);
 }
 
-export async function updateTurma(idTurma: string, data: any) {
+export async function updateTurma(idTurma: string, data: UpdateTurmaDTO) {
   const res = await axios.put(`${API_BASE_URL}/turmas/${idTurma}`, data);
   return res.data;
 }
@@ -54,7 +53,22 @@ export async function getMetodologias() {
   return res.data;
 }
 
+export interface CreateTurmaDTO {
+  nomeTurma: string;
+  dataInicio: string;
+  dataFim: string;
+  idCurso: number;
+  idMetodologia: number;
+}
 
+export interface UpdateTurmaDTO {
+  idTurma: number;
+  nomeTurma: string;
+  dataInicio: string;
+  dataFim: string;
+  idCurso: number;
+  idMetodologia: number;
+}
 
 export type TurmaFormadorDTO = {
   idTurma: number;
@@ -64,9 +78,8 @@ export type TurmaFormadorDTO = {
   nomeModulo: string;
   horasDadas: number;
   horasTotaisModulo: number;
-  estado: "Para começar" | "A decorrer" | "Terminado";
+  estado: "Para começar" | "A decorrer" | "Terminada";
 };
-
 
 export async function getTurmasFormador() {
   const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador`);
@@ -74,7 +87,9 @@ export async function getTurmasFormador() {
 }
 
 export async function getTurmasFormadorHorario(idFormador: number) {
-  const res = await axios.get(`${API_BASE_URL}/TurmaAlocacao/turmas/formador/${idFormador}`);
+  const res = await axios.get(
+    `${API_BASE_URL}/TurmaAlocacao/turmas/formador/${idFormador}`,
+  );
   return res.data;
 }
 
@@ -108,7 +123,6 @@ export async function postTurmaAvaliacao(avaliacoes: DarAvaliacaoDTO[]) {
   );
   return res.data;
 }
-
 
 export interface Colega {
   id: number;
@@ -146,14 +160,20 @@ export interface MinhaTurma {
 }
 
 export async function getMinhaTurma(): Promise<MinhaTurma> {
-  const res = await axios.get(
-    `${API_BASE_URL}/turmas/minha-turma`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    }
-  );
+  const res = await axios.get(`${API_BASE_URL}/turmas/minha-turma`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
 
   return res.data;
+}
+
+export interface Metodologia {
+  idMetodologia: number;
+  nome: string;
+  horarioInicio: string;
+  horarioFim: string;
+  pausaRefeicaoInicio: string;
+  pausaRefeicaoFim: string;
 }

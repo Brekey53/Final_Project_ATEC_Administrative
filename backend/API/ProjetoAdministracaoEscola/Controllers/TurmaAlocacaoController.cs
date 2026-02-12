@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
@@ -13,6 +11,7 @@ using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TurmaAlocacaoController : ControllerBase
@@ -25,14 +24,30 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém a lista de turmas e módulos associados ao formador autenticado,
-        /// incluindo o número de horas dadas, horas totais do módulo e o estado atual
-        /// (Para começar, A decorrer ou Terminado).
+        /// Obtém a lista de turmas e módulos atribuídos ao formador autenticado.
         /// </summary>
+        /// <remarks>
+        /// Para cada alocação são devolvidos:
+        /// - Identificação da turma
+        /// - Curso associado
+        /// - Módulo lecionado
+        /// - Total de horas já dadas até à data atual
+        /// - Total de horas previstas para o módulo
+        /// - Estado atual do módulo:
+        ///     • "Para começar" (0 horas dadas)
+        ///     • "A decorrer" (horas dadas inferiores ao total)
+        ///     • "Terminado" (horas dadas iguais ou superiores ao total)
+        ///
+        /// Apenas utilizadores com política "Formador" podem aceder.
+        /// </remarks>
         /// <returns>
-        /// Lista de turmas e módulos atribuídos ao formador autenticado.
+        /// Lista de <see cref="TurmaFormadorDTO"/>.
         /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="400">Utilizador autenticado não é formador.</response>
         [HttpGet("turmas/formador")]
+        [Authorize(Policy = "Formador")]
         public async Task<ActionResult<IEnumerable<TurmaFormadorDTO>>> GetTurmasDoFormador()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -111,13 +126,26 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém a lista de turmas e módulos associados ao formador com Id inserido no parametro do metodo,
-        /// incluindo o número de horas dadas, horas totais do módulo e o estado atual
-        /// (Para começar, A decorrer ou Terminado).
+        /// Obtém a lista de turmas e módulos atribuídos a um formador específico.
         /// </summary>
+        /// <param name="idFormador">Identificador do formador.</param>
+        /// <remarks>
+        /// Para cada módulo são devolvidos:
+        /// - Horas já dadas
+        /// - Horas totais previstas
+        /// - Horas já agendadas
+        /// - Estado atual com indicação do progresso
+        ///
+        /// Apenas módulos que ainda não estejam terminados são incluídos na resposta.
+        /// </remarks>
         /// <returns>
-        /// Lista de turmas e módulos atribuídos ao formador.
+        /// Lista de <see cref="TurmaFormadorModuloCursoDTO"/>.
         /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        /// <response code="400">Formador não encontrado.</response>
+        /// <response code="403">Acesso negado.</response> e módulos atribuídos ao formador.
+        /// </returns>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("turmas/formador/{idFormador}")]
         public async Task<ActionResult<IEnumerable<TurmaFormadorDTO>>> GetTurmasDoFormador(int idFormador)
         {
@@ -177,11 +205,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                     cm.IdModulo == a.IdModulo
                 );
 
-                // Se por algum motivo a matriz do curso estiver mal configurada, ignoramos esta linha
                 if (cursoModulo == null) continue;
 
-                // Filtro opcional: Se quiseres mostrar APENAS o que ele pode agendar,
-                // podes descomentar a linha abaixo para esconder os módulos terminados:
                 if (estado == "Terminado") continue;
 
                 resultado.Add(new TurmaFormadorModuloCursoDTO
@@ -204,13 +229,25 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         /// <summary>
         /// Obtém as avaliações dos formandos de uma determinada turma e módulo.
-        /// Caso o formando ainda não tenha avaliação, a nota é devolvida como nula.
         /// </summary>
-        /// <param name="turmaId">Id da turma.</param>
-        /// <param name="moduloId">Id do módulo.</param>
+        /// <param name="turmaId">Identificador da turma.</param>
+        /// <param name="moduloId">Identificador do módulo.</param>
+        /// <remarks>
+        /// Para cada formando inscrito na turma é devolvido:
+        /// - Identificador da inscrição
+        /// - Identificador do formando
+        /// - Nome do formando
+        /// - Nota atribuída ao módulo (caso exista)
+        ///
+        /// Se o formando ainda não tiver avaliação registada,
+        /// o campo Nota é devolvido com valor nulo.
+        /// </remarks>
         /// <returns>
-        /// Lista de formandos com a respetiva avaliação no módulo indicado.
+        /// Lista de <see cref="AvaliacaoAlunoDTO"/>.
         /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        /// <response code="403">Acesso negado.</response>
+        [Authorize(Policy = "Formador")]
         [HttpGet("avaliacoes")]
         public async Task<ActionResult<IEnumerable<AvaliacaoAlunoDTO>>> GetAvaliacoes(int turmaId, int moduloId)
         {
@@ -233,16 +270,30 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Guarda ou atualiza as avaliações dos formandos para um determinado módulo.
-        /// Se a avaliação já existir, a nota é atualizada; caso contrário, é criada uma nova.
+        /// Regista ou atualiza avaliações de formandos para um determinado módulo.
         /// </summary>
         /// <param name="avaliacoes">
-        /// Lista de avaliações a registar, contendo o identificador da inscrição,
-        /// do módulo e a respetiva nota.
+        /// Lista de objetos contendo:
+        /// - IdInscricao
+        /// - IdModulo
+        /// - Nota (0 a 20)
         /// </param>
+        /// <remarks>
+        /// Regras aplicadas:
+        /// - Se já existir avaliação para a inscrição e módulo, a nota é atualizada.
+        /// - Caso contrário, é criada uma nova avaliação.
+        /// - As notas devem estar no intervalo 0–20.
+        /// - A data da avaliação é definida automaticamente como a data atual.
+        /// 
+        /// Apenas utilizadores com política "Formador" podem executar esta operação.
+        /// </remarks>
         /// <returns>
-        /// Resultado da operação de gravação das avaliações.
+        /// Resultado da operação.
         /// </returns>
+        /// <response code="200">Avaliações guardadas com sucesso.</response>
+        /// <response code="400">Lista inválida ou notas fora do intervalo permitido.</response>
+        /// <response code="403">Acesso negado.</response>
+        [Authorize(Policy = "Formador")]
         [HttpPost("avaliacoes")]
         public async Task<IActionResult> GuardarAvaliacoes(List<DarAvaliacaoDTO> avaliacoes)
         {
@@ -284,12 +335,20 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Calcula o número total de horas dadas com base numa lista de horários.
-        /// Apenas são consideradas as sessões em que a hora de fim é superior à hora de início.
+        /// Calcula o total de horas lecionadas com base numa coleção de horários.
         /// </summary>
-        /// <param name="horarios">Coleção de horários</param>
-        /// <returns>Total de horas dadas.</returns>
-        public static double CalcularHorasDadas(IEnumerable<Horario> horarios)
+        /// <param name="horarios">
+        /// Coleção de entidades <see cref="Horario"/> a analisar.
+        /// </param>
+        /// <remarks>
+        /// Apenas são consideradas sessões válidas, isto é, aquelas em que 
+        /// <c>HoraFim</c> é superior a <c>HoraInicio</c>.
+        /// Sessões inválidas contribuem com 0 horas para o total.
+        /// </remarks>
+        /// <returns>
+        /// Total de horas lecionadas expresso em valor decimal.
+        /// </returns>
+        private static double CalcularHorasDadas(IEnumerable<Horario> horarios)
         {
             return horarios.Sum(h =>
             {
@@ -301,10 +360,24 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém os formadores alocados a uma determinada turma,
-        /// incluindo os módulos que cada um leciona.
-        /// 
+        /// Obtém os formadores alocados a uma turma específica,
+        /// incluindo os módulos que lecionam e o total de horas já dadas.
         /// </summary>
+        /// <param name="idTurma">Identificador da turma.</param>
+        /// <remarks>
+        /// Para cada formador é devolvido:
+        /// - Identificação do formador
+        /// - Módulo lecionado
+        /// - Total de horas dadas até à data atual
+        /// 
+        /// Apenas são consideradas horas com data igual ou anterior ao dia atual.
+        /// </remarks>
+        /// <returns>
+        /// Lista de <see cref="FormadorTurmaDTO"/>.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        /// <response code="404">Turma não encontrada.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("turma/{idTurma}/formadores")]
         public async Task<ActionResult<IEnumerable<FormadorTurmaDTO>>> GetFormadoresDaTurma(int idTurma)
         {
@@ -338,7 +411,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     NomeFormador = a.IdFormadorNavigation.IdUtilizadorNavigation.Nome,
                     IdModulo = a.IdModulo,
                     NomeModulo = a.IdModuloNavigation.Nome,
-                    HorasDadas = TurmaAlocacaoController.CalcularHorasDadas(horasDadas)
+                    HorasDadas = CalcularHorasDadas(horasDadas)
                 };
             })
             .OrderBy(r => r.NomeModulo)
@@ -349,11 +422,21 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém a lista de todos os módulos de uma turma que ainda não foram alocados a um formador
+        /// Obtém a lista de módulos de uma turma que ainda não estão alocados a nenhum formador.
         /// </summary>
-        /// <param name="idTurma">Id da turma</param>
-        /// <returns>Lista de módulos disponiveis</returns>
-
+        /// <param name="idTurma">Identificador da turma.</param>
+        /// <remarks>
+        /// São considerados apenas os módulos pertencentes ao curso da turma
+        /// que ainda não tenham registo na tabela de alocações.
+        /// 
+        /// A resposta inclui também o tipo de matéria associado ao módulo.
+        /// </remarks>
+        /// <returns>
+        /// Lista de módulos disponíveis para alocação.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        /// <response code="404">Turma não encontrada.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("turma/{idTurma}/modulos-disponiveis")]
         public async Task<IActionResult> GetModulosDisponiveis(int idTurma)
         {
@@ -389,10 +472,20 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém a lista de formadores capacitado para lecionar determinado módulo consoante a matéria
+        /// Obtém a lista de formadores habilitados a lecionar um determinado tipo de matéria.
         /// </summary>
-        /// <param name="idTipoMateria">Recebe o id tipo de matéria do Módulo selecionado</param>
-        /// <returns>Lista formadores que podem dar aquele módulo</returns>
+        /// <param name="idTipoMateria">
+        /// Identificador do tipo de matéria associado ao módulo.
+        /// </param>
+        /// <remarks>
+        /// Apenas são devolvidos formadores que possuam registo de habilitação
+        /// para o tipo de matéria indicado.
+        /// </remarks>
+        /// <returns>
+        /// Lista de formadores elegíveis.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("tipo-materia/{idTipoMateria}")]
         public async Task<IActionResult> GetFormadoresPorTipoMateria(int idTipoMateria)
         {
@@ -412,11 +505,23 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Criar uma entrada na tabela turmaAlocacao para um formador lecionar um módulo
-        /// numa determinada turma
+        /// Cria uma nova alocação de formador a um módulo numa determinada turma.
         /// </summary>
-        /// <param name="dto">Recebe idTurma, idFormador e idModulo para criar entrada na bd</param>
-        /// <returns></returns>
+        /// <param name="dto">
+        /// Objeto contendo:
+        /// - IdTurma
+        /// - IdModulo
+        /// - IdFormador
+        /// </param>
+        /// <remarks>
+        /// Não é permitido alocar o mesmo módulo duas vezes à mesma turma.
+        /// </remarks>
+        /// <returns>
+        /// Resultado da operação.
+        /// </returns>
+        /// <response code="200">Alocação criada com sucesso.</response>
+        /// <response code="400">O módulo já se encontra alocado à turma.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost]
         public async Task<IActionResult> AlocarFormador(CriarTurmaAlocacaoDTO dto)
         {
@@ -440,12 +545,28 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Elimina entrada na tabela turmaAlocacao desde que não existam ainda horas dadas naquele módulo e desde que não haja entrada criada na tabela horários
+        /// Remove a alocação de um formador a um módulo de uma turma.
         /// </summary>
-        /// <param name="idTurma"> idturma</param>
-        /// <param name="idFormador">idformador</param>
-        /// <param name="idModulo">id modulo</param>
-        /// <returns></returns>
+        /// <param name="idTurma">Identificador da turma.</param>
+        /// <param name="idFormador">Identificador do formador.</param>
+        /// <param name="idModulo">Identificador do módulo.</param>
+        /// <remarks>
+        /// A remoção só é permitida se:
+        /// - Não existirem horas já lecionadas para o módulo.
+        /// - Não existirem horários registados associados à alocação.
+        /// 
+        /// Caso contrário, a operação é bloqueada para garantir integridade dos dados.
+        /// </remarks>
+        /// <returns>
+        /// Resultado da operação.
+        /// </returns>
+        /// <response code="204">Alocação removida com sucesso.</response>
+        /// <response code="404">Alocação não encontrada.</response>
+        /// <response code="409">
+        /// Não é possível remover: já existem aulas dadas ou horários registados.
+        /// </response>
+        /// <response code="400">Matriz curso-módulo inválida.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("turma/{idTurma}/formador/{idFormador}/modulo/{idModulo}")]
         public async Task<IActionResult> RemoverFormadorDaTurma(
             int idTurma,
@@ -508,8 +629,5 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return NoContent();
         }
-
-
-
     }
 }

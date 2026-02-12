@@ -1,25 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { postNewModulo } from "../../services/modules/ModuleService";
+import {
+  postNewModulo,
+  getTiposMateria,
+} from "../../services/modules/ModuleService";
 import { useNavigate } from "react-router-dom";
 
 export default function AddNewModule() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const [tiposMateria, setTiposMateria] = useState<any[]>([]);
+
   const [formData, setFormData] = useState({
     nome: "",
     codigoIdentificacao: "",
     horasTotais: 0,
     creditos: 0,
+    idTipoMateria: 0,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const fetchTipos = async () => {
+      try {
+        const res = await getTiposMateria();
+        setTiposMateria(res);
+      } catch {
+        toast.error("Erro ao carregar tipos de matéria.", {
+          id: "erro-carregar-modulos",
+        });
+      }
+    };
+
+    fetchTipos();
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
+
     setFormData({
       ...formData,
       [name]:
-        name === "horasTotais" || name === "creditos" ? Number(value) : value,
+        name === "horasTotais" ||
+        name === "creditos" ||
+        name === "idTipoMateria"
+          ? Number(value)
+          : value,
     });
   };
 
@@ -134,6 +162,26 @@ export default function AddNewModule() {
                   onChange={handleChange}
                   required
                 />
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-8 mb-3">
+                <label className="form-label fw-bold">Tipo de Matéria</label>
+                <select
+                  name="idTipoMateria"
+                  className="form-select"
+                  value={formData.idTipoMateria}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Selecionar</option>
+                  {tiposMateria.map((tipo) => (
+                    <option key={tipo.idTipoMateria} value={tipo.idTipoMateria}>
+                      {tipo.tipo}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

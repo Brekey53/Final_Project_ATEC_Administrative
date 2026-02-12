@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
@@ -8,14 +6,11 @@ using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Formador;
 using ProjetoAdministracaoEscola.ModelsDTO.GetMinhaTurma;
 using ProjetoAdministracaoEscola.ModelsDTO.Turma;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TurmasController : ControllerBase
@@ -28,12 +23,25 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Devolve a lista de todas as turmas registadas no sistema,
-        /// incluindo informação do curso associado e o estado atual da turma
-        /// (Para começar, A decorrer ou Terminada).
+        /// Obtém a lista completa de turmas registadas no sistema.
         /// </summary>
-        /// <returns>Lista de turmas em formato DTO.</returns>
+        /// <remarks>
+        /// Para cada turma são devolvidos:
+        /// - Identificação da turma
+        /// - Curso associado
+        /// - Metodologia de horário
+        /// - Datas de início e fim
+        /// - Estado atual calculado automaticamente:
+        ///     "Para começar"
+        ///     "A decorrer"
+        ///     "Terminada"
+        /// </remarks>
+        /// <returns>
+        /// Lista de <see cref="TurmaDTO"/>.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
         // GET: api/Turmas
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TurmaDTO>>> GetTurmas()
         {
@@ -55,6 +63,19 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtém a lista de metodologias de horário disponíveis.
+        /// </summary>
+        /// <remarks>
+        /// Cada metodologia inclui:
+        /// - Intervalo horário diário
+        /// - Período de pausa para refeição
+        /// </remarks>
+        /// <returns>
+        /// Lista de <see cref="MetodologiaDTO"/>.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        [Authorize]
         [HttpGet("metodologias")]
         public async Task<ActionResult<IEnumerable<MetodologiaDTO>>> GetMetodologias()
         {
@@ -72,11 +93,18 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém todas as turmas cuja data de início é posterior à data atual,
-        /// ordenadas pela data de início.
+        /// Obtém todas as turmas cuja data de início é posterior à data atual.
         /// </summary>
-        /// <returns>Lista de próximas turmas em formato DTO.</returns>
+        /// <remarks>
+        /// As turmas são devolvidas ordenadas por data de início crescente.
+        /// Apenas são consideradas turmas futuras.
+        /// </remarks>
+        /// <returns>
+        /// Lista de <see cref="TurmaDTO"/> correspondentes às próximas turmas.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
         // GET: api/proximasturmas
+        [Authorize]
         [HttpGet("proximasturmas")]
         public async Task<ActionResult<IEnumerable<TurmaDTO>>> GetProximasTurmas()
         {
@@ -101,34 +129,60 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém uma turma específica através do seu id.
+        /// Obtém os dados de uma turma específica através do seu identificador.
         /// </summary>
-        /// <param name="id">id da turma.</param>
-        /// <returns>Objeto Turma correspondente ou NotFound se não existir.</returns>
+        /// <param name="id">Identificador da turma.</param>
+        /// <returns>
+        /// DTO <see cref="GetTurmaPorIdDTO"/>.
+        /// </returns>
+        /// <response code="200">Turma encontrada.</response>
+        /// <response code="404">Turma não encontrada.</response>
         // GET: api/Turmas/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Turma>> GetTurma(int id)
+        public async Task<ActionResult<GetTurmaPorIdDTO>> GetTurma(int id)
         {
-            var turma = await _context.Turmas.FindAsync(id);
+            var turma = await _context.Turmas
+                .Where(t => t.IdTurma == id)
+                .Select(t => new GetTurmaPorIdDTO
+                {
+                    IdTurma = t.IdTurma,
+                    NomeTurma = t.NomeTurma,
+                    DataInicio = t.DataInicio,
+                    DataFim = t.DataFim,
+                    IdCurso = t.IdCurso,
+                    NomeCurso = t.IdCursoNavigation.Nome,
+                    IdMetodologia = t.IdMetodologia,
+                    NomeMetodologia = t.IdMetodologiaNavigation.Nome,
+                    Estado = CalcularEstadoTurma(t.DataInicio, t.DataFim)
+                })
+                .FirstOrDefaultAsync();
 
             if (turma == null)
-            {
                 return NotFound();
-            }
 
-            return turma;
+            return Ok(turma);
         }
 
         /// <summary>
         /// Atualiza os dados de uma turma existente.
         /// </summary>
-        /// <param name="id">Id da turma a atualizar.</param>
-        /// <param name="turmadto">Objeto DTO com os novos dados da turma.</param>
+        /// <param name="id">Identificador da turma a atualizar.</param>
+        /// <param name="turmadto">Objeto com os novos dados da turma.</param>
+        /// <remarks>
+        /// Atualiza:
+        /// - Nome da turma
+        /// - Datas
+        /// - Curso associado
+        /// - Metodologia
+        /// </remarks>
         /// <returns>
-        /// Resultado da operação de atualização.
+        /// Resultado da operação.
         /// </returns>
+        /// <response code="200">Turma atualizada com sucesso.</response>
+        /// <response code="400">Turma não encontrada ou dados inválidos.</response>
         // PUT: api/Turmas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTurma(int id, TurmaDTO turmadto)
         {
@@ -138,6 +192,12 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 return BadRequest(new { message = "Erro ao carregar a turma." });
             }
+
+            if(turmadto.DataFim <= turmadto.DataInicio)
+            {
+                return BadRequest(new { message = "A data de fim não pode ser anterior à data início." });
+            }
+
             turma.IdTurma = turmadto.IdTurma;
             turma.NomeTurma = turmadto.NomeTurma;
             turma.DataInicio = turmadto.DataInicio;
@@ -152,14 +212,19 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         /// <summary>
         /// Cria uma nova turma no sistema.
-        /// Valida se já existe uma turma com o mesmo nome.
         /// </summary>
-        /// <param name="turmadto">Objeto DTO com os dados da nova turma.</param>
+        /// <param name="turmadto">Dados da nova turma.</param>
+        /// <remarks>
+        /// Valida:
+        /// - Existência prévia de turma com o mesmo nome.
+        /// </remarks>
         /// <returns>
-        /// Resultado da operação de criação da turma.
+        /// Resultado da operação.
         /// </returns>
+        /// <response code="200">Turma criada com sucesso.</response>
+        /// <response code="400">Já existe turma com o mesmo nome ou erro de validação.</response>
         // POST: api/Turmas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost]
         public async Task<IActionResult> PostTurma([FromForm] TurmaDTO turmadto)
         {
@@ -170,6 +235,12 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 return BadRequest(new { message = "Já existe uma turma com esse nome!" });
             }
+
+            if (turmadto.DataFim <= turmadto.DataInicio)
+            {
+                return BadRequest(new { message = "A data de fim não pode ser anterior à data início." });
+            }
+
             try
             {
                 var novaTurma = new Turma
@@ -179,7 +250,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                     DataFim = turmadto.DataFim,
                     IdCurso = turmadto.IdCurso,
                     IdMetodologia = turmadto.IdMetodologia
-                    //NomeCurso = turmadto.NomeCurso
                 };
 
                 _context.Turmas.Add(novaTurma);
@@ -189,17 +259,27 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Erro ao salvar na base de dados: " + ex.Message });
+                return BadRequest(new { message = "Erro ao guardar na base de dados "});
             }
-
-
         }
 
         /// <summary>
-        /// Remove uma turma existente do sistema.
+        /// Remove (desativa) uma turma existente.
         /// </summary>
-        /// <param name="id">Id da turma a remover.</param>
-        /// <returns>NoContent se for removida com sucesso ou NotFound se não existir.</returns>
+        /// <param name="id">Identificador da turma.</param>
+        /// <remarks>
+        /// A remoção é lógica (soft delete), definindo a propriedade <c>Ativo</c> como false.
+        /// 
+        /// Não é permitido eliminar a turma se existirem aulas futuras agendadas.
+        /// Requer política "AdminOrAdministrativo".
+        /// </remarks>
+        /// <returns>
+        /// Resultado da operação.
+        /// </returns>
+        /// <response code="204">Turma desativada com sucesso.</response>
+        /// <response code="400">Existem aulas futuras associadas.</response>
+        /// <response code="403">Acesso negado.</response>
+        /// <response code="404">Turma não encontrada.</response>
         // DELETE: api/Turmas/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
@@ -428,7 +508,6 @@ namespace ProjetoAdministracaoEscola.Controllers
             .ToList();
 
             return resultado;
-
         }
     }
 }

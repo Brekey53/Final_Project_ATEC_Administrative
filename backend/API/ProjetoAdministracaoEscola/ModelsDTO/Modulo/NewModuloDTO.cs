@@ -16,5 +16,7 @@ namespace ProjetoAdministracaoEscola.ModelsDTO.Modulo
 
         [Range(0, 100, ErrorMessage = "Os créditos devem estar entre 0 e 100.")]
         public decimal Creditos { get; set; }
+
+        public int IdTipoMateria { get; set; }
     }
 }

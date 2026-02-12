@@ -34,7 +34,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult<IEnumerable<ModulosGetAll>>> GetModulos()
         {
             var modulos = await _context.Modulos
-                .Select( m => new ModulosGetAll
+                .Select(m => new ModulosGetAll
                 {
                     IdModulo = m.IdModulo,
                     CodigoIdentificacao = m.CodigoIdentificacao,
@@ -65,14 +65,18 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult<ModuloGetByIdDTO>> GetModulo(int id)
         {
             var modulo = await _context.Modulos
+                .Where(m => m.IdModulo == id)
                 .Select(m => new ModuloGetByIdDTO
                 {
                     IdModulo = m.IdModulo,
                     CodigoIdentificacao = m.CodigoIdentificacao,
                     Nome = m.Nome,
                     HorasTotais = m.HorasTotais,
-                    Creditos = m.Creditos
-                }).FirstOrDefaultAsync();
+                    Creditos = m.Creditos,
+                    NomeTipoMateria = m.IdTipoMateriaNavigation.Tipo
+                })
+                .FirstOrDefaultAsync();
+
 
             if (modulo == null)
             {
@@ -201,7 +205,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                 Nome = moduloDto.Nome,
                 CodigoIdentificacao = moduloDto.CodigoIdentificacao,
                 HorasTotais = moduloDto.HorasTotais,
-                Creditos = moduloDto.Creditos
+                Creditos = moduloDto.Creditos,
+                IdTipoMateria = moduloDto.IdTipoMateria
             };
             try
             {
@@ -214,6 +219,21 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 return StatusCode(500, new { message = "Erro ao guardar no servidor." });
             }
+        }
+
+        /// <summary>
+        /// Obtém todos os tipos de matéria disponíveis no sistema.
+        /// </summary>
+        /// <returns>
+        /// 200 OK com a lista de tipos de matéria.
+        /// </returns>
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpGet("tiposmateria")]
+        public async Task<IActionResult> GetTiposMateria()
+        {
+            var tiposMateria = await _context.TipoMaterias.ToListAsync();
+
+            return Ok(tiposMateria);
         }
 
         /// <summary>
@@ -238,7 +258,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             var modulo = await _context.Modulos.FindAsync(id);
             if (modulo == null)
             {
-                return NotFound(new {message = "Modulo não encontrado"});
+                return NotFound(new { message = "Modulo não encontrado" });
             }
 
             // Verificar se o módulo ainda está em uso

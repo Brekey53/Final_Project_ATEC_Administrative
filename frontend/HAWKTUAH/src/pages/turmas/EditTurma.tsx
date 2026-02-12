@@ -6,6 +6,8 @@ import {
   updateTurma,
   type Turma,
   getCursos,
+  getMetodologias,
+  type Metodologia
 } from "../../services/turmas/TurmasService";
 import type { Curso } from "../../services/cursos/CursosService";
 import {
@@ -35,7 +37,7 @@ export default function EditTurma() {
     dataInicio: "",
     dataFim: "",
     nomeCurso: "",
-    estado: "A decorrer",
+    estado: "Para começar",
     idMetodologia: 0,
   });
 
@@ -62,8 +64,8 @@ export default function EditTurma() {
     null,
   );
   const [selectedFormador, setSelectedFormador] = useState<number | null>(null);
-
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [metodologias, setMetodologias] = useState<Metodologia[]>([]);
 
   const [alocacaoParaRemover, setAlocacaoParaRemover] = useState<{
     idFormador: number;
@@ -94,30 +96,27 @@ export default function EditTurma() {
   };
 
   useEffect(() => {
-    // 1. Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // 2. Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
-
-    // 3. Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
-  }, [formadoresTurma]); // Re-executa quando a lista carrega
+  }, [formadoresTurma]);
 
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
       try {
-        const [turmaData, cursosRes] = await Promise.all([
+        const [turmaData, cursosRes, metodologiasRes] = await Promise.all([
           getTurma(id),
           getCursos(),
+          getMetodologias(),
         ]);
 
         setFormData({
@@ -129,6 +128,7 @@ export default function EditTurma() {
         });
 
         setCursos(cursosRes);
+        setMetodologias(metodologiasRes);
       } catch {
         toast.error("Erro ao carregar dados da turma.", { id: "erroCarregarDadosTurmaas" });
         navigate("/turmas");
@@ -163,11 +163,30 @@ export default function EditTurma() {
   ) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "idCurso" ? Number(value) : value,
-      nomeCurso: cursos.find((c) => c.idCurso === Number(value))?.nome || "",
-    }));
+    setFormData((prev) => {
+      if (name === "idCurso") {
+        const cursoSelecionado = cursos.find(
+          (c) => c.idCurso === Number(value),
+        );
+
+        return {
+          ...prev,
+          idCurso: Number(value),
+          nomeCurso: cursoSelecionado?.nome || "",
+        };
+      }
+
+      if (name === "idMetodologia") {
+        return {
+          ...prev,
+          idMetodologia: Number(value),
+        };
+      }
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -180,7 +199,9 @@ export default function EditTurma() {
       toast.success("Turma atualizada com sucesso!", { id: "successTurmaUpdate" });
       navigate("/turmas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar turma.", { id: "errorUpdateTurma" });
+      toast.error(err.response?.data?.message || "Erro ao atualizar turma.", {
+        id: "turma-error",
+      });
     } finally {
       setLoading(false);
     }
@@ -364,6 +385,24 @@ export default function EditTurma() {
                     onChange={handleChange}
                     required
                   />
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">Metodologia</label>
+                  <select
+                    name="idMetodologia"
+                    className="form-select"
+                    value={formData.idMetodologia}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Selecione metodologia...</option>
+                    {metodologias.map((m) => (
+                      <option key={m.idMetodologia} value={m.idMetodologia}>
+                        {m.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
