@@ -1,19 +1,14 @@
-using iText.StyledXmlParser.Jsoup.Nodes;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Curso;
 using ProjetoAdministracaoEscola.ModelsDTO.Modulo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CursosController : ControllerBase
@@ -25,7 +20,17 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os cursos ativos.
+        /// </summary>
+        /// <remarks>
+        /// Devolve os cursos ordenados por nome, incluindo o nome da área associada.
+        /// </remarks>
+        /// <returns>
+        /// 200 OK com a lista de cursos.
+        /// </returns>
         // GET: api/Cursos
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CursoDTO>>> GetCursos()
         {
@@ -43,7 +48,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(cursos);
         }
 
+        /// <summary>
+        /// Obtém a lista de todas as áreas de cursos.
+        /// </summary>
+        /// <remarks>
+        /// Devolve apenas o id e o nome de cada área,
+        /// ordenados alfabeticamente.
+        /// </remarks>
+        /// <returns>
+        /// 200 OK com a lista de áreas.
+        /// </returns>
         // GET: api/Cursos/areaCursos
+ 
         [HttpGet("areacursos")]
         public async Task<ActionResult<IEnumerable<AreaCursoDto>>> GetAreaCursos()
         {
@@ -59,9 +75,22 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(areas);
         }
 
-
-
+        /// <summary>
+        /// Obtém os detalhes de um curso específico.
+        /// </summary>
+        /// <param name="id">
+        /// Id do curso.
+        /// </param>
+        /// <remarks>
+        /// Inclui a lista de módulos associados ao curso,
+        /// ordenados pelo nome do módulo.
+        /// </remarks>
+        /// <returns>
+        /// 200 OK com os dados do curso;
+        /// 404 NotFound se o curso não existir.
+        /// </returns>
         // GET: api/Cursos/5
+
         [HttpGet("{id}")]
         public async Task<ActionResult<CursoDTO>> GetCurso(int id)
         {
@@ -93,8 +122,28 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(curso);
         }
 
+        /// <summary>
+        /// Atualiza os dados de um curso existente,
+        /// incluindo os módulos associados.
+        /// </summary>
+        /// <param name="id">
+        /// Id do curso a atualizar.
+        /// </param>
+        /// <param name="dto">
+        /// Dados atualizados do curso, incluindo área e módulos.
+        /// </param>
+        /// <remarks>
+        /// Valida a existência da área e dos módulos indicados.
+        /// Atualiza prioridades dos módulos existentes,
+        /// adiciona novos e remove os que deixaram de estar associados.
+        /// </remarks>
+        /// <returns>
+        /// 204 NoContent se a atualização for bem-sucedida;
+        /// 400 BadRequest se a área ou módulos forem inválidos;
+        /// 404 NotFound se o curso não existir.
+        /// </returns>
         // PUT: api/Cursos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCurso(int id, UpdateCursoDTO dto)
         {
@@ -157,10 +206,21 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
-
-
+        /// <summary>
+        /// Cria um novo curso.
+        /// </summary>
+        /// <param name="dto">
+        /// Dados necessários para criação do curso.
+        /// </param>
+        /// <remarks>
+        /// O curso é criado com a área associada e descrição.
+        /// </remarks>
+        /// <returns>
+        /// 201 Created se o curso for criado com sucesso;
+        /// 400 BadRequest se o modelo for inválido.
+        /// </returns>
         // POST: api/Cursos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost]
         public async Task<ActionResult<Curso>> PostCurso(CreateCursoDTO dto)
         {
@@ -184,7 +244,25 @@ namespace ProjetoAdministracaoEscola.Controllers
             );
         }
 
-
+        /// <summary>
+        /// Desativa um curso existente (soft delete).
+        /// </summary>
+        /// <param name="id">
+        /// Identificador do curso a desativar.
+        /// </param>
+        /// <remarks>
+        /// O curso não é removido da base de dados.
+        /// Apenas é marcado como inativo.
+        /// 
+        /// A operação falha se existirem aulas futuras
+        /// associadas ao curso.
+        /// </remarks>
+        /// <returns>
+        /// 204 NoContent se a desativação for bem-sucedida;
+        /// 400 BadRequest se existirem aulas futuras associadas;
+        /// 404 NotFound se o curso não existir;
+        /// 401 Unauthorized se o utilizador não tiver permissão.
+        /// </returns>
         // DELETE: api/Cursos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
@@ -209,15 +287,9 @@ namespace ProjetoAdministracaoEscola.Controllers
             curso.DataDesativacao = DateTime.Now;
 
             // não remover (Soft Delete)
-            //_context.Cursos.Remove(curso); 
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool CursoExists(int id)
-        {
-            return _context.Cursos.Any(e => e.IdCurso == id);
         }
     }
 }
