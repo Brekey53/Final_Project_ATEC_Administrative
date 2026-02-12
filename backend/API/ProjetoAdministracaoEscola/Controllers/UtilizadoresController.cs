@@ -294,9 +294,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
-
+        // ESTE É O DE CRIAR CONTA NOVA NORMAL
         // POST: api/Utilizadores
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult> PostUtilizador(UtilizadorRegisterDTO dto)
         {
@@ -316,6 +315,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 IdTipoUtilizador = 5, // criar como geral
                 Email = dto.Email,
+                Morada = dto.Morada,
+                Telefone = dto.Telefone,
+                Sexo = dto.Sexo,
                 StatusAtivacao = false
             };
 
@@ -331,7 +333,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> DeleteUtilizador(int id)
         {
             // Impedir que o admin se apague a si pr?prio
-            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (currentUserId != null && currentUserId == id.ToString())
             {
