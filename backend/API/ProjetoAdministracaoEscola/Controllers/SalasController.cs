@@ -67,8 +67,11 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "A hora de início deve ser anterior à hora de fim." });
 
             // Identificar Salas Ocupadas
+            // Online não conta
             var salasOcupadasIds = await _context.Horarios
-                    .Where(h => h.Data == dataDate && h.HoraInicio < horaFim && h.HoraFim > horaInicio)
+                    .Where(h => h.Data == dataDate && h.HoraInicio < horaFim && h.HoraFim > horaInicio &&
+                    h.IdSalaNavigation.IdTipoSalaNavigation.Nome != "Online"
+                    )
                     .Select(h => h.IdSala)
                     .Distinct()
                     .ToListAsync();
