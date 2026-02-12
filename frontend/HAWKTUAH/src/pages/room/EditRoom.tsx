@@ -33,7 +33,9 @@ export default function EditRoom() {
         setFormData(sala);
         setTiposSala(tipos);
       } catch {
-        toast.error("Erro ao carregar dados da sala.");
+        toast.error("Erro ao carregar dados da sala.",
+          {id: "erro-dados-sala"}
+        );
         navigate("/gerir-salas");
       } finally {
         setFetching(false);
@@ -68,7 +70,9 @@ export default function EditRoom() {
       toast.success("Sala atualizada com sucesso!");
       navigate("/gerir-salas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar sala.");
+      toast.error(err.response?.data?.message || "Erro ao atualizar sala.",
+        {id: "erro-atualizar-sala"}
+      );
     } finally {
       setLoading(false);
     }
@@ -129,7 +133,7 @@ export default function EditRoom() {
             <h5 className="text-primary mb-4 border-bottom pb-2">
               Informações Gerais
             </h5>
-
+            
             <div className="row">
               {/* Descrição da Sala */}
               <div className="col-md-8 mb-3">
@@ -139,7 +143,7 @@ export default function EditRoom() {
                 <input
                   type="text"
                   name="descricao"
-                  className="form-control form-control-lg form-control-sm d-lg-none"
+                  className="form-control form-control-lg form-control-sm "
                   placeholder="Ex: Sala 102 - Laboratório"
                   value={formData.descricao}
                   onChange={handleChange}
@@ -153,7 +157,7 @@ export default function EditRoom() {
                 <input
                   type="number"
                   name="numMaxAlunos"
-                  className="form-control form-control-lg form-control-sm d-lg-none"
+                  className="form-control form-control-lg form-control-sm"
                   value={formData.numMaxAlunos}
                   onChange={handleChange}
                   min="1"

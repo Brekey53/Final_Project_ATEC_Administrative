@@ -29,7 +29,9 @@ export default function EditModule() {
 
         setFormData(res);
       } catch (err) {
-        toast.error("Erro ao carregar dados do módulo.");
+        toast.error("Erro ao carregar dados do módulo.",
+          {id: "erro-modulos"}
+        );
         navigate("/gerir-modulos");
       } finally {
         setFetching(false);

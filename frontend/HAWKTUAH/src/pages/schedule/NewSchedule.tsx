@@ -97,7 +97,9 @@ export default function NewSchedule() {
         setFormadores(res);
       } catch (err) {
         console.error(err);
-        toast.error("Erro ao carregar formadores.");
+        toast.error("Erro ao carregar formadores.", {
+          id: "erro-getFormadores",
+        });
       }
     };
     loadFormadores();
@@ -151,7 +153,7 @@ export default function NewSchedule() {
       setTurmasRaw(res);
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao carregar turmas.");
+      toast.error("Erro ao carregar turmas.", { id: "erro-getTurmasFormador" });
     }
   };
 
@@ -321,7 +323,7 @@ export default function NewSchedule() {
       setTurmas(res);
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao carregar turmas.");
+      toast.error("Erro ao carregar turmas.", { id: "getTurmas" });
     }
   };
 
@@ -329,7 +331,7 @@ export default function NewSchedule() {
     e.preventDefault();
 
     if (!autoGenData.idTurma) {
-      toast.error("Selecione uma turma válida.");
+      toast.error("Selecione uma turma válida.", { id: "erro-Autogenerate" });
       return;
     }
 
@@ -346,7 +348,7 @@ export default function NewSchedule() {
       await fetchHorarios();
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao gerar horário.");
+      toast.error("Erro ao gerar horário.", { id: "fetchHorarios" });
     } finally {
       setLoadingGenerator(false);
     }
@@ -375,15 +377,16 @@ export default function NewSchedule() {
       await fetchHorarios();
       handleCloseModal();
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Erro ao atualizar.";
-      toast.error(msg);
+      toast.error(err.response?.data?.message || "Erro ao atualizar.", {
+        id: "erro-fetch",
+      });
     }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newHorario.idCursoModulo) {
-      toast.error("Selecione um módulo válido.");
+      toast.error("Selecione um módulo válido.", { id: "erro-modulos" });
       return;
     }
 
@@ -402,8 +405,9 @@ export default function NewSchedule() {
       await fetchHorarios();
       setShowCreateModal(false);
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Erro ao criar horário.";
-      toast.error(msg);
+      toast.error(err.response?.data?.message || "Erro ao criar horário.", {
+        id: "erro-criar horario",
+      });
     }
   };
 
