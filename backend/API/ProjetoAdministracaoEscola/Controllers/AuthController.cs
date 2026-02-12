@@ -39,7 +39,20 @@ namespace ProjetoAdministracaoEscola.Controllers
             _configuration = configuration;
         }
 
-        
+        /// <summary>
+        /// Autentica um utilizador com email e password.
+        /// Se as credenciais forem válidas e a conta estiver ativada,
+        /// inicia o processo de autenticação 2 fatores (2FA).
+        /// </summary>
+        /// <param name="loginDto">
+        /// DTO contendo o email e a password do utilizador.
+        /// </param>
+        /// <returns>
+        /// 200 OK se as credenciais forem válidas;
+        /// 400 BadRequest se a conta não estiver ativada;
+        /// 401 Unauthorized se as credenciais forem inválidas.
+        /// </returns>
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UtilizadorLoginDTO loginDto)
         {
@@ -47,7 +60,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (utilizador == null)
             {
-                return Unauthorized(new { message = "Credenciais inválidas." });
+                return Unauthorized(new { message = "Utilizador não registado." });
             }
 
             if (utilizador.StatusAtivacao != true)
@@ -83,7 +96,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UtilizadorRegisterDTO dto)
         {
-            string token = Guid.NewGuid().ToString(); // gerar token único
+            string token = Guid.NewGuid().ToString();
 
             if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
             {
@@ -98,6 +111,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 IdTipoUtilizador = 5, // criar como geral
                 Email = dto.Email,
+                Morada = dto.Morada,
+                Telefone = dto.Telefone,
+                Sexo = dto.Sexo,
                 StatusAtivacao = false,
                 TokenAtivacao = token
             };
@@ -118,7 +134,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return StatusCode(500, "Utilizador criado, mas houve um erro ao enviar o email de ativação.");
             } catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro ao salvar utilizador.", error = ex.Message });
+                return StatusCode(500, new { message = "Erro ao guardar utilizador.", error = ex.Message });
             }
             
 
@@ -312,51 +328,6 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (string.IsNullOrEmpty(utilizador.IdGoogle))
             {
                 utilizador.IdGoogle = payload.Subject;
-                await _context.SaveChangesAsync();
-            }
-
-            var token = _tokenService.GerarJwtToken(
-                utilizador.IdUtilizador,
-                utilizador.Email,
-                utilizador.IdTipoUtilizador
-            );
-
-            return Ok(new { token });
-        }
-
-        [HttpPost("facebook")]
-        public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginDTO dto)
-        {
-            if (string.IsNullOrWhiteSpace(dto.IdToken))
-                return BadRequest("Token inválido");
-
-            using var httpClient = new HttpClient();
-
-            var response = await httpClient.GetAsync(
-                $"https://graph.facebook.com/me?fields=id,email&access_token={dto.IdToken}"
-            );
-
-            if (!response.IsSuccessStatusCode)
-                return Unauthorized("Token Facebook inválido");
-
-            var json = await response.Content.ReadAsStringAsync();
-            var fbUser = JsonSerializer.Deserialize<FacebookUserDTO>(json);
-
-            if (fbUser?.Email == null)
-                return Unauthorized("Email não disponível no Facebook");
-
-            var utilizador = await _context.Utilizadores
-                .FirstOrDefaultAsync(u => u.Email == fbUser.Email);
-
-            if (utilizador == null)
-                return Unauthorized("Utilizador não autorizado");
-
-            if (utilizador.StatusAtivacao != true)
-                return Unauthorized("Conta não ativa");
-
-            if (string.IsNullOrEmpty(utilizador.IdFacebook))
-            {
-                utilizador.IdFacebook = fbUser.Id;
                 await _context.SaveChangesAsync();
             }
 
