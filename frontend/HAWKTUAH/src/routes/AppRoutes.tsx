@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./PrivateRoutes";
 
 import MainLayout from "../layouts/MainLayout";
-
 import Dashboard from "../pages/LandingPage";
 import Cursos from "../pages/course/Cursos";
 import Formandos from "../pages/Formandos";
@@ -41,6 +40,7 @@ import EditAvaliacoesFormador from "../pages/turmas/EditAvaliacoesFormador";
 import AddNewAvailability from "../pages/teacher/AddNewAvailability";
 
 import RoleRoute from "./RoleRoute";
+import NotFound from "../pages/NotFound";
 
 function AppRoutes() {
   return (
@@ -152,7 +152,8 @@ function AppRoutes() {
               element={<AddNewAvailability />}
             />
           </Route>
-          
+          {/* 404 GLOBAL */}
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
     </Routes>
