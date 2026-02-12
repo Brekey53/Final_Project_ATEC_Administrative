@@ -133,22 +133,35 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// </summary>
         /// <param name="id">Identificador da turma.</param>
         /// <returns>
-        /// Entidade <see cref="Turma"/> correspondente.
+        /// DTO <see cref="GetTurmaPorIdDTO"/>.
         /// </returns>
         /// <response code="200">Turma encontrada.</response>
         /// <response code="404">Turma não encontrada.</response>
         // GET: api/Turmas/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Turma>> GetTurma(int id)
+        public async Task<ActionResult<GetTurmaPorIdDTO>> GetTurma(int id)
         {
-            var turma = await _context.Turmas.FindAsync(id);
+            var turma = await _context.Turmas
+                .Where(t => t.IdTurma == id)
+                .Select(t => new GetTurmaPorIdDTO
+                {
+                    IdTurma = t.IdTurma,
+                    NomeTurma = t.NomeTurma,
+                    DataInicio = t.DataInicio,
+                    DataFim = t.DataFim,
+                    IdCurso = t.IdCurso,
+                    NomeCurso = t.IdCursoNavigation.Nome,
+                    IdMetodologia = t.IdMetodologia,
+                    NomeMetodologia = t.IdMetodologiaNavigation.Nome,
+                    Estado = CalcularEstadoTurma(t.DataInicio, t.DataFim)
+                })
+                .FirstOrDefaultAsync();
 
             if (turma == null)
-            {
                 return NotFound();
-            }
-            return turma;
+
+            return Ok(turma);
         }
 
         /// <summary>
@@ -179,6 +192,12 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 return BadRequest(new { message = "Erro ao carregar a turma." });
             }
+
+            if(turmadto.DataFim <= turmadto.DataInicio)
+            {
+                return BadRequest(new { message = "A data de fim não pode ser anterior à data início." });
+            }
+
             turma.IdTurma = turmadto.IdTurma;
             turma.NomeTurma = turmadto.NomeTurma;
             turma.DataInicio = turmadto.DataInicio;
@@ -216,6 +235,12 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 return BadRequest(new { message = "Já existe uma turma com esse nome!" });
             }
+
+            if (turmadto.DataFim <= turmadto.DataInicio)
+            {
+                return BadRequest(new { message = "A data de fim não pode ser anterior à data início." });
+            }
+
             try
             {
                 var novaTurma = new Turma
@@ -234,10 +259,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Erro ao salvar na base de dados: " + ex.Message });
+                return BadRequest(new { message = "Erro ao guardar na base de dados "});
             }
-
-
         }
 
         /// <summary>
