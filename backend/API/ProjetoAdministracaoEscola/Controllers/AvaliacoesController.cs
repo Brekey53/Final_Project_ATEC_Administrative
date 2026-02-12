@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
@@ -19,7 +18,22 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
-        [Authorize]
+        /// <summary>
+        /// Obtém a lista de avaliações associadas ao formando.
+        /// </summary>
+        /// <remarks>
+        /// Este endpoint identifica o utilizador autenticado através do claim NameIdentifier,
+        /// verifica se está associado a um registo de formando e devolve todas as avaliações
+        /// correspondentes à sua inscrição.
+        /// 
+        /// Caso o formando não tenha inscrição ativa, é devolvida uma lista vazia.
+        /// </remarks>
+        /// <returns>
+        /// 200 OK com a lista de avaliações do formando;
+        /// 401 Unauthorized se o utilizador não estiver autenticado;
+        /// 404 NotFound se o utilizador autenticado não estiver associado a um formando.
+        /// </returns>
+        [Authorize(Policy = "Formando")]
         [HttpGet("formando")]
         public async Task<ActionResult<IEnumerable<AvaliacaoFormandoDTO>>> GetAvaliacoesFormando()
         {
@@ -64,6 +78,5 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(avaliacoes);
         }
-
     }
 }
