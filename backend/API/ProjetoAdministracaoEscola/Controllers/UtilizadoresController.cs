@@ -1,20 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UtilizadoresController : ControllerBase
@@ -26,7 +19,22 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
-        // GET: api/Utilizadores
+        /// <summary>
+        /// Obtém a lista de todos os utilizadores registados no sistema.
+        /// </summary>
+        /// <remarks>
+        /// Para cada utilizador são devolvidos:
+        /// - Dados pessoais básicos
+        /// - Tipo de utilizador (Admin, Formador, Formando, Administrativo, Geral)
+        /// - Estado de ativação
+        /// 
+        /// A lista é devolvida ordenada alfabeticamente pelo nome.
+        /// </remarks>
+        /// <returns>
+        /// Lista de <see cref="UtilizadorDTO"/>.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UtilizadorDTO>>> GetUtilizadores()
         {
@@ -46,10 +54,16 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .ToListAsync();
         }
 
-
-        // GET: api/Utilizadores/5
-        //TODO: Pode só ir buscar os UTILIZADOR DTO 
-        //todo: METER POLICY ADMIN ADMINISTRATIVO ACIMA
+        /// <summary>
+        /// Obtém os dados de um utilizador específico através do seu identificador.
+        /// </summary>
+        /// <param name="id">Identificador do utilizador.</param>
+        /// <returns>
+        /// Entidade <see cref="Utilizador"/> correspondente.
+        /// </returns>
+        /// <response code="200">Utilizador encontrado.</response>
+        /// <response code="404">Utilizador não encontrado.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Utilizador>> GetUtilizador(int id)
         {
@@ -64,7 +78,26 @@ namespace ProjetoAdministracaoEscola.Controllers
             return utilizador;
         }
 
+        /// <summary>
+        /// Obtém o perfil completo do utilizador autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Inclui:
+        /// - Dados base do utilizador
+        /// - Informação adicional consoante o tipo:
+        ///     • Formando: IdFormando e Escolaridade
+        ///     • Formador: IdFormador, IBAN e Qualificações
+        /// 
+        /// O formato da resposta varia consoante o tipo de utilizador.
+        /// </remarks>
+        /// <returns>
+        /// Objeto com informação de perfil.
+        /// </returns>
+        /// <response code="200">Perfil devolvido com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="404">Utilizador não encontrado.</response>
         ///api/utilizadores/perfil
+        [Authorize]
         [HttpGet("perfil")]
         public async Task<IActionResult> GetMyProfile()
         {
@@ -98,7 +131,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 user.StatusAtivacao
             };
 
-            // Adicionar dados espec?ficos se for Formando (Tipo 3) ou Formador (Tipo 2)
+            // Adicionar dados especificos se for Formando (Tipo 3) ou Formador (Tipo 2)
             if (user.IdTipoUtilizador == 3 && user.Formandos.Any())
             {
                 var f = user.Formandos.First();
@@ -131,6 +164,20 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(perfilBase);
         }
 
+        /// <summary>
+        /// Obtém a fotografia de perfil do utilizador autenticado.
+        /// </summary>
+        /// <remarks>
+        /// A fotografia pode estar associada à entidade Formando ou Formador.
+        /// Se não existir fotografia, é devolvido código 204 (NoContent).
+        /// </remarks>
+        /// <returns>
+        /// Ficheiro binário no formato image/jpeg.
+        /// </returns>
+        /// <response code="200">Fotografia devolvida com sucesso.</response>
+        /// <response code="204">Utilizador sem fotografia associada.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        [Authorize]
         [HttpGet("perfil/foto")]
         public async Task<IActionResult> GetFotoPerfil()
         {
@@ -157,8 +204,29 @@ namespace ProjetoAdministracaoEscola.Controllers
             return File(foto, "image/jpeg");
         }
 
-
+        /// <summary>
+        /// Atualiza os dados de um utilizador existente.
+        /// </summary>
+        /// <param name="id">Identificador do utilizador.</param>
+        /// <param name="dto">Objeto com os novos dados.</param>
+        /// <remarks>
+        /// Regras aplicadas:
+        /// - Apenas administradores podem atribuir perfil de Administrador.
+        /// - Se o estado "Ativo" for alterado, é sincronizado com Formador/Formando.
+        /// - Se o tipo de utilizador for alterado:
+        ///     • Desativa perfis anteriores
+        ///     • Ativa ou cria perfil correspondente ao novo tipo
+        /// 
+        /// Consome multipart/form-data.
+        /// </remarks>
+        /// <returns>
+        /// Resultado da operação.
+        /// </returns>
+        /// <response code="204">Atualização realizada com sucesso.</response>
+        /// <response code="403">Sem permissões suficientes.</response>
+        /// <response code="404">Utilizador não encontrado.</response>
         // PUT: api/Utilizadores/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto) { 
@@ -253,8 +321,25 @@ namespace ProjetoAdministracaoEscola.Controllers
             return NoContent();
         }
 
-
+        /// <summary>
+        /// Cria um novo utilizador através de criação administrativa.
+        /// </summary>
+        /// <param name="dto">Dados do utilizador a criar.</param>
+        /// <remarks>
+        /// Valida:
+        /// - Email único
+        /// - NIF único
+        /// 
+        /// A password é armazenada com hash BCrypt.
+        /// O utilizador é criado com estado de ativação ativo.
+        /// </remarks>
+        /// <returns>
+        /// Identificação do novo utilizador.
+        /// </returns>
+        /// <response code="201">Utilizador criado com sucesso.</response>
+        /// <response code="409">Email ou NIF já registado.</response>
         // POST: api/Utilizadores/new-user
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost("new-user")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
         {
@@ -294,7 +379,22 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
-        // ESTE É O DE CRIAR CONTA NOVA NORMAL
+        /// <summary>
+        /// Regista um novo utilizador através de auto-registo público.
+        /// </summary>
+        /// <param name="dto">Dados de registo.</param>
+        /// <remarks>
+        /// Regras:
+        /// - Email e NIF devem ser únicos.
+        /// - O utilizador é criado com tipo "Geral".
+        /// - A conta é criada com ativação pendente.
+        /// - A password é armazenada com hash BCrypt.
+        /// </remarks>
+        /// <returns>
+        /// Resultado do registo.
+        /// </returns>
+        /// <response code="200">Utilizador registado com sucesso.</response>
+        /// <response code="409">Email ou NIF já existente.</response>
         // POST: api/Utilizadores
         [HttpPost]
         public async Task<ActionResult> PostUtilizador(UtilizadorRegisterDTO dto)
@@ -327,6 +427,39 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new { message = "Utilizador registado com sucesso", userId = newUser.IdUtilizador });
         }
 
+        /// <summary>
+        /// Desativa (soft delete) um utilizador do sistema.
+        /// </summary>
+        /// <param name="id">Id do utilizador a desativar.</param>
+        /// <remarks>
+        /// Regras aplicadas:
+        /// - O utilizador autenticado não pode eliminar a própria conta.
+        /// - Apenas utilizadores com política "AdminOrAdministrativo" podem executar esta operação.
+        /// 
+        /// Caso o utilizador seja:
+        ///Formador:
+        ///     - Não pode ter aulas futuras agendadas.
+        ///     - Caso não existam impedimentos, o perfil de formador é desativado.
+        /// 
+        ///Formando:
+        ///     - Não pode estar inscrito em turmas com aulas futuras agendadas.
+        ///     - Caso não existam impedimentos, o perfil de formando é desativado.
+        /// 
+        /// A operação é um soft delete:
+        /// - A propriedade <c>Ativo</c> é definida como false.
+        /// - A propriedade <c>DataDesativacao</c> é preenchida com a data atual.
+        /// 
+        /// Nenhum registo é fisicamente removido da base de dados.
+        /// </remarks>
+        /// <returns>
+        /// Resultado da operação.
+        /// </returns>
+        /// <response code="204">Utilizador desativado com sucesso.</response>
+        /// <response code="400">
+        /// Violação de regra de negócio (ex: aulas futuras ou tentativa de autoeliminação).
+        /// </response>
+        /// <response code="404">Utilizador não encontrado.</response>
+        /// <response code="403">Acesso negado.</response>
         // DELETE: api/Utilizadores/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
@@ -406,6 +539,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Verifica se um email já se encontra registado no sistema.
+        /// </summary>
+        /// <param name="email">Endereço de email a validar.</param>
+        /// <returns>
+        /// Objeto com booleano.
+        /// </returns>
+        /// <response code="200">Resultado devolvido com sucesso.</response>
         [HttpGet("check-email")]
         public async Task<IActionResult> CheckEmail([FromQuery] string email)
         {
@@ -417,7 +558,17 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new { existe });
         }
 
-
+        /// <summary>
+        /// Obtém os dados de um utilizador através do email.
+        /// </summary>
+        /// <param name="email">Email do utilizador.</param>
+        /// <remarks>
+        /// Se o utilizador não existir, é devolvido objeto com propriedade "Existe" a false.
+        /// </remarks>
+        /// <returns>
+        /// Dados básicos do utilizador.
+        /// </returns>
+        /// <response code="200">Resultado devolvido com sucesso.</response>
         [HttpGet("details-by-email")]
         public async Task<IActionResult> GetUserDetails(string email)
         {
@@ -440,6 +591,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(user);
         }
 
+        /// <summary>
+        /// Obtém o nome de um utilizador através do email.
+        /// </summary>
+        /// <param name="email">Email do utilizador.</param>
+        /// <returns>
+        /// Objeto com email e nome.
+        /// </returns>
+        /// <response code="200">Resultado devolvido com sucesso.</response>
         [HttpGet("name-by-email")]
         public async Task<IActionResult> GetUserName(string email)
         {
@@ -455,11 +614,5 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(user);
         }
-
-        private bool UtilizadorExists(int id)
-        {
-            return _context.Utilizadores.Any(e => e.IdUtilizador == id);
-        }
-
     }
 }
