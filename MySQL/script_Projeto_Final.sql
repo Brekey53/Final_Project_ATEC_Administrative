@@ -214,7 +214,6 @@ CREATE TABLE horarios (
     data DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
-    UNIQUE (id_sala, data, hora_inicio),
     UNIQUE (id_formador, data, hora_inicio),
     FOREIGN KEY (id_turma) REFERENCES turmas(id_turma),
     FOREIGN KEY (id_curso_modulo) REFERENCES cursos_modulos(id_curso_modulo),
