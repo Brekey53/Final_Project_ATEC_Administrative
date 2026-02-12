@@ -14,6 +14,7 @@ using ProjetoAdministracaoEscola.ModelsDTO.Formando;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class FormandosController : ControllerBase
@@ -25,8 +26,15 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os formandos registados no sistema,
+        /// incluindo informação básica do utilizador e a turma ativa (caso exista).
+        /// </summary>
+        /// <returns>
+        /// Lista de formandos com dados resumidos.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
         // GET: api/Formandos
-        // Retorna a lista simplificada para a tabela/grid
         [HttpGet]
         public async Task<ActionResult> GetFormandos()
         {
@@ -37,10 +45,10 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .Select(f => new
                 {
                     f.IdFormando,
-                    Nome = f.IdUtilizadorNavigation.Nome,
-                    Email = f.IdUtilizadorNavigation.Email,
-                    Nif = f.IdUtilizadorNavigation.Nif,
-                    Telefone = f.IdUtilizadorNavigation.Telefone,
+                    f.IdUtilizadorNavigation.Nome,
+                    f.IdUtilizadorNavigation.Email,
+                    f.IdUtilizadorNavigation.Nif,
+                    f.IdUtilizadorNavigation.Telefone,
                     Status = f.IdUtilizadorNavigation.StatusAtivacao,
                     // Procuramos o nome da turma onde a inscrição esteja Ativa
                     Turma = f.Inscricos
@@ -54,7 +62,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(formandos);
         }
 
+        /// <summary>
+        /// Obtém os dados completos de um formando específico,
+        /// incluindo dados pessoais, escolaridade, estado de inscrição e ficheiros associados.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <returns>
+        /// Dados detalhados do formando.
+        /// </returns>
+        /// <response code="200">Formando encontrado.</response>
+        /// <response code="404">Formando não encontrado.</response>
         // GET: api/Formandos/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
         public async Task<ActionResult> GetFormando(int id)
         {
@@ -75,21 +94,21 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             var resposta = new
             {
-                IdFormando = formando.IdFormando,
-                IdUtilizador = formando.IdUtilizador,
-                Nome = formando.IdUtilizadorNavigation.Nome,
-                Nif = formando.IdUtilizadorNavigation.Nif,
-                DataNascimento = formando.IdUtilizadorNavigation.DataNascimento,
-                Morada = formando.IdUtilizadorNavigation.Morada,
-                Telefone = formando.IdUtilizadorNavigation.Telefone,
-                Sexo = formando.IdUtilizadorNavigation.Sexo,
-                Email = formando.IdUtilizadorNavigation.Email,
-                IdEscolaridade = formando.IdEscolaridade,
+                formando.IdFormando,
+                formando.IdUtilizador,
+                formando.IdUtilizadorNavigation.Nome,
+                formando.IdUtilizadorNavigation.Nif,
+                formando.IdUtilizadorNavigation.DataNascimento,
+                formando.IdUtilizadorNavigation.Morada,
+                formando.IdUtilizadorNavigation.Telefone,
+                formando.IdUtilizadorNavigation.Sexo,
+                formando.IdUtilizadorNavigation.Email,
+                formando.IdEscolaridade,
                 EscolaridadeNivel = formando.IdEscolaridadeNavigation?.Nivel,
                 //Estado Inscrição
                 Estado = inscricao?.Estado ?? "Suspenso",
                 // Dados da Turma
-                IdTurma = inscricao?.IdTurma,
+                inscricao?.IdTurma,
                 NomeTurma = inscricao?.IdTurmaNavigation?.NomeTurma ?? "Sem Turma",
                 // Ficheiros
                 Fotografia = formando.Fotografia != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(formando.Fotografia)}" : null,
@@ -99,8 +118,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(resposta);
         }
 
-
+        /// <summary>
+        /// Gera e devolve um ficheiro PDF com a ficha completa do formando,
+        /// incluindo dados pessoais, percurso formativo e média final.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <returns>
+        /// Ficheiro PDF com a ficha do formando.
+        /// </returns>
+        /// <response code="200">PDF gerado com sucesso.</response>
+        /// <response code="404">Formando não encontrado.</response>
         // GET: api/Formandos/5{id}/download-ficha
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}/download-ficha")]
         public async Task<IActionResult> DownloadFicha(int id)
         {
@@ -232,6 +261,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        /// <summary>
+        /// Cria um novo perfil completo de formando.
+        /// Caso o utilizador ainda não exista, é criado automaticamente.
+        /// Permite associar inscrição numa turma e anexar ficheiros.
+        /// </summary>
+        /// <param name="dto">Dados completos do formando.</param>
+        /// <returns>
+        /// Resultado da operação de criação.
+        /// </returns>
+        /// <response code="200">Formando criado com sucesso.</response>
+        /// <response code="400">Erro de validação ou dados inválidos.</response>
+        /// <response code="409">Email ou NIF já registado.</response>
         // POST: api/Formandos/completo
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost("completo")]
@@ -351,7 +392,19 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Atualiza os dados de um formando existente,
+        /// incluindo dados pessoais, escolaridade, ficheiros e estado de inscrição.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <param name="dto">Dados atualizados do formando.</param>
+        /// <returns>
+        /// Resultado da operação de atualização.
+        /// </returns>
+        /// <response code="200">Atualização realizada com sucesso.</response>
+        /// <response code="400">Dados inválidos.</response>
+        /// <response code="404">Formando não encontrado.</response>
+        /// <response code="409">NIF já pertence a outro utilizador.</response>
         // PUT: api/Formandos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
@@ -452,6 +505,17 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        /// <summary>
+        /// Inativa (soft delete) um formando do sistema.
+        /// A operação falha caso existam aulas futuras associadas à turma onde está inscrito.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <returns>
+        /// Resultado da operação de remoção.
+        /// </returns>
+        /// <response code="204">Formando inativado com sucesso.</response>
+        /// <response code="400">Existem aulas futuras associadas.</response>
+        /// <response code="404">Formando não encontrado.</response>
         // DELETE: api/Formandos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]

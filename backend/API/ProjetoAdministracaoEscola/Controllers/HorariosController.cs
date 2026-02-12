@@ -1,20 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
 using ProjetoAdministracaoEscola.Services;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class HorariosController : ControllerBase
@@ -28,6 +23,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             _horarioGeradorService = horarioGeradorService;
         }
 
+        /// <summary>
+        /// Obtém a lista completa de todos os horários registados no sistema.
+        /// </summary>
+        /// <returns>
+        /// Lista de horarios <see cref="Horario"/>.
+        /// </returns>
+        /// <response code="200">Lista de horários devolvida com sucesso.</response>
         // GET: api/Horarios
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Horario>>> GetHorarios()
@@ -35,6 +37,15 @@ namespace ProjetoAdministracaoEscola.Controllers
             return await _context.Horarios.ToListAsync();
         }
 
+        /// <summary>
+        /// Obtém os detalhes de um horário específico.
+        /// </summary>
+        /// <param name="id">Identificador do horário.</param>
+        /// <returns>
+        /// Objeto <see cref="HorarioSaveDTO"/> com os dados do horário.
+        /// </returns>
+        /// <response code="200">Horário encontrado e devolvido com sucesso.</response>
+        /// <response code="404">Horário não encontrado.</response>
         // GET: api/Horarios/5
         [HttpGet("{id}")]
         public async Task<ActionResult<HorarioSaveDTO>> GetHorario(int id)
@@ -62,13 +73,13 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém o horário associado ao formador autenticado,
-        /// incluindo o Data, Hora de fim e inicio de aula,
-        /// com o nome da sala e nome do curso que dará a aula
+        /// Obtém os horários associados ao formador autenticado.
         /// </summary>
         /// <returns>
-        /// Horário do formador autenticado.
+        /// Lista de horários em formato <see cref="ScheduleCalendarDTO"/>.
         /// </returns>
+        /// <response code="200">Horários devolvidos com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
         [HttpGet("formador")]
         public async Task<ActionResult<IEnumerable<ScheduleCalendarDTO>>> GetHorariosFormador()
         {
@@ -108,13 +119,13 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém o horário da turma associada ao formando autenticado,
-        /// incluindo o Data, Hora de fim e inicio de aula,
-        /// com o nome da sala e nome do curso que dará a aula
+        /// Obtém os horários das turmas em que o formando autenticado está inscrito.
         /// </summary>
         /// <returns>
-        /// Horário do formando autenticado.
+        /// Lista de horários em formato <see cref="ScheduleCalendarDTO"/>.
         /// </returns>
+        /// <response code="200">Horários devolvidos com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
         [HttpGet("formando")]
         public async Task<IActionResult> GetHorariosFormando()
         {
@@ -161,12 +172,13 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém o horário geral para apresentar aos admin ou administrativos,
-        /// incluindo Nome da turma, curso, modulo, formador, sala e data do horario
+        /// Obtém a listagem completa de horários com informação detalhada
+        /// (turma, curso, módulo, formador e sala).
         /// </summary>
         /// <returns>
-        /// Horário geral de tudo.
+        /// Lista de horários em formato <see cref="HorarioGetDTO"/>.
         /// </returns>
+        /// <response code="200">Horários devolvidos com sucesso.</response>
         [HttpGet("horario-get")]
         public async Task<ActionResult<IEnumerable<HorarioGetDTO>>> GetHorariosTotal()
         {
@@ -186,28 +198,34 @@ namespace ProjetoAdministracaoEscola.Controllers
                     HoraInicio = h.HoraInicio.ToString(@"HH\:mm"),
                     HoraFim = h.HoraFim.ToString(@"HH\:mm")
                 })
-
                 .ToListAsync();
 
             return Ok(horarios);
         }
 
         /// <summary>
-        /// Atualiza os dados do horário selecionado
-        /// incluindo hora de inicio e fim de aula, idFormador, idSala, idCursoModulo
+        /// Atualiza um horário existente.
         /// </summary>
+        /// <param name="id">Identificador do horário.</param>
+        /// <param name="dto">Dados atualizados do horário.</param>
         /// <returns>
-        /// Atualiza horário selecionado
+        /// NoContent se a atualização for bem-sucedida.
         /// </returns>
+        /// <response code="204">Horário atualizado com sucesso.</response>
+        /// <response code="400">Dados inválidos.</response>
+        /// <response code="404">Horário não encontrado.</response>
+        /// <response code="409">Conflito de horários ou limite de horas ultrapassado.</response>
         // PUT: api/Horarios/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutHorario(int id, [FromForm] HorarioSaveDTO dto)
         {
-            if (id != dto.IdHorario) return BadRequest(new { message = "Os IDs não coincidem." });
+            if (id != dto.IdHorario)
+                BadRequest(new { message = "Os IDs não coincidem." });
 
             var horario = await _context.Horarios.FindAsync(id);
-            if (horario == null) return NotFound(new { message = "Horário não encontrado." });
+            if (horario == null)
+                return NotFound(new { message = "Horário não encontrado." });
 
             TimeOnly inicio, fim;
             try
@@ -215,17 +233,25 @@ namespace ProjetoAdministracaoEscola.Controllers
                 inicio = TimeOnly.Parse(dto.HoraInicio);
                 fim = TimeOnly.Parse(dto.HoraFim);
             }
-            catch { return BadRequest(new { message = "Formato de hora inválido." }); }
+            catch
+            {
+                return BadRequest(new { message = "Formato de hora inválido." });
+            }
 
-            if (inicio >= fim) return BadRequest(new { message = "Hora de início deve ser anterior ao fim." });
+            if (inicio >= fim)
+                return BadRequest(new { message = "Hora de início deve ser anterior ao fim." });
 
             // Validar Limite de Horas
             string? erroHoras = await ValidarLimiteHoras(dto.IdCursoModulo, dto.IdTurma, inicio, fim, id);
-            if (erroHoras != null) return Conflict(new { message = erroHoras });
+
+            if (erroHoras != null)
+                return Conflict(new { message = erroHoras });
 
             // Validar Conflitos
             string? erroConflito = await ValidarConflitos(dto, inicio, fim, id);
-            if (erroConflito != null) return Conflict(new { message = erroConflito });
+
+            if (erroConflito != null)
+                return Conflict(new { message = erroConflito });
 
             // dto para entidade + atualizar
             try
@@ -242,21 +268,22 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Erro ao atualizar: " + ex.Message });
+                return BadRequest(new { message = "Erro ao atualizar horário" });
             }
         }
 
         /// <summary>
-        /// Cria um horário novo validando inputs e disponibilidade de turma,
-        /// formador e sala, caso algum esteja sobreposto irá dar erro ao criar e enviar mensagem personalizada
-        /// Valida se a hora de início é anterior à hora de fim
-        /// Valida tamebm se a marcação ultrapassa o limite de horas do módulo
+        /// Cria um novo horário.
         /// </summary>
+        /// <param name="dto">Dados do horário a criar.</param>
         /// <returns>
-        /// Cria horário
+        /// Horário criado com sucesso.
         /// </returns>
+        /// <response code="201">Horário criado com sucesso.</response>
+        /// <response code="400">Dados inválidos.</response>
+        /// <response code="409">Conflito de horários ou limite de horas ultrapassado.</response>
         // POST: api/Horarios
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost]
         public async Task<ActionResult<Horario>> PostHorario([FromForm] HorarioSaveDTO dto)
         {
@@ -270,18 +297,24 @@ namespace ProjetoAdministracaoEscola.Controllers
                 inicio = TimeOnly.Parse(dto.HoraInicio);
                 fim = TimeOnly.Parse(dto.HoraFim);
             }
-            catch { return BadRequest(new { message = "Formato de hora inválido." }); }
+            catch
+            {
+                return BadRequest(new { message = "Formato de hora inválido." });
+            }
 
-            if (inicio >= fim) return BadRequest(new { message = "Hora de início deve ser anterior ao fim." });
+            if (inicio >= fim)
+                return BadRequest(new { message = "Hora de início deve ser anterior ao fim." });
 
 
             // Validar Limite de Horas
             string? erroHoras = await ValidarLimiteHoras(dto.IdCursoModulo, dto.IdTurma, inicio, fim, null);
-            if (erroHoras != null) return Conflict(new { message = erroHoras });
+            if (erroHoras != null)
+                return Conflict(new { message = erroHoras });
 
             // Validar Conflitos
             string? erroConflito = await ValidarConflitos(dto, inicio, fim, null);
-            if (erroConflito != null) return Conflict(new { message = erroConflito });
+            if (erroConflito != null)
+                return Conflict(new { message = erroConflito });
 
             // dto para entidade + gravar
             var novoHorario = new Horario
@@ -302,12 +335,25 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Erro ao gravar n BD: " + ex.Message });
+                return BadRequest(new { message = "Erro ao gravar n BD" });
             }
 
             return CreatedAtAction("GetHorario", new { id = novoHorario.IdHorario }, novoHorario);
         }
 
+        /// <summary>
+        /// Gera automaticamente o horário para uma turma específica,
+        /// com base nas disponibilidades, módulos e salas.
+        /// </summary>
+        /// <param name="idTurma">Identificador da turma.</param>
+        /// <returns>
+        /// Resultado da operação com resumo do horário gerado.
+        /// </returns>
+        /// <response code="200">Horário gerado com sucesso.</response>
+        /// <response code="400">Não foi possível gerar horário com as condições atuais.</response>
+        /// <response code="404">Turma não encontrada.</response>
+        /// <response code="500">Erro interno durante a geração.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost("gerar-automatico/{idTurma}")]
         public async Task<IActionResult> GerarHorarioAutomatico(int idTurma)
         {
@@ -404,14 +450,21 @@ namespace ProjetoAdministracaoEscola.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                // Logar o erro real na consola para tu veres
-                Console.WriteLine(ex.ToString());
-                return StatusCode(500, $"Erro interno ao gerar horário: {ex.Message}");
+                return StatusCode(500, "Erro interno ao gerar horário");
             }
         }
-        
 
+        /// <summary>
+        /// Remove um horário do sistema.
+        /// </summary>
+        /// <param name="id">Identificador do horário.</param>
+        /// <returns>
+        /// NoContent se removido com sucesso.
+        /// </returns>
+        /// <response code="204">Horário removido com sucesso.</response>
+        /// <response code="404">Horário não encontrado.</response>
         // DELETE: api/Horarios/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHorario(int id)
         {
@@ -427,19 +480,27 @@ namespace ProjetoAdministracaoEscola.Controllers
             return NoContent();
         }
 
-        
 
         /* 
-         * METODOS AUXILIARES DE VALIDAÇÃO:
-         */
+        * METODOS AUXILIARES DE VALIDAÇÃO:
+        */
 
         /// <summary>
-        /// Verifica conflitos de Turma, Formador e Sala.
-        /// Aceita 'idIgnorar' para permitir atualizações (PUT) sem colidir com o próprio registo.
+        /// Valida se existem conflitos ao agendar ou atualizar um horário.
+        /// Verifica sobreposição de horários do formador, disponibilidade,
+        /// conflitos da turma e ocupação da sala (exceto salas online).
         /// </summary>
+        /// <param name="dto">DTO com os dados do horário.</param>
+        /// <param name="inicio">Hora de início da aula.</param>
+        /// <param name="fim">Hora de fim da aula.</param>
+        /// <param name="idIgnorar">
+        /// Identificador do horário a ignorar (utilizado em operações de edição).
+        /// </param>
+        /// <returns>
+        /// Mensagem de erro caso exista conflito; caso contrário, <c>null</c>.
+        /// </returns>
         private async Task<string?> ValidarConflitos(HorarioSaveDTO dto, TimeOnly inicio, TimeOnly fim, int? idIgnorar = null)
         {
-
             // Verificar Formador não tem sobreposição 
             var formadorOcupado = await _context.Horarios.AnyAsync(h =>
                 (idIgnorar == null || h.IdHorario != idIgnorar) && // Ignora o próprio (no caso de edit)
@@ -471,23 +532,43 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (turmaOcupada)
                 return "Conflito: Esta Turma já tem outra aula marcada que coincide com este horário.";
 
-            // Verificar Sala
-            var salaOcupada = await _context.Horarios.AnyAsync(h =>
-                (idIgnorar == null || h.IdHorario != idIgnorar) &&
-                h.IdSala == dto.IdSala &&
-                h.Data == dto.Data &&
-                h.HoraInicio < fim && h.HoraFim > inicio
+            var isSalaOnline = await _context.Salas
+            .AnyAsync(s =>
+                s.IdSala == dto.IdSala &&
+                s.IdTipoSalaNavigation.IdTipoSala == 10
             );
+            if (!isSalaOnline)
+            {
+                var salaOcupada = await _context.Horarios.AnyAsync(h =>
+                    (idIgnorar == null || h.IdHorario != idIgnorar) &&
+                    h.IdSala == dto.IdSala &&
+                    h.Data == dto.Data &&
+                    h.HoraInicio < fim &&
+                    h.HoraFim > inicio
+                );
 
-            if (salaOcupada)
-                return "Conflito: A Sala selecionada já está ocupada neste intervalo.";
+                if (salaOcupada)
+                    return "Conflito: A Sala selecionada já está ocupada neste intervalo.";
+            }
 
-            return null; // Nenhum conflito encontrado
+            return null;
+
         }
 
         /// <summary>
-        /// Verifica se a nova duração ultrapassa o limite de horas do módulo.
+        /// Valida se a nova aula ultrapassa o limite total de horas definido
+        /// para o módulo dentro da turma.
         /// </summary>
+        /// <param name="idCursoModulo">Identificador da relação curso-módulo.</param>
+        /// <param name="idTurma">Identificador da turma.</param>
+        /// <param name="inicio">Hora de início da aula.</param>
+        /// <param name="fim">Hora de fim da aula.</param>
+        /// <param name="idIgnorar">
+        /// Identificador do horário a ignorar (utilizado em operações de edição).
+        /// </param>
+        /// <returns>
+        /// Mensagem de erro caso o limite seja ultrapassado; caso contrário, <c>null</c>.
+        /// </returns>
         private async Task<string?> ValidarLimiteHoras(int idCursoModulo, int idTurma, TimeOnly inicio, TimeOnly fim, int? idIgnorar = null)
         {
             // Obter dados do módulo
@@ -524,6 +605,16 @@ namespace ProjetoAdministracaoEscola.Controllers
             return null; // Tudo OK
         }
 
+        /// <summary>
+        /// Obtém a disponibilidade registada de um formador específico.
+        /// </summary>
+        /// <param name="idFormador">Identificador do formador.</param>
+        /// <returns>
+        /// Lista de disponibilidades em formato <see cref="DisponibilidadeFormadorMarcarHorarios"/>.
+        /// </returns>
+        /// <response code="200">Disponibilidade devolvida com sucesso.</response>
+        /// <response code="404">Formador não encontrado.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{idFormador}/disponibilidade")]
         public async Task<ActionResult<IEnumerable<DisponibilidadeFormadorMarcarHorarios>>> GetDisponibilidadeFormador(int idFormador)
         {
@@ -548,6 +639,16 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(disponibilidade);
         }
 
+        /// <summary>
+        /// Obtém os horários já marcados para um formador específico.
+        /// </summary>
+        /// <param name="idFormador">Identificador do formador.</param>
+        /// <returns>
+        /// Lista de horários marcados em formato <see cref="HorarioMarcadoFormador"/>.
+        /// </returns>
+        /// <response code="200">Horários devolvidos com sucesso.</response>
+        /// <response code="404">Formador não encontrado.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{idFormador}/marcados")]
         public async Task<ActionResult<IEnumerable<HorarioMarcadoFormador>>> GetHorariosFormador(int idFormador)
         {
@@ -567,7 +668,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             var horarios = horariosDb.Select(h => new HorarioMarcadoFormador
             {
-                Data = h.Data, 
+                Data = h.Data,
                 HoraInicio = h.HoraInicio.ToString(@"hh\:mm"),
                 HoraFim = h.HoraFim.ToString(@"hh\:mm"),
                 NomeTurma = h.IdCursoModuloNavigation.IdCursoNavigation.Nome,

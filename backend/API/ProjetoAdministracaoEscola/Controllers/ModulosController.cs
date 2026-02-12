@@ -1,14 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Modulo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -24,33 +19,85 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os módulos registados no sistema.
+        /// </summary>
+        /// <returns>
+        /// Lista de módulos em formato <see cref="ModulosGetAll"/>.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="403">Utilizador sem permissões suficientes.</response>
         // GET: api/Modulos
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Modulo>>> GetModulos()
+        public async Task<ActionResult<IEnumerable<ModulosGetAll>>> GetModulos()
         {
             var modulos = await _context.Modulos
+                .Select( m => new ModulosGetAll
+                {
+                    IdModulo = m.IdModulo,
+                    CodigoIdentificacao = m.CodigoIdentificacao,
+                    Nome = m.Nome,
+                    HorasTotais = m.HorasTotais,
+                    Creditos = m.Creditos
+                })
                 .OrderBy(m => m.Nome)
                 .ToListAsync();
 
             return Ok(modulos);
         }
 
+        /// <summary>
+        /// Obtém os detalhes de um módulo específico.
+        /// </summary>
+        /// <param name="id">Identificador único do módulo.</param>
+        /// <returns>
+        /// Objeto <see cref="ModuloGetByIdDTO"/> correspondente.
+        /// </returns>
+        /// <response code="200">Módulo encontrado com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="403">Utilizador sem permissões suficientes.</response>
+        /// <response code="404">Módulo não encontrado.</response>
         // GET: api/Modulos/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Modulo>> GetModulo(int id)
+        public async Task<ActionResult<ModuloGetByIdDTO>> GetModulo(int id)
         {
-            var modulo = await _context.Modulos.FindAsync(id);
+            var modulo = await _context.Modulos
+                .Select(m => new ModuloGetByIdDTO
+                {
+                    IdModulo = m.IdModulo,
+                    CodigoIdentificacao = m.CodigoIdentificacao,
+                    Nome = m.Nome,
+                    HorasTotais = m.HorasTotais,
+                    Creditos = m.Creditos
+                }).FirstOrDefaultAsync();
 
             if (modulo == null)
             {
                 return NotFound();
             }
 
-            return modulo;
+            return Ok(modulo);
         }
 
+        /// <summary>
+        /// Atualiza os dados de um módulo existente.
+        /// </summary>
+        /// <param name="id">Identificador do módulo a atualizar.</param>
+        /// <param name="moduloDto">Dados atualizados do módulo.</param>
+        /// <returns>
+        /// Resultado da operação de atualização.
+        /// </returns>
+        /// <response code="204">Módulo atualizado com sucesso.</response>
+        /// <response code="400">Dados inválidos ou IDs inconsistentes.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="404">Módulo não encontrado.</response>
+        /// <response code="403">Utilizador sem permissões suficientes.</response>
+        /// <response code="409">Código de identificação já está em uso.</response>
+        /// <response code="500">Erro interno do servidor.</response>
         // PUT: api/Modulos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutModulo(int id, ModuloUpdateDTO moduloDto)
@@ -108,11 +155,23 @@ namespace ProjetoAdministracaoEscola.Controllers
             return NoContent(); // Sucesso (204)
         }
 
+        /// <summary>
+        /// Cria um novo módulo no sistema.
+        /// </summary>
+        /// <param name="moduloDto">Dados necessários para criação do módulo.</param>
+        /// <returns>
+        /// Módulo criado com sucesso.
+        /// </returns>
+        /// <response code="201">Módulo criado com sucesso.</response>
+        /// <response code="400">Dados inválidos.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="403">Utilizador sem permissões suficientes.</response>
+        /// <response code="409">Código de identificação já existente.</response>
+        /// <response code="500">Erro interno do servidor.</response>
         // POST: api/Modulos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost]
-        public async Task<ActionResult<Modulo>> PostModulo(NewModuloDTO moduloDto)
+        public async Task<ActionResult<Modulo>> PostModulo([FromBody] NewModuloDTO moduloDto)
         {
 
             if (string.IsNullOrWhiteSpace(moduloDto.Nome) || string.IsNullOrWhiteSpace(moduloDto.CodigoIdentificacao))
@@ -144,8 +203,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                 HorasTotais = moduloDto.HorasTotais,
                 Creditos = moduloDto.Creditos
             };
-
-
             try
             {
                 _context.Modulos.Add(novoModulo);
@@ -155,11 +212,23 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (DbUpdateException)
             {
-                // Erro genérico de base de dados
-                return StatusCode(500, new { message = "Erro ao guardar no servidor. Tente novamente mais tarde." });
+                return StatusCode(500, new { message = "Erro ao guardar no servidor." });
             }
         }
 
+        /// <summary>
+        /// Inativa (soft delete) um módulo existente.
+        /// A eliminação falha caso existam aulas futuras associadas.
+        /// </summary>
+        /// <param name="id">Identificador do módulo a eliminar.</param>
+        /// <returns>
+        /// Resultado da operação de inativação.
+        /// </returns>
+        /// <response code="204">Módulo inativado com sucesso.</response>
+        /// <response code="400">Não é possível eliminar devido a aulas futuras associadas.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="403">Utilizador sem permissões suficientes.</response>
+        /// <response code="404">Módulo não encontrado.</response>
         // DELETE: api/Modulos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
@@ -186,13 +255,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             modulo.Ativo = false;
             modulo.DataDesativacao = DateTime.Now;
 
-            // não remover (Soft Delete)
-            //_context.modulo.Remove(modulo); 
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
+        /// <summary>
+        /// Verifica se um módulo existe na base de dados.
+        /// </summary>
+        /// <param name="id">Identificador do módulo.</param>
+        /// <returns>
+        /// <c>true</c> se existir; caso contrário, <c>false</c>.
+        /// </returns>
         private bool ModuloExists(int id)
         {
             return _context.Modulos.Any(e => e.IdModulo == id);
