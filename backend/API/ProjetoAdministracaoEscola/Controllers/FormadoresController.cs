@@ -15,6 +15,7 @@ using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO;
 using ProjetoAdministracaoEscola.ModelsDTO.Formador;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
+using ProjetoAdministracaoEscola.ModelsDTO.TipoMateria;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers

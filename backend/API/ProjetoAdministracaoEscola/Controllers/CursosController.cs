@@ -21,10 +21,10 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// ObtÈm a lista de todos os cursos ativos.
+        /// Obt–πm a lista de todos os cursos ativos.
         /// </summary>
         /// <remarks>
-        /// Devolve os cursos ordenados por nome, incluindo o nome da ·rea associada.
+        /// Devolve os cursos ordenados por nome, incluindo o nome da –±rea associada.
         /// </remarks>
         /// <returns>
         /// 200 OK com a lista de cursos.
@@ -49,14 +49,14 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// ObtÈm a lista de todas as ·reas de cursos.
+        /// Obt–πm a lista de todas as –±reas de cursos.
         /// </summary>
         /// <remarks>
-        /// Devolve apenas o id e o nome de cada ·rea,
+        /// Devolve apenas o id e o nome de cada –±rea,
         /// ordenados alfabeticamente.
         /// </remarks>
         /// <returns>
-        /// 200 OK com a lista de ·reas.
+        /// 200 OK com a lista de –±reas.
         /// </returns>
         // GET: api/Cursos/areaCursos
  
@@ -76,18 +76,18 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// ObtÈm os detalhes de um curso especÌfico.
+        /// Obt–πm os detalhes de um curso espec–Ωfico.
         /// </summary>
         /// <param name="id">
         /// Id do curso.
         /// </param>
         /// <remarks>
-        /// Inclui a lista de mÛdulos associados ao curso,
-        /// ordenados pelo nome do mÛdulo.
+        /// Inclui a lista de m—Édulos associados ao curso,
+        /// ordenados pelo nome do m—Édulo.
         /// </remarks>
         /// <returns>
         /// 200 OK com os dados do curso;
-        /// 404 NotFound se o curso n„o existir.
+        /// 404 NotFound se o curso n–≥o existir.
         /// </returns>
         // GET: api/Cursos/5
 
@@ -124,23 +124,23 @@ namespace ProjetoAdministracaoEscola.Controllers
 
         /// <summary>
         /// Atualiza os dados de um curso existente,
-        /// incluindo os mÛdulos associados.
+        /// incluindo os m—Édulos associados.
         /// </summary>
         /// <param name="id">
         /// Id do curso a atualizar.
         /// </param>
         /// <param name="dto">
-        /// Dados atualizados do curso, incluindo ·rea e mÛdulos.
+        /// Dados atualizados do curso, incluindo –±rea e m—Édulos.
         /// </param>
         /// <remarks>
-        /// Valida a existÍncia da ·rea e dos mÛdulos indicados.
-        /// Atualiza prioridades dos mÛdulos existentes,
+        /// Valida a exist–∫ncia da –±rea e dos m—Édulos indicados. <br/>
+        /// Atualiza prioridades dos m—Édulos existentes,
         /// adiciona novos e remove os que deixaram de estar associados.
         /// </remarks>
         /// <returns>
-        /// 204 NoContent se a atualizaÁ„o for bem-sucedida;
-        /// 400 BadRequest se a ·rea ou mÛdulos forem inv·lidos;
-        /// 404 NotFound se o curso n„o existir.
+        /// 204 NoContent se a atualiza–∑–≥o for bem-sucedida;<br/>
+        /// 400 BadRequest se a –±rea ou m—Édulos forem inv–±lidos;<br/>
+        /// 404 NotFound se o curso n–≥o existir.
         /// </returns>
         // PUT: api/Cursos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
@@ -152,15 +152,15 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .FirstOrDefaultAsync(c => c.IdCurso == id);
 
             if (curso == null)
-                return NotFound(new { message = "Curso n„o encontrado." });
+                return NotFound(new { message = "Curso n√£o encontrado." });
 
             if (!await _context.Areas.AnyAsync(a => a.IdArea == dto.IdArea))
-                return BadRequest(new { message = "¡rea inv·lida." });
+                return BadRequest(new { message = "–ërea inv√°lida." });
 
             curso.Nome = dto.Nome;
             curso.IdArea = dto.IdArea;
 
-            // validar mÛdulos
+            // validar m—Édulos
             var idsDto = dto.Modulos.Select(m => m.IdModulo).ToList();
 
             var modulosValidos = await _context.Modulos
@@ -169,9 +169,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .ToListAsync();
 
             if (modulosValidos.Count != idsDto.Count)
-                return BadRequest(new { message = "Um ou mais mÛdulos s„o inv·lidos." });
+                return BadRequest(new { message = "Um ou mais m√≥dulos s√£o inv√°lidos." });
 
-            // remover mÛdulos que j· n„o vÍm
+            // remover m—Édulos que j–± n–≥o v–∫m
             var aRemover = curso.CursosModulos
                 .Where(cm => !idsDto.Contains(cm.IdModulo))
                 .ToList();
@@ -210,14 +210,14 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// Cria um novo curso.
         /// </summary>
         /// <param name="dto">
-        /// Dados necess·rios para criaÁ„o do curso.
+        /// Dados necess–±rios para cria–∑–≥o do curso.
         /// </param>
         /// <remarks>
-        /// O curso È criado com a ·rea associada e descriÁ„o.
+        /// O curso √© criado com a –±rea associada e descri–∑–≥o.
         /// </remarks>
         /// <returns>
         /// 201 Created se o curso for criado com sucesso;
-        /// 400 BadRequest se o modelo for inv·lido.
+        /// 400 BadRequest se o modelo for inv–±lido.
         /// </returns>
         // POST: api/Cursos
         [Authorize(Policy = "AdminOrAdministrativo")]
@@ -251,17 +251,17 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// Identificador do curso a desativar.
         /// </param>
         /// <remarks>
-        /// O curso n„o È removido da base de dados.
-        /// Apenas È marcado como inativo.
+        /// O curso n–≥o –π removido da base de dados.<br/>
+        /// Apenas √© marcado como inativo.
         /// 
-        /// A operaÁ„o falha se existirem aulas futuras
+        /// A opera–∑–≥o falha se existirem turmas ativas
         /// associadas ao curso.
         /// </remarks>
         /// <returns>
-        /// 204 NoContent se a desativaÁ„o for bem-sucedida;
-        /// 400 BadRequest se existirem aulas futuras associadas;
-        /// 404 NotFound se o curso n„o existir;
-        /// 401 Unauthorized se o utilizador n„o tiver permiss„o.
+        /// 204 NoContent se a desativa–∑–≥o for bem-sucedida; <br/>
+        /// 400 BadRequest se existirem aulas futuras associadas; <br/> 
+        /// 404 NotFound se o curso n–≥o existir; <br/>
+        /// 401 Unauthorized se o utilizador n–≥o tiver permiss–≥o.
         /// </returns>
         // DELETE: api/Cursos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
@@ -271,8 +271,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             var curso = await _context.Cursos.FindAsync(id);
             if (curso == null)
             {
-                return NotFound(new {message = "Curso n„o encontrado."});
+                return NotFound(new {message = "Curso n√£o encontrado."});
             }
+            if (!curso.Ativo)
+            {
+                return BadRequest(new { message = "Este curso j√° se encontra desativado." });
+            }
+
 
 
             var cursoEmUso = await _context.Horarios.AnyAsync(h => h.IdCursoModuloNavigation.IdCursoNavigation.IdCurso == id &&
@@ -280,13 +285,21 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (cursoEmUso)
             {
-                return BadRequest(new { message = "N„o È possivel eliminar o curso pois existem aulas agendadas para o prÛprio." });
+                return BadRequest(new { message = "N√£o √© possivel eliminar o curso pois existem aulas agendadas para o pr√≥prio." });
             }
 
+            var turmaEmAndamento = await _context.Turmas.AnyAsync(t => t.IdCurso == id && t.Ativo == true);
+
+            if (turmaEmAndamento)
+            {
+                return BadRequest(new { message = "N√£o √© possivel eliminar o curso pois existem turmas alocadas a este curso." });
+            }
+
+            
             curso.Ativo = false;
             curso.DataDesativacao = DateTime.Now;
 
-            // n„o remover (Soft Delete)
+            // n√£o remover (Soft Delete)
             await _context.SaveChangesAsync();
 
             return NoContent();
