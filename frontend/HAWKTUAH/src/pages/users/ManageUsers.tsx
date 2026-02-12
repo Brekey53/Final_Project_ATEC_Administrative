@@ -84,9 +84,9 @@ export default function ManageUsers() {
 
       setShowDeleteModal(false);
       setUtilizadorSelecionado(null);
-      toast.success("Utilizador eliminado com sucesso");
+      toast.success("Utilizador eliminado com sucesso", { id: "successDelUserCoiso" });
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao eliminar utilizador");
+      toast.error(err.response?.data?.message || "Erro ao eliminar utilizador", { id: "erroDelUserCoiso" });
     }
   }
 

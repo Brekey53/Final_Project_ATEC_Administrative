@@ -16,11 +16,11 @@ export default function ForgotPassword() {
       const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, {
         email,
       });
-      toast.success("Irá receber um email com instruções.");
+      toast.success("Irá receber um email com instruções.", { id: "MailEnviado" });
       return res.data;
     } catch (err: any) {
       toast.error(
-        err.mensagem || "Ocorreu um erro. Tente novamente mais tarde.",
+        err.mensagem || "Ocorreu um erro. Tente novamente mais tarde.", { id: "errorNãoEnviado" }
       );
     } finally {
       setLoading(false);

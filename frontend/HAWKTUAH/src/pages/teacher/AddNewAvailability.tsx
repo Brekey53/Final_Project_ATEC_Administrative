@@ -121,7 +121,7 @@ export default function AddNewAvailability() {
 
     try {
       await postDisponibilidadeInput(scheduleInput);
-      toast.success("Horário adicionado com sucesso!");
+      toast.success("Horário adicionado com sucesso!", { id: "successHorarioAdicionadoC" });
     } catch (err: any) {
       toast.error(
         err.response?.data?.message || "Erro ao adicionar horário disponível",
@@ -220,8 +220,7 @@ export default function AddNewAvailability() {
                     onBlur={() => {
                       if (isFimDeSemana(scheduleInput.dataInicio)) {
                         toast.error(
-                          "Não é possível selecionar fins de semana.",
-                        );
+                          "Não é possível selecionar fins de semana.", { id: "erroSelecionarFDS" });
                       }
                     }}
                     required
@@ -239,8 +238,7 @@ export default function AddNewAvailability() {
                     onBlur={() => {
                       if (isFimDeSemana(scheduleInput.dataInicio)) {
                         toast.error(
-                          "Não é possível selecionar fins de semana.",
-                        );
+                          "Não é possível selecionar fins de semana.", { id: "ErroSelecionarFDS" });
                       }
                     }}
                   />

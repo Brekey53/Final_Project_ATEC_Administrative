@@ -84,11 +84,11 @@ export default function NewRoom() {
 
       setShowDeleteModal(false);
       setSalaSelecionada(null);
-      toast.success("Sala eliminada com sucesso");
+      toast.success("Sala eliminada com sucesso", {id: "successDelSala"});
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.message) {
-        toast.error(errorData.message || "Erro ao eliminar sala");
+        toast.error(errorData.message || "Erro ao eliminar sala", {id: "erroDelSala"});
       }
     }
   }

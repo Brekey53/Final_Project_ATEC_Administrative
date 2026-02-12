@@ -20,7 +20,7 @@ export default function GeralTurmas() {
         if (!data) return;
         setTurmas(data);
       } catch (err: any) {
-        toast.error(err || "Erro ao carregar turmas.");
+        toast.error(err || "Erro ao carregar turmas.", { id: "erroGeralTurmas" });
       }
     }
 

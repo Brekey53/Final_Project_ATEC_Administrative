@@ -79,7 +79,6 @@ export async function downloadFicheiroPDF(
     link.remove();
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Erro ao descarregar PDF", error);
-    toast.error("Não foi possível gerar o PDF.");
+    toast.error("Não foi possível gerar o PDF.", { id: "errorPdF" });
   }
 }

@@ -4,7 +4,7 @@ import {
   getHorariosFormador,
   getHorasFormadorMesAtual,
   getHorasFormadorMesAnterior,
-  getNumeroTurmasFormador
+  getNumeroTurmasFormador,
 } from "../../services/calendar/CalendarService";
 import { checkEmailGetName } from "../../services/users/UserService";
 import CalendarSchedule from "../CalendarSchedule";
@@ -33,7 +33,7 @@ export default function FormadorDashboard() {
 
         const events = resData.map((h: any) => ({
           id: h.idHorario,
-          title: `${h.nomeCurso} - ${h.nomeSala}`,
+          title: `${h.nomeTurma}\n${h.nomeModulo}\n${h.nomeSala}`,
           start: `${h.data}T${h.horaInicio}`,
           end: `${h.data}T${h.horaFim}`,
         }));
@@ -92,7 +92,7 @@ export default function FormadorDashboard() {
             <div className="card-body p-3">
               <div className="d-flex align-items-center gap-3">
                 <div className="p-2 bg-primary bg-opacity-10 rounded-3 text-primary">
-                  <Clock size={20} /> 
+                  <Clock size={20} />
                 </div>
                 <div>
                   <h6 className="text-muted mb-0 small fw-semibold">
@@ -124,8 +124,8 @@ export default function FormadorDashboard() {
           </div>
         </div>
 
-      {/* Turmas que o formador leciona agora */}
-      <div className="col-12 col-sm-6 col-md-4">
+        {/* Turmas que o formador leciona agora */}
+        <div className="col-12 col-sm-6 col-md-4">
           <div className="card border-0 shadow-sm rounded-4 h-100">
             <div className="card-body p-3">
               <div className="d-flex align-items-center gap-3">
@@ -142,7 +142,6 @@ export default function FormadorDashboard() {
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Horário semanal */}

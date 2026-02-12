@@ -91,10 +91,10 @@ export default function EditUser() {
 
     try {
       await updateUtilizador(id, data);
-      toast.success("Perfil do Utilizador atualizado!");
+      toast.success("Perfil do Utilizador atualizado!", { id: "successPerfilAtualizado" });
       navigate(-1); // Volta para a listagem
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar dados.");
+      toast.error(err.response?.data?.message || "Erro ao atualizar dados.", { id: "erro-atualizar-dados" });
     } finally {
       setLoading(false);
     }

@@ -11,16 +11,16 @@ export interface Formando {
   telefone?: string;
   sexo: string;
   email: string;
-  turma: string;
+  nomeTurma: string;
   idEscolaridade: string;
   estado: string;
   fotografia: File | null;
   anexoFicheiro: File | null;
+  dataFim?: string;
 }
 
-
 // Obter todos os formandos
-export async function getFormandos(): Promise<Formando[]> {
+export async function getFormandos() {
   const res = await axios.get(`${API_BASE_URL}/formandos`);
   return res.data;
 }
@@ -93,7 +93,6 @@ export async function downloadFicheiroPDF(
     link.remove();
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Erro ao descarregar PDF", error);
-    toast.error("Não foi possível gerar o PDF.");
+    toast.error("Não foi possível gerar o PDF.", { id: "errorPDF" });
   }
 }

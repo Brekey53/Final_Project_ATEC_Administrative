@@ -19,6 +19,7 @@ export default function EditCourse() {
     nome: "",
     idArea: 0,
     modulos: [],
+    nomeArea: '',
   });
 
   const [modulosDisponiveis, setModulosDisponiveis] = useState<Modulo[]>([]);
@@ -85,7 +86,7 @@ export default function EditCourse() {
     if (!id) return;
 
     if (!curso.nome.trim()) {
-      toast.error("O nome do curso é obrigatório.");
+      toast.error("O nome do curso é obrigatório.", {id: "errorNomeCurso"});
       return;
     }
 
@@ -102,10 +103,10 @@ export default function EditCourse() {
 
     try {
       await updateCurso(id, payload);
-      toast.success("Curso atualizado com sucesso!");
+      toast.success("Curso atualizado com sucesso!", {id: "sucessCursoAtualizado"});
       navigate("/gerir-cursos");
     } catch {
-      toast.error("Erro ao atualizar curso.");
+      toast.error("Erro ao atualizar curso.", {id: "error-curso4"});
     } finally {
       setLoading(false);
     }

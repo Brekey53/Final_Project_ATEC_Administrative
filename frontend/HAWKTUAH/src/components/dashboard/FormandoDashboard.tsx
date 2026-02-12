@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 import CalendarSchedule from "../../components/CalendarSchedule";
 import { authService } from "../../auth/AuthService";
-import { getHorariosFormando } from "../../services/calendar/CalendarService";
+import {
+  getHorariosFormando,
+  exportHorarioFormando,
+} from "../../services/calendar/CalendarService";
 import {
   type AvaliacaoFormando,
   getAvaliacoesFormando,
 } from "../../services/dashboard/DashboardService";
 import { checkEmailGetName } from "../../services/users/UserService";
 import { Award, BookOpen, Clock } from "lucide-react";
+import axios from "axios";
 
 export default function FormandoDashboard() {
   const [events, setEvents] = useState<[]>([]);
@@ -29,7 +33,7 @@ export default function FormandoDashboard() {
 
         const events = resData.map((h: any) => ({
           id: h.idHorario,
-          title: `${h.nomeCurso} - ${h.nomeSala}`,
+          title: `${h.nomeModulo}\n${h.nomeSala}`,
           start: `${h.data}T${h.horaInicio}`,
           end: `${h.data}T${h.horaFim}`,
         }));
@@ -43,11 +47,30 @@ export default function FormandoDashboard() {
     fetchHorarios();
   }, []);
 
-  
-
   useEffect(() => {
     getAvaliacoesFormando().then(setAvaliacoes);
   }, []);
+
+  const handleExportClick = async () => {
+    if (!user) return null;
+
+    try {
+      const res = await exportHorarioFormando();
+
+      const url = window.URL.createObjectURL(new Blob([res]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "meu_horario.ics");
+      document.body.appendChild(link);
+      link.click();
+
+      // Limpeza
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erro ao exportar:", error);
+    }
+  };
 
   if (!user) return null;
 
@@ -95,7 +118,8 @@ export default function FormandoDashboard() {
                   Módulos por Avaliar
                 </h6>
                 <h4 className="fw-bold mb-0">
-                  {avaliacoes && avaliacoes.length > 0 &&
+                  {avaliacoes &&
+                  avaliacoes.length > 0 &&
                   avaliacoes[0].totalModulosCurso
                     ? avaliacoes[0].totalModulosCurso - avaliacoes.length
                     : "0"}
@@ -194,7 +218,16 @@ export default function FormandoDashboard() {
               <h5 className="fw-bold mb-0">Agenda Semanal</h5>
             </div>
             <div className="card-body p-4">
-              <CalendarSchedule events={events}/>
+              <CalendarSchedule events={events} />
+              <div>
+                <br />
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={handleExportClick}
+                >
+                  📅 Exportar para Google Calendar
+                </button>
+              </div>
             </div>
           </div>
         </div>

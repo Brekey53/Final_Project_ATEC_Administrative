@@ -141,7 +141,7 @@ export default function EditFormando() {
 
     try {
       await updateFormando(id, data);
-      toast.success("Perfil atualizado com sucesso!");
+      toast.success("Perfil atualizado com sucesso!", { id: "successPerfilAtualizado" });
       navigate("/gerir-formandos");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar dados.", {
@@ -176,7 +176,7 @@ export default function EditFormando() {
       // Abrir em nova aba
       window.open(fileURL, "_blank");
     } catch (error) {
-      toast.error("Não foi possível abrir o documento.");
+      toast.error("Não foi possível abrir o documento.", { id: "erroAoAbrirDoc" });
       console.error(error);
     }
   };

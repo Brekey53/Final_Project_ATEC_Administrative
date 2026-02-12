@@ -48,12 +48,12 @@ export default function Perfil() {
     e.preventDefault();
     try {
       if (!currentPassword || !newPassword || !confirmPassword) {
-        toast.error("Preencha todos os campos");
+        toast.error("Preencha todos os campos", { id: "erroCamposIncompletos" });
         return;
       }
 
       if (newPassword !== confirmPassword) {
-        toast.error("As passwords não coincidem");
+        toast.error("As passwords não coincidem", { id: "erroPasswordsCoincidem" });
         return;
       }
       setLoading(true);
@@ -78,7 +78,7 @@ export default function Perfil() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao alterar password");
+      toast.error(err.response?.data?.message || "Erro ao alterar password", { id: "erroAlterarPassword" });
     } finally {
       setLoading(false);
     }

@@ -24,7 +24,7 @@ export default function AddNewRoom() {
         const data = await getTipoSalas();
         setTiposSala(data);
       } catch {
-        toast.error("Erro ao carregar tipos de sala");
+        toast.error("Erro ao carregar tipos de sala", {id: "erroCarregarTiposSala"});
       }
     }
 
@@ -49,7 +49,7 @@ export default function AddNewRoom() {
     e.preventDefault();
 
     if (formData.idTipoSala === 0) {
-      toast.error("Seleciona um tipo de sala");
+      toast.error("Seleciona um tipo de sala", {id: "errorSelecioneTipoSala"});
       return;
     }
 
@@ -57,10 +57,10 @@ export default function AddNewRoom() {
 
     try {
       await postNewSala(formData);
-      toast.success("Sala criada com sucesso!");
+      toast.success("Sala criada com sucesso!", {id: "sucessCriarSala"});
       navigate("/gerir-salas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao criar sala.");
+      toast.error(err.response?.data?.message || "Erro ao criar sala.", {id: "erroCriarSala"});
     } finally {
       setLoading(false);
     }

@@ -15,7 +15,7 @@ export default function AddNewCourse() {
     e.preventDefault();
 
     if (!nome || !area) {
-      toast.error("Preenche todos os campos obrigatórios.");
+      toast.error("Preenche todos os campos obrigatórios.", { id: "erroCamposIncompletos2" });
       return;
     }
 
@@ -30,7 +30,7 @@ export default function AddNewCourse() {
     try {
       await postNewCurso(payload);
 
-      toast.success("Curso criado com sucesso!");
+      toast.success("Curso criado com sucesso!", { id: "sucessCursoCriado" });
       navigate(-1);
     } catch (err: any) {
       const errorData = err.response?.data;
@@ -40,7 +40,7 @@ export default function AddNewCourse() {
           .flat()
           .forEach((msg: any) => toast.error(msg));
       } else {
-        toast.error(errorData?.message || "Erro ao criar curso.");
+        toast.error(errorData?.message || "Erro ao criar curso.", { id: "erroAoCriarCurso" });
       }
     } finally {
       setLoading(false);
@@ -51,7 +51,7 @@ export default function AddNewCourse() {
     <div className="container mt-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h2>Registar Novo Curso</h2>
-        <button className="btn btn-light border" onClick={() => navigate(-1)}>
+        <button className="btn btn-light border" onClick={() => navigate("/gerir-cursos")}>
           Voltar
         </button>
       </div>
@@ -125,7 +125,7 @@ export default function AddNewCourse() {
               <button
                 type="button"
                 className="btn btn-light px-4"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/gerir-cursos")}
               >
                 Cancelar
               </button>

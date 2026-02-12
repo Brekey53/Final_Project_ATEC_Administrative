@@ -36,6 +36,7 @@ export default function EditTurma() {
     dataFim: "",
     nomeCurso: "",
     estado: "A decorrer",
+    idMetodologia: 0,
   });
 
   type Tabs = "dados" | "formadores";
@@ -78,7 +79,7 @@ export default function EditTurma() {
       setModulosDisponiveis(data);
       setShowModal(true);
     } catch {
-      toast.error("Erro ao carregar módulos disponíveis.");
+      toast.error("Erro ao carregar módulos disponíveis.", { id: "erroCarregarModulosDisponiveissa" });
     }
   };
 
@@ -129,7 +130,7 @@ export default function EditTurma() {
 
         setCursos(cursosRes);
       } catch {
-        toast.error("Erro ao carregar dados da turma.");
+        toast.error("Erro ao carregar dados da turma.", { id: "erroCarregarDadosTurmaas" });
         navigate("/turmas");
       } finally {
         setFetching(false);
@@ -148,7 +149,7 @@ export default function EditTurma() {
         const data = await getFormadoresDaTurma(id);
         setFormadoresTurma(data);
       } catch {
-        toast.error("Erro ao carregar formadores da turma.");
+        toast.error("Erro ao carregar formadores da turma.", { id: "erroLifTeacherTurma" });
       } finally {
         setLoadingFormadores(false);
       }
@@ -176,10 +177,10 @@ export default function EditTurma() {
 
     try {
       await updateTurma(id, formData);
-      toast.success("Turma atualizada com sucesso!");
+      toast.success("Turma atualizada com sucesso!", { id: "successTurmaUpdate" });
       navigate("/turmas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar turma.");
+      toast.error(err.response?.data?.message || "Erro ao atualizar turma.", { id: "errorUpdateTurma" });
     } finally {
       setLoading(false);
     }
@@ -195,7 +196,7 @@ export default function EditTurma() {
         idFormador: selectedFormador,
       });
 
-      toast.success("Formador alocado com sucesso!");
+      toast.success("Formador alocado com sucesso!", { id: "successTeacherPut" });
 
       setShowModal(false);
       setSelectedModulo(null);
@@ -219,14 +220,14 @@ export default function EditTurma() {
         alocacaoParaRemover.idModulo,
       );
 
-      toast.success("Formador removido com sucesso.");
+      toast.success("Formador removido com sucesso.", { id: "successTeacherNoPut" });
 
       const data = await getFormadoresDaTurma(id);
       setFormadoresTurma(data);
     } catch (err: any) {
       const mensagem =
         err.response?.data?.message || "Não foi possível remover o formador.";
-      toast.error(mensagem);
+      toast.error(mensagem, { id: "errorTeacherNoPutTurma" });
     } finally {
       setShowRemoveModal(false);
       setAlocacaoParaRemover(null);
