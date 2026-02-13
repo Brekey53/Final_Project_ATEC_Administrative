@@ -39,7 +39,6 @@ export interface EditUtilizador {
     ativo: boolean;
 }
 
-
 export async function getUtilizadores(): Promise<UtilizadorListItem[]> {
   const res = await axios.get(`${API_BASE_URL}/utilizadores`);
 

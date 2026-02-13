@@ -59,24 +59,38 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// </summary>
         /// <param name="id">Identificador do utilizador.</param>
         /// <returns>
-        /// Entidade <see cref="Utilizador"/> correspondente.
+        /// Entidade <see cref="UtilizadorEditDTO"/> correspondente.
         /// </returns>
         /// <response code="200">Utilizador encontrado.</response>
         /// <response code="404">Utilizador não encontrado.</response>
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Utilizador>> GetUtilizador(int id)
+        public async Task<ActionResult<UtilizadorEditDTO>> GetUtilizador(int id)
         {
-            var utilizador = await _context.Utilizadores
-                .FindAsync(id);
+            var dto = await _context.Utilizadores
+                .AsNoTracking()
+                .Where(u => u.IdUtilizador == id)
+                .Select(u => new UtilizadorEditDTO
+                {
+                    IdUtilizador = u.IdUtilizador,
+                    Email = u.Email,
+                    NomeCompleto = u.Nome,
+                    NIF = u.Nif,
+                    Sexo = u.Sexo,
+                    DataNascimento = u.DataNascimento,
+                    Telefone = u.Telefone,
+                    TipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador,
+                    Ativo = u.Ativo,
+                    Morada = u.Morada
+                })
+                .FirstOrDefaultAsync();
 
-            if (utilizador == null)
-            {
+            if (dto == null)
                 return NotFound();
-            }
 
-            return utilizador;
+            return Ok(dto);
         }
+
 
         /// <summary>
         /// Obtém o perfil completo do utilizador autenticado.
