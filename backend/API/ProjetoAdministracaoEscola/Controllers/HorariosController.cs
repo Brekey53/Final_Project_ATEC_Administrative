@@ -556,7 +556,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             var horario = await _context.Horarios.FindAsync(id);
             if (horario == null)
             {
-                return NotFound();
+                return NotFound(new {message = "Horário não encontrado."});
             }
 
             _context.Horarios.Remove(horario);

@@ -55,9 +55,10 @@ export async function getMetodologias() {
 
 export interface CreateTurmaDTO {
   nomeTurma: string;
+  idCurso: number;
   dataInicio: string;
   dataFim: string;
-  idCurso: number;
+  nomeCurso: string;
   idMetodologia: number;
 }
 
