@@ -38,7 +38,7 @@ export default function AddNewTurma() {
         setCursos(cursosRes);
         setMetedologia(metedologiaRes);
       } catch (err) {
-        toast.error("Erro ao carregar dados da turma.");
+        toast.error("Erro ao carregar dados da turma.", { id: "errLiftTurma" });
         navigate("/turmas");
       } finally {
         setFetching(false);
@@ -74,7 +74,7 @@ export default function AddNewTurma() {
     e.preventDefault();
 
     if (!formData.idCurso || !formData.nomeTurma) {
-      toast.error("Preencha todos os campos obrigatórios.");
+      toast.error("Preencha todos os campos obrigatórios.", { id: "erroFillTudo" });
       return;
     }
 
@@ -91,10 +91,10 @@ export default function AddNewTurma() {
 
     try {
       await postNewTurma(data);
-      toast.success("Turma criada com sucesso!");
+      toast.success("Turma criada com sucesso!", { id: "successTurmaCriada" });
       navigate("/turmas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao criar turma.");
+      toast.error(err.response?.data?.message || "Erro ao criar turma.", { id: "erroInspCriarTurma" });
     } finally {
       setLoading(false);
     }

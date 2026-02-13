@@ -25,7 +25,7 @@ export default function AdminTurmas() {
         if (!data) return;
         setTurmas(data);
       } catch (err: any) {
-        toast.error(err || "Erro ao carregar turmas.");
+        toast.error(err || "Erro ao carregar turmas.", { id: "erroAdminTurmas" });
       }
     }
 
@@ -45,9 +45,9 @@ export default function AdminTurmas() {
         setTurmaSelecionada(null);
         setShowDeleteModal(false);
   
-        toast.success("Turma eliminada com sucesso");
+        toast.success("Turma eliminada com sucesso", { id: "sucessAdminTurmas" });
       } catch (error: any) {
-        toast.error(error.response?.data?.message || "Erro ao eliminar Turma");
+        toast.error(error.response?.data?.message || "Erro ao eliminar Turma", { id: "eoorAdminTurmas" });
       }
     }
 

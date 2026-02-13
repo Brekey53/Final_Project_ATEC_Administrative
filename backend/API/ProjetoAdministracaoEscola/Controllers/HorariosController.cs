@@ -5,7 +5,9 @@ using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
 using ProjetoAdministracaoEscola.Services;
+using System.Net.Mime;
 using System.Security.Claims;
+using System.Text;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
@@ -97,8 +99,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             var horarios = await _context.Horarios
                 .Where(h => h.IdFormador == formadorId)
                 .Include(h => h.IdSalaNavigation)
-                .Include(h => h.IdCursoModuloNavigation)
-                    .ThenInclude(cm => cm.IdCursoNavigation)
+                .Include(h => h.IdTurmaNavigation)
                 .Include(h => h.IdCursoModuloNavigation)
                     .ThenInclude(cm => cm.IdModuloNavigation)
                 .Select(h => new ScheduleCalendarDTO
@@ -108,8 +109,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                     HoraInicio = h.HoraInicio,
                     HoraFim = h.HoraFim,
                     NomeSala = h.IdSalaNavigation.Descricao,
-                    NomeCurso = h.IdCursoModuloNavigation.IdCursoNavigation.Nome,
-                    //NomeModulo = h.IdCursoModuloNavigation.IdModuloNavigation.Nome // TODO:AQUI!
+                    NomeTurma = h.IdTurmaNavigation.NomeTurma,
+                    NomeModulo = h.IdCursoModuloNavigation.IdModuloNavigation.Nome
                 })
                 .OrderBy(h => h.Data)
                 .ThenBy(h => h.HoraInicio)
@@ -162,13 +163,97 @@ namespace ProjetoAdministracaoEscola.Controllers
                     HoraInicio = h.HoraInicio,
                     HoraFim = h.HoraFim,
                     NomeSala = h.IdSalaNavigation.Descricao,
-                    NomeCurso = h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                    NomeModulo = h.IdCursoModuloNavigation.IdModuloNavigation.Nome
                 })
                 .OrderBy(h => h.Data)
                 .ThenBy(h => h.HoraInicio)
                 .ToListAsync();
 
             return Ok(horarios);
+        }
+
+        /// <summary>
+        /// Exporta o horário do utilizador autenticado como um ficheiro iCalendar (.ics).
+        /// </summary>
+        /// <remarks>
+        /// O calendário exportado inclui todas as aulas agendadas para o utilizador nas turmas em que está inscrito.
+        /// O ficheiro pode ser importado na maioria das aplicações de calendário, como Google Calendar ou Outlook.
+        /// Apenas utilizadores autenticados podem aceder ao seu próprio horário.
+        /// </remarks>
+        /// <returns>
+        /// Um ficheiro contendo o horário do utilizador no formato iCalendar. 
+        /// Retorna 'Não Autorizado' se o utilizador não estiver autenticado, ou 'Não Encontrado' se o formando não existir.
+        /// </returns>
+        [HttpGet("exportar/formandoCalendar")]
+        public async Task<IActionResult> ExportarHorario()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim);
+
+            var formando = await _context.Formandos.FirstOrDefaultAsync(f => f.IdUtilizador == userId);
+
+            if (formando == null)
+            {
+                return NotFound(new { message = "Formando não encontrado." });
+            }
+
+            // Turmas onde está inscrito
+            var turmasIds = await _context.Inscricoes
+                .Where(i => i.IdFormando == formando.IdFormando)
+                .Select(i => i.IdTurma)
+                .ToListAsync();
+
+            if (!turmasIds.Any())
+                return Ok(new List<ScheduleCalendarDTO>());
+
+            // Horários
+            var horarios = await _context.Horarios
+                .Where(h => turmasIds.Contains(h.IdTurma))
+                .Select(h => new
+                {
+                    h.Data,
+                    h.HoraInicio,
+                    h.HoraFim,
+                    Sala = h.IdSalaNavigation.Descricao,
+                    Modulo = h.IdCursoModuloNavigation.IdCursoNavigation.Nome
+                })
+                .OrderBy(h => h.Data)
+                .ThenBy(h => h.HoraInicio)
+                .ToListAsync();
+
+            var ics = new StringBuilder();
+            ics.AppendLine("BEGIN:VCALENDAR");
+            ics.AppendLine("VERSION:2.0");
+            ics.AppendLine("PROID:-//HAWKPORTAL//PT");
+            ics.AppendLine("CALSCALE:GREGORIAN");
+            ics.AppendLine("METHOD:PUBLISH");
+
+            foreach (var h in horarios)
+            {
+                // Formato padrao ICS: YYYYMMDDTHHMMSS
+                string start = h.Data.ToString("yyyyMMdd") + "T" + h.HoraInicio.ToString("HHmm") + "00";
+                string end = h.Data.ToString("yyyyMMdd") + "T" + h.HoraFim.ToString("HHmm") + "00";
+
+                ics.AppendLine("BEGIN:VEVENT");
+                ics.AppendLine($"UID:{Guid.NewGuid()}@hawkportal.pt"); // ID único para o Google não duplicar
+                ics.AppendLine($"DTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}");
+                ics.AppendLine($"DTSTART:{start}");
+                ics.AppendLine($"DTEND:{end}");
+                ics.AppendLine($"SUMMARY:{h.Modulo}");
+                ics.AppendLine($"LOCATION:{h.Sala}");
+                ics.AppendLine($"DESCRIPTION:Aula do módulo {h.Modulo}");
+                ics.AppendLine("END:VEVENT");
+            }
+
+            ics.AppendLine("END:VCALENDAR");
+
+            var bytesDoCalendario = Encoding.UTF8.GetBytes(ics.ToString());
+
+            return File(bytesDoCalendario, "text/calendar", $"horario_formando_{userId}.ics");
+
         }
 
         /// <summary>

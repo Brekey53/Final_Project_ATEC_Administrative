@@ -70,7 +70,7 @@ export default function EditTeacher() {
         if (f.fotografia) setFotoPreview(f.fotografia);
         if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro);
       } catch {
-        toast.error("Erro ao carregar dados do formador.");
+        toast.error("Erro ao carregar dados do formador.", { id: "errorAoCarregarDadosFormador" });
       } finally {
         setFetching(false);
       }
@@ -132,7 +132,7 @@ export default function EditTeacher() {
     });
     try {
       await updateFormador(id, data);
-      toast.success("Perfil do formador atualizado!");
+      toast.success("Perfil do formador atualizado!", { id: "successFormadorAtualizado" });
       navigate("/gerir-formadores"); // Volta para a listagem
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar dados.", {
@@ -167,7 +167,7 @@ export default function EditTeacher() {
       // Abrir em nova aba
       window.open(fileURL, "_blank");
     } catch (error) {
-      toast.error("Não foi possível abrir o documento.");
+      toast.error("Não foi possível abrir o documento.", { id: "errorOpenDocS" });
       console.error(error);
     }
   };

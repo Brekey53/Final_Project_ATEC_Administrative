@@ -17,10 +17,10 @@ namespace ProjetoAdministracaoEscola.Services
          */
 
         /// <summary>
-        /// Para a função gerar hórarios sem conflitos, é necessário:
-        /// CursoModulos -> tem de conter .Include(cm => cm.IdModuloNavigation).ThenInclude(m => m.IdTipoMateriaNavigation).ThenInclude(tm => tm.IdTipoSalas) e .OrderBy(x => x.Prioridade)
-        /// TurmaAlocacao -> tem de conter .Include(ta => ta.IdFormadorNavigation).ThenInclude(f => f.DisponibilidadeFormadores)
-        /// Turma -> tem de conter .Include(t => t.IdMetodologiaNavigation)
+        /// Para a função gerar hórarios sem conflitos, é necessário: <br/> <br/>
+        /// CursoModulos -> tem de conter .Include(cm => cm.IdModuloNavigation).ThenInclude(m => m.IdTipoMateriaNavigation).ThenInclude(tm => tm.IdTipoSalas) e .OrderBy(x => x.Prioridade) <br/>
+        /// TurmaAlocacao -> tem de conter .Include(ta => ta.IdFormadorNavigation).ThenInclude(f => f.DisponibilidadeFormadores) <br/>
+        /// Turma -> tem de conter .Include(t => t.IdMetodologiaNavigation) <br/>
         /// </summary>
         /// <returns>
         /// Gera o horário de uma turma, encaixando os módulos de acordo com a disponibilidade dos formadores e salas,

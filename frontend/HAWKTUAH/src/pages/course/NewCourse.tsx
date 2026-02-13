@@ -37,7 +37,7 @@ export default function NewCourse() {
         setCursos(cursosData);
         setAreaCursos(areasData);
       } catch (err) {
-        toast.error("Erro ao carregar dados");
+        toast.error("Erro ao carregar dados", {id: "errorCarregarDados"});
       } finally {
         setLoading(false);
       }
@@ -59,9 +59,9 @@ export default function NewCourse() {
       setCursoSelecionado(null);
       setShowDeleteModal(false);
 
-      toast.success("Curso eliminado com sucesso");
+      toast.success("Curso eliminado com sucesso", {id: "sucessDelCurso"});
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erro ao eliminar curso");
+      toast.error(error.response?.data?.message || "Erro ao eliminar curso", {id: "errorDelCurso"});
     }
   }
 

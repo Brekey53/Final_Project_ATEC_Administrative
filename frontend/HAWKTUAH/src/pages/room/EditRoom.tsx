@@ -67,7 +67,7 @@ export default function EditRoom() {
 
     try {
       await updateSala(id, formData);
-      toast.success("Sala atualizada com sucesso!");
+      toast.success("Sala atualizada com sucesso!", {id: "sucessSalaAtualizada"});
       navigate("/gerir-salas");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar sala.",

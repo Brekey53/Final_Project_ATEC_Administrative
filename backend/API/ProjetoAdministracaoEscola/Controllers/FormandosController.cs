@@ -51,15 +51,31 @@ namespace ProjetoAdministracaoEscola.Controllers
                     f.IdUtilizadorNavigation.Telefone,
                     Status = f.IdUtilizadorNavigation.StatusAtivacao,
                     // Procuramos o nome da turma onde a inscrição esteja Ativa
-                    Turma = f.Inscricos
+                    TurmaAtiva = f.Inscricos
                         .Where(i => i.Estado == "Ativo")
-                        .Select(i => i.IdTurmaNavigation.NomeTurma)
-                        .FirstOrDefault() ?? "Sem Turma"
+                        .Select(i => new
+                        {
+                            i.IdTurmaNavigation.NomeTurma,
+                            i.IdTurmaNavigation.DataFim
+                        })
+                        .FirstOrDefault()
                 })
                 .OrderBy(f => f.Nome)
                 .ToListAsync();
 
-            return Ok(formandos);
+            var resultado = formandos.Select(f => new
+            {
+                f.IdFormando,
+                f.Nome,
+                f.Email,
+                f.Nif,
+                f.Telefone,
+                f.Status,
+                NomeTurma = f.TurmaAtiva != null ? f.TurmaAtiva.NomeTurma : "Sem Turma",
+                DataFim = f.TurmaAtiva != null ? f.TurmaAtiva.DataFim.ToString("dd/MM/yyyy") : "N/A"
+            });
+
+            return Ok(resultado);
         }
 
         /// <summary>

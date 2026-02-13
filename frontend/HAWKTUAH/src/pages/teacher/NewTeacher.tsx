@@ -29,7 +29,7 @@ export default function NewTeacher() {
         const data = await getFormadores();
         setFormadores(data);
       } catch {
-        toast.error("Erro ao carregar formadores");
+        toast.error("Erro ao carregar formadores", { id: "erroLiftFormadores" });
       } finally {
         setLoading(false);
       }
@@ -83,10 +83,10 @@ export default function NewTeacher() {
 
       setShowDeleteModal(false);
       setFormadorSelecionado(null);
-      toast.success("Formador eliminado com sucesso");
+      toast.success("Formador eliminado com sucesso", { id: "successDelFormadors" });
     } catch (err: any) {
       const errorData = err.response?.data;
-      toast.error(errorData?.message || "Erro ao eliminar formador");
+      toast.error(errorData?.message || "Erro ao eliminar formador", { id: "erroDelFormadors" });
     }
   }
 

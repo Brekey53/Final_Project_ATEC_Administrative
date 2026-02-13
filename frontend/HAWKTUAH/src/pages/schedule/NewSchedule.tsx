@@ -344,7 +344,7 @@ export default function NewSchedule() {
       // Mesmo que a API responda em 100ms, o spinner fica mais tempo
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast.success("Horário gerado com sucesso!");
+      toast.success("Horário gerado com sucesso!", {id: "successHorarioGerado"});
       await fetchHorarios();
     } catch (err) {
       console.error(err);
@@ -373,7 +373,7 @@ export default function NewSchedule() {
       );
 
       await updateHorario(selectedHorario.idHorario.toString(), data);
-      toast.success("Atualizado com sucesso!");
+      toast.success("Atualizado com sucesso!", {id: "successHorarioAtualizado2"});
       await fetchHorarios();
       handleCloseModal();
     } catch (err: any) {
@@ -386,7 +386,7 @@ export default function NewSchedule() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newHorario.idCursoModulo) {
-      toast.error("Selecione um módulo válido.", { id: "erro-modulos" });
+      toast.error("Selecione um módulo válido.", { id: "erroSelecionarModulo" });
       return;
     }
 
@@ -401,7 +401,7 @@ export default function NewSchedule() {
 
     try {
       await postHorario(data);
-      toast.success("Horário criado!");
+      toast.success("Horário criado!", { id: "successHorarioCriado" });
       await fetchHorarios();
       setShowCreateModal(false);
     } catch (err: any) {

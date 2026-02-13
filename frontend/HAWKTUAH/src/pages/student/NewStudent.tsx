@@ -26,7 +26,7 @@ export default function NewStudent() {
   const ITEMS_PER_PAGE = 10;
 
   const turmasDisponiveis = Array.from(
-    new Set(formandos.map((f) => f.turma || "Sem Turma")),
+    new Set(formandos.map((f) => f.nomeTurma || "Sem Turma")),
   ).sort();
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function NewStudent() {
         const data = await getFormandos();
         setFormandos(data);
       } catch {
-        toast.error("Erro ao carregar formandos");
+        toast.error("Erro ao carregar formandos", { id: "erroCarregarFormandoss" });
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,8 @@ export default function NewStudent() {
 
     const matchTurma =
       turmaFilter === "" ||
-      normalizarTexto(f.turma || "Sem Turma") === normalizarTexto(turmaFilter);
+      normalizarTexto(f.nomeTurma || "Sem Turma") ===
+        normalizarTexto(turmaFilter);
 
     return matchPesquisa && matchTurma;
   });
@@ -93,9 +94,9 @@ export default function NewStudent() {
 
       setShowDeleteModal(false);
       setFormandoSelecionado(null);
-      toast.success("Formando eliminado com sucesso");
+      toast.success("Formando eliminado com sucesso", { id: "successDelFormando" });
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao eliminar formando");
+      toast.error(err.response?.data?.message || "Erro ao eliminar formando", { id: "erroDelFormando" });
     }
   }
 
@@ -103,6 +104,39 @@ export default function NewStudent() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
+
+  const getBadgeClass = (f: any) => {
+    if (!f.nomeTurma || f.nomeTurma === "Sem Turma") {
+      return "bg-secondary-subtle text-secondary-emphasis border border-secondary";
+    }
+
+    if (f.dataFim) {
+      // Converte "dd/mm/yyyy" para um objeto Date válido
+      const [dia, mes, ano] = f.dataFim.split("/");
+      const dataFimObjeto = new Date(ano, mes - 1, dia);
+      const hoje = new Date();
+
+      hoje.setHours(0, 0, 0, 0);
+
+      if (dataFimObjeto < hoje) {
+        return "bg-warning-subtle text-warning-emphasis border border-warning";
+      }
+    }
+
+    return "bg-info-subtle text-info-emphasis border border-info";
+  };
+
+  const getBadgeText = (f: any) => {
+    if (!f.nomeTurma || f.nomeTurma === "Sem Turma") {
+      return "Sem Turma";
+    }
+
+    if (f.dataFim && new Date(f.dataFim) < new Date()) {
+      return `${f.nomeTurma} (Expirada)`;
+    }
+
+    return f.nomeTurma;
+  };
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -193,15 +227,21 @@ export default function NewStudent() {
                 <div className="text-muted text-truncate">{f.email || "-"}</div>
 
                 <div>
-                  <span
-                    className={`badge badge-turma-fixa ${
-                      f.turma === "Sem Turma"
-                        ? "bg-light text-muted border"
-                        : "bg-info-subtle text-info-emphasis border border-info"
-                    }`}
-                  >
-                    {f.turma || "Sem Turma"}
-                  </span>
+                  <div>
+                    <span
+                      className={`badge badge-turma-fixa ${getBadgeClass(f)}`}
+                    >
+                      {/* Mostra o nome da turma e, se existir data, coloca-a entre parênteses numa linha pequena */}
+                      <div className="d-flex flex-column">
+                        <span>{getBadgeText(f)}</span>
+                        {f.dataFim && f.nomeTurma !== "Sem Turma" && (
+                          <small style={{ fontSize: "0.8em", opacity: 0.8 }}>
+                            Fim: {f.dataFim}
+                          </small>
+                        )}
+                      </div>
+                    </span>
+                  </div>
                 </div>
 
                 <div className="d-flex justify-content-end gap-3 align-items-center">

@@ -57,7 +57,7 @@ export default function AddNewModule() {
 
     try {
       await postNewModulo(formData);
-      toast.success("Módulo criado com sucesso!");
+      toast.success("Módulo criado com sucesso!", {id: "sucessModuloCriado"});
       navigate(-1); // Volta para a listagem
     } catch (err: any) {
       const errorData = err.response?.data;
@@ -66,7 +66,7 @@ export default function AddNewModule() {
           .flat()
           .forEach((msg: any) => toast.error(msg));
       } else {
-        toast.error(errorData?.message || "Erro ao criar módulo.");
+        toast.error(errorData?.message || "Erro ao criar módulo.", {id: "errorAoCriarModulo"});
       }
     } finally {
       setLoading(false);

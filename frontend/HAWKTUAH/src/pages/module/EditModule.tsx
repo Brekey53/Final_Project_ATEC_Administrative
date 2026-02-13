@@ -64,7 +64,7 @@ export default function EditModule() {
 
     try {
       await updateModulo(id, formData);
-      toast.success("Módulo atualizado com sucesso!");
+      toast.success("Módulo atualizado com sucesso!", {id: "sucessAtualizarModulos"});
       navigate("/gerir-modulos");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar módulo.", {

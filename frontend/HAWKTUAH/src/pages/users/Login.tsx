@@ -45,7 +45,7 @@ export default function Login() {
         });
       } else if (socialSuccessG === "success") {
         toast.success("Google login efetuado com sucesso!", {
-          id: "social-toast",
+          id: "social-toasts",
         });
       }
 
@@ -68,10 +68,10 @@ export default function Login() {
       if (loginData.requires2FA) {
         setShow2FA(true);
         setEmail(loginData.email);
-        toast.success("Código de verificação enviado para o seu e-mail.");
+        toast.success("Código de verificação enviado para o seu e-mail.", { id: "successSendMailToMail" });
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Email ou password inválidos");
+      toast.error(err.response?.data?.message || "Email ou password inválidos", { id: "UnsuccessLog" });
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ export default function Login() {
     setLoading(true);
     try {
       if (code.length !== 6) {
-        toast.error("O código deve ter 6 dígitos.");
+        toast.error("O código deve ter 6 dígitos.", { id: "erroNeedMoreDigits" });
         return;
       }
 
@@ -90,7 +90,7 @@ export default function Login() {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
-        toast.success("Bem-vindo de volta!");
+        toast.success("Bem-vindo de volta!", { id: "successWelcomeBack" });
         navigate("/dashboard", { replace: true });
       }
     } catch (err: any) {
@@ -188,7 +188,7 @@ export default function Login() {
                   width="100%"
                   text="continue_with"
                   onSuccess={handleGoogleSuccess}
-                  onError={() => toast.error("Falha no login Google")}
+                  onError={() => toast.error("Falha no login Google", { id: "erroGoogles" })}
                 />
               </div>
 

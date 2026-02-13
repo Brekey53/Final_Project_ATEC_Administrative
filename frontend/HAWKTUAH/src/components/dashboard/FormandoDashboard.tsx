@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import CalendarSchedule from "../../components/CalendarSchedule";
 import { authService } from "../../auth/AuthService";
-import { getHorariosFormando } from "../../services/calendar/CalendarService";
+import {
+  getHorariosFormando,
+  exportHorarioFormando,
+} from "../../services/calendar/CalendarService";
 import {
   type AvaliacaoFormando,
   getAvaliacoesFormando,
 } from "../../services/dashboard/DashboardService";
 import { checkEmailGetName } from "../../services/users/UserService";
+import axios from "axios";
 import {
   Award,
   BookOpen,
@@ -38,7 +42,7 @@ export default function FormandoDashboard() {
 
         const formattedEvents = resData.map((h: any) => ({
           id: h.idHorario,
-          title: `${h.nomeCurso} - ${h.nomeSala}`,
+          title: `${h.nomeModulo}\n${h.nomeSala}`,
           start: `${h.data}T${h.horaInicio}`,
           end: `${h.data}T${h.horaFim}`,
         }));
@@ -55,6 +59,27 @@ export default function FormandoDashboard() {
   useEffect(() => {
     getAvaliacoesFormando().then(setAvaliacoes);
   }, []);
+
+  const handleExportClick = async () => {
+    if (!user) return null;
+
+    try {
+      const res = await exportHorarioFormando();
+
+      const url = window.URL.createObjectURL(new Blob([res]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "meu_horario.ics");
+      document.body.appendChild(link);
+      link.click();
+
+      // Limpeza
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erro ao exportar:", error);
+    }
+  };
 
   if (!user) return null;
 
@@ -238,6 +263,15 @@ export default function FormandoDashboard() {
             </div>
             <div className="card-body p-3 p-md-4 overflow-auto">
               <CalendarSchedule events={events} />
+              <div>
+                <br />
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={handleExportClick}
+                >
+                  📅 Exportar para Google Calendar
+                </button>
+              </div>
             </div>
           </div>
         </div>

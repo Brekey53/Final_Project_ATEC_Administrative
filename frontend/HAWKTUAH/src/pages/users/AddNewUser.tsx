@@ -38,7 +38,7 @@ export default function AddNewUser() {
 
   const handleCheckEmail = async () => {
     if (!formData.email) {
-      toast.error("Insira um email válido.");
+      toast.error("Insira um email válido.", { id: "erroPutEmailValido" });
       return;
     }
 
@@ -49,13 +49,13 @@ export default function AddNewUser() {
 
       if (res.existe) {
         setEmailStatus("exists");
-        toast.error("Este email já está registado no sistema.");
+        toast.error("Este email já está registado no sistema.", { id: "errorMailNoSisJa" });
       } else {
         setEmailStatus("new");
-        toast.success("Email disponível. Pode criar o utilizador.");
+        toast.success("Email disponível. Pode criar o utilizador.", { id: "successMailSisNãoTava" });
       }
     } catch {
-      toast.error("Erro ao verificar o email.");
+      toast.error("Erro ao verificar o email.", { id: "erroIssoEraMail" });
     } finally {
       setVerificandoEmail(false);
     }
@@ -70,10 +70,10 @@ export default function AddNewUser() {
 
     try {
       await createUser(formData);
-      toast.success("Utilizador criado com sucesso!");
+      toast.success("Utilizador criado com sucesso!", { id: "successUserCriadoSus" });
       navigate("/gerir-utilizadores");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao criar utilizador.");
+      toast.error(err.response?.data?.message || "Erro ao criar utilizador.", { id: "errorAoCriarUtilizador" });
     } finally {
       setLoading(false);
     }
