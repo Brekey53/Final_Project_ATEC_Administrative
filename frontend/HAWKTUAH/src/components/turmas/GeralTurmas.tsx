@@ -117,7 +117,7 @@ export default function GeralTurmas() {
             ))
           ) : (
             <div className="p-5 text-center text-muted">
-              Não existem turmas para começar
+              De momento não existe turmas por começar, volte mais tarde.
             </div>
           )}
         </div>

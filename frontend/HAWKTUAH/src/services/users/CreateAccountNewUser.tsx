@@ -1,6 +1,5 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
-import toast from "react-hot-toast";
 
 export interface RegisterData {
   Email: string;
@@ -15,16 +14,7 @@ export interface RegisterData {
  * Envia os dados para a tabela centralizada de Utilizadores
  */
 export async function CreateAccountNewUser(userData: RegisterData) {
-  try {
-    const res = await axios.post(
-      `${API_BASE_URL}/auth/register`,
-      userData,
-    );
+  const res = await axios.post(`${API_BASE_URL}/auth/register`, userData);
 
-    return res.data;
-  } catch (error: any) {
-    toast.error("Erro no Registo:", error.response?.data || error.message);
-
-    throw error;
-  }
+  return res.data;
 }

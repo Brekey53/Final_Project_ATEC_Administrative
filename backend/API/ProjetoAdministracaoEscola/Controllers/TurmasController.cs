@@ -226,7 +226,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         // POST: api/Turmas
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost]
-        public async Task<IActionResult> PostTurma([FromForm] TurmaDTO turmadto)
+        public async Task<IActionResult> PostTurma([FromBody] TurmaDTO turmadto)
         {
             var turmaExistente = await _context.Turmas.FirstOrDefaultAsync(t => t.NomeTurma == turmadto.NomeTurma);
             
@@ -236,7 +236,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest(new { message = "Já existe uma turma com esse nome!" });
             }
 
-            if (turmadto.DataFim <= turmadto.DataInicio)
+            if (turmadto.DataInicio > turmadto.DataFim)
             {
                 return BadRequest(new { message = "A data de fim não pode ser anterior à data início." });
             }
@@ -246,9 +246,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 var novaTurma = new Turma
                 {
                     NomeTurma = turmadto.NomeTurma,
+                    IdCurso = turmadto.IdCurso,
                     DataInicio = turmadto.DataInicio,
                     DataFim = turmadto.DataFim,
-                    IdCurso = turmadto.IdCurso,
                     IdMetodologia = turmadto.IdMetodologia
                 };
 

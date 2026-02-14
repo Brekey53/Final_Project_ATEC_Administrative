@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getHojeISO } from "../../utils/dataUtils"
+import { getHojeISO } from "../../utils/dataUtils";
 import { checkEmail, createUser } from "../../services/users/UserService";
 
 export default function AddNewUser() {
@@ -49,10 +49,14 @@ export default function AddNewUser() {
 
       if (res.existe) {
         setEmailStatus("exists");
-        toast.error("Este email já está registado no sistema.", { id: "errorMailNoSisJa" });
+        toast.error("Este email já está registado no sistema.", {
+          id: "errorMailNoSisJa",
+        });
       } else {
         setEmailStatus("new");
-        toast.success("Email disponível. Pode criar o utilizador.", { id: "successMailSisNãoTava" });
+        toast.success("Email disponível. Pode criar o utilizador.", {
+          id: "successMailSisNãoTava",
+        });
       }
     } catch {
       toast.error("Erro ao verificar o email.", { id: "erroIssoEraMail" });
@@ -68,12 +72,33 @@ export default function AddNewUser() {
 
     setLoading(true);
 
+    if (formData.password.length < 6) {
+      toast.error("Tem de ter pelo menos 6 caracteres");
+    }
+
+    const isPasswordStrong = (pass: string) => {
+      const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+      return regex.test(pass);
+    };
+
+    if (!isPasswordStrong(formData.password)) {
+      toast.error(
+        "A password deve ter pelo menos 6 caracteres, incluindo uma letra e um número.",
+        { id: "erro-password-inválida" },
+      );
+      return;
+    }
+
     try {
       await createUser(formData);
-      toast.success("Utilizador criado com sucesso!", { id: "successUserCriadoSus" });
+      toast.success("Utilizador criado com sucesso!", {
+        id: "successUserCriadoSus",
+      });
       navigate("/gerir-utilizadores");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao criar utilizador.", { id: "errorAoCriarUtilizador" });
+      toast.error(err.response?.data?.message || "Erro ao criar utilizador.", {
+        id: "errorAoCriarUtilizador",
+      });
     } finally {
       setLoading(false);
     }
@@ -190,6 +215,10 @@ export default function AddNewUser() {
 
               <div className="col-md-6 mb-3">
                 <label className="form-label">Password</label>
+                <br />
+                <small className="text-muted">
+                  Tem de ter pelo menos 6 caracteres.
+                </small>
                 <input
                   type="password"
                   name="password"

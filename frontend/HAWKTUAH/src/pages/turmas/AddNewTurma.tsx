@@ -90,23 +90,12 @@ export default function AddNewTurma() {
 
     setLoading(true);
 
-    // TODO: Eliminar comentários depois de exprimentar
-    
-    // const data = new FormData();
-    // data.append("NomeTurma", formData.nomeTurma);
-    // data.append("IdCurso", formData.idCurso.toString());
-    // data.append("DataInicio", formData.dataInicio);
-    // data.append("DataFim", formData.dataFim);
-    // data.append("NomeCurso", formData.nomeCurso || "");
-    // //data.append("Estado", formData.estado || "A decorrer");
-    // data.append("IdMetodologia", formData.idMetodologia.toString());
-
     const data: CreateTurmaDTO = {
       nomeTurma: formData.nomeTurma,
       idCurso: formData.idCurso,
       dataInicio: formData.dataInicio,
-      dataFim: formData.dataInicio,
-      nomeCurso: formData.nomeCurso || "",
+      dataFim: formData.dataFim,
+      nomeCurso: formData.nomeCurso,
       idMetodologia: formData.idMetodologia,
     } 
 

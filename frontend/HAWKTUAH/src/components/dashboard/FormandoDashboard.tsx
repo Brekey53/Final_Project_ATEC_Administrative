@@ -113,9 +113,9 @@ export default function FormandoDashboard() {
       {/* Header */}
       <div className="row align-items-center gy-3 mb-4">
         <div className="col-12">
-          <h2 className="fw-bold text-dark mb-1 fs-4 fs-md-3">
-            Bem vindo(a) {nameUser.split(" ")[0]}
-          </h2>
+          <h2 className="fw-bold">
+          Bem-vindo(a), <span className="text-primary">{nameUser}</span>
+        </h2>
           <p className="text-muted mb-0">
             Vê aqui o teu progresso académico e horários.
           </p>
