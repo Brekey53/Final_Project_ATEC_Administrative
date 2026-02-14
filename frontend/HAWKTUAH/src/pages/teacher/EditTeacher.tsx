@@ -168,7 +168,6 @@ export default function EditTeacher() {
       window.open(fileURL, "_blank");
     } catch (error) {
       toast.error("Não foi possível abrir o documento.", { id: "errorOpenDocS" });
-      console.error(error);
     }
   };
 

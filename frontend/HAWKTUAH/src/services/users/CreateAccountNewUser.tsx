@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
+import toast from "react-hot-toast";
 
 export interface RegisterData {
   Email: string;
@@ -22,7 +23,7 @@ export async function CreateAccountNewUser(userData: RegisterData) {
 
     return res.data;
   } catch (error: any) {
-    console.error("Erro no Registo:", error.response?.data || error.message);
+    toast.error("Erro no Registo:", error.response?.data || error.message);
 
     throw error;
   }

@@ -51,3 +51,8 @@ export async function autoGenerateSchedule(idTurma: number) {
   );
   return res.data;
 }
+
+export async function deleteHorario(id: number) {
+  const res = await axios.delete(`${API_BASE_URL}/horarios/${id}`);
+  return res.data;
+}

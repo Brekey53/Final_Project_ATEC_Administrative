@@ -122,7 +122,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                     aplicarFiltroArea = true;
 
                     // Aqui é definido quem pode ir para onde
-                    // Os nomes aqui devem ser IGUAIS aos que estão na tabela 'tipo_salas'
                     switch (infoCurso)
                     {
                         case "Informática":

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
+import { getHojeISO } from "../../utils/dataUtils"
 import { checkEmail, createUser } from "../../services/users/UserService";
 
 export default function AddNewUser() {
@@ -182,6 +182,8 @@ export default function AddNewUser() {
                   name="dataNascimento"
                   className="form-control"
                   onChange={handleChange}
+                  min={1900}
+                  max={getHojeISO()}
                   required
                 />
               </div>

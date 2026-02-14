@@ -35,3 +35,13 @@ export async function exportHorarioFormando() {
   );
   return res.data;
 }
+
+export async function exportHorarioFormador() {
+  const res = await axios.get(
+    `${API_BASE_URL}/Horarios/exportar/formadorCalendar`,
+    {
+      responseType: "blob",
+    },
+  );
+  return res.data;
+}

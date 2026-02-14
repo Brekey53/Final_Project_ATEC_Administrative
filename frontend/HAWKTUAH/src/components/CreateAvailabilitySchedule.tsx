@@ -28,6 +28,8 @@ export default function CreateAvailabilitySchedule({
     const dataEvento = new Date(startISO);
     const hoje = new Date();
     hoje.setDate(hoje.getDate() + 1);
+    
+     // Eventos de ontem ou antes: marcados como "Realizado" (vermelho)
     const dataMarcada = dataEvento < hoje;
 
     return {
@@ -67,6 +69,7 @@ export default function CreateAvailabilitySchedule({
   const dataMarcacaoMinima = new Date();
   dataMarcacaoMinima.setMonth(hoje.getMonth() + 1);
 
+  // Período desativado: da origem até daqui a 1 mês (não permitido marcar)
   const diasPassados = {
     start: "2000-01-01",
     end: dataMarcacaoMinima.toISOString().split("T")[0],
@@ -123,14 +126,14 @@ export default function CreateAvailabilitySchedule({
           const hoje = new Date();
           const dataLimite = new Date();
           dataLimite.setMonth(hoje.getMonth() + 1);
-          if (start < dataLimite) return false;
+          if (start < dataLimite) return false; // Não permitir antes de daqui a 1 mês
 
           const diff = end.getTime() - start.getTime();
           const duracaoMinimaHoras = 1;
           const milissegundosPorHora = 3600000;
           
           if (diff < duracaoMinimaHoras * milissegundosPorHora) {
-            return false;
+            return false; // Mínimo 1 hora
           }
 
           const almocoInicio = new Date(start);

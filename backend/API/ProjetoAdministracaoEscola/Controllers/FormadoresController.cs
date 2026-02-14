@@ -15,6 +15,7 @@ using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Formador;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
 using ProjetoAdministracaoEscola.ModelsDTO.TipoMateria;
+using ProjetoAdministracaoEscola.ModelsDTO.MobileDTO;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
@@ -694,7 +695,58 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .FirstOrDefaultAsync();
         }
 
-    }
+        /// <summary>
+        /// Retorna um alista de formadores com foto (caso exista),
+        /// para visualização na aplicação mobile
+        /// </summary>
+        /// <returns>
+        /// Retorna lista de formadores
+        /// </returns>
+        [HttpGet("com-foto")]
+        public async Task<ActionResult<IEnumerable<FormadoresFotosDTO>>> GetFormadoresComFoto()
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+            var formadores = await _context.Formadores
+                .Include(f => f.IdUtilizadorNavigation)
+                .Select(f => new FormadoresFotosDTO
+                {
+                    IdFormador = f.IdFormador,
+                    Nome = f.IdUtilizadorNavigation.Nome,
+                    Email = f.IdUtilizadorNavigation.Email,
+                    Telefone = f.IdUtilizadorNavigation.Telefone,
+                    Qualificacoes = f.Qualificacoes,
+                    FotoUrl = $"{baseUrl}/api/formadores/{f.IdFormador}/foto"
+                })
+                .OrderBy(f => f.Nome)
+                .ToListAsync();
+
+            return Ok(formadores);
+        }
+
+        /// <summary>
+        /// Metodo para retornar a fotografia do formador
+        /// pesquisando pelo id do mesmo
+        /// </summary>
+        /// <param name="id">Id do Formador.</param>
+        /// <returns>
+        /// Retorna foto do formador
+        /// </returns>
+        [HttpGet("{id}/foto")]
+        public async Task<IActionResult> GetFotoFormador(int id)
+        {
+            var foto = await _context.Formadores
+                .Where(f => f.IdFormador == id)
+                .Select(f => f.Fotografia)
+                .FirstOrDefaultAsync();
+
+            if (foto == null || foto.Length == 0)
+                return NoContent();
+
+            return File(foto, "image/jpeg");
+        }
+
+
+    }
 
 }

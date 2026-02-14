@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import "../../css/cursos.css";
 import { Search, Info } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
+import toast from "react-hot-toast";
 
 export default function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -19,7 +20,7 @@ export default function Cursos() {
         const data = await getCursos();
         setCursos(data);
       } catch (error) {
-        console.error("Erro ao carregar cursos", error);
+        toast.error("Erro ao carregar cursos.", { id: "erro-getCursos" });
         setCursos([]);
       } finally {
         setLoading(false);

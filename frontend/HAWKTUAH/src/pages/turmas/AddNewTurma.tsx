@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import { isDataFimValida } from "../../utils/dataUtils";
 import {
   postNewTurma,
   type Turma,
+  type CreateTurmaDTO,
   getCursos,
   getMetodologias,
 } from "../../services/turmas/TurmasService";
@@ -53,6 +55,7 @@ export default function AddNewTurma() {
   ) => {
     const { name, value } = e.target;
 
+    // Preencher nomeCurso para o backend (não editável pelo utilizador)
     if (name == "idCurso") {
       const cursoId = Number(value);
       const cursoSelecionado = cursos.find((c) => c.idCurso === cursoId);
@@ -78,16 +81,34 @@ export default function AddNewTurma() {
       return;
     }
 
+    if (formData.dataInicio && formData.dataFim && !isDataFimValida(formData.dataInicio, formData.dataFim)) {
+      toast.error("A data de fim deve ser igual ou posterior à data de início.", {
+        id: "erroDataFim",
+      });
+      return;
+    }
+
     setLoading(true);
 
-    const data = new FormData();
-    data.append("NomeTurma", formData.nomeTurma);
-    data.append("IdCurso", formData.idCurso.toString());
-    data.append("DataInicio", formData.dataInicio);
-    data.append("DataFim", formData.dataFim);
-    data.append("NomeCurso", formData.nomeCurso || "");
-    data.append("Estado", formData.estado || "A decorrer");
-    data.append("IdMetodologia", formData.idMetodologia.toString());
+    // TODO: Eliminar comentários depois de exprimentar
+    
+    // const data = new FormData();
+    // data.append("NomeTurma", formData.nomeTurma);
+    // data.append("IdCurso", formData.idCurso.toString());
+    // data.append("DataInicio", formData.dataInicio);
+    // data.append("DataFim", formData.dataFim);
+    // data.append("NomeCurso", formData.nomeCurso || "");
+    // //data.append("Estado", formData.estado || "A decorrer");
+    // data.append("IdMetodologia", formData.idMetodologia.toString());
+
+    const data: CreateTurmaDTO = {
+      nomeTurma: formData.nomeTurma,
+      idCurso: formData.idCurso,
+      dataInicio: formData.dataInicio,
+      dataFim: formData.dataInicio,
+      nomeCurso: formData.nomeCurso || "",
+      idMetodologia: formData.idMetodologia,
+    } 
 
     try {
       await postNewTurma(data);
@@ -203,6 +224,7 @@ export default function AddNewTurma() {
                   className="form-control"
                   value={formData.dataInicio}
                   onChange={handleChange}
+                  max={formData.dataFim || undefined}
                   required
                 />
               </div>
@@ -215,6 +237,7 @@ export default function AddNewTurma() {
                   className="form-control"
                   value={formData.dataFim}
                   onChange={handleChange}
+                  min={formData.dataInicio || undefined}
                   required
                 />
               </div>

@@ -18,6 +18,8 @@ import {
   ChevronRight,
   Clock,
 } from "lucide-react";
+import { getHojeISO } from "../../utils/dataUtils";
+import toast from "react-hot-toast";
 
 export default function FormandoDashboard() {
   const [events, setEvents] = useState<any[]>([]);
@@ -49,7 +51,7 @@ export default function FormandoDashboard() {
 
         setEvents(formattedEvents);
       } catch (error) {
-        console.error("Erro ao carregar horários", error);
+        toast.error("Erro ao carregar horários");
       }
     }
 
@@ -69,7 +71,10 @@ export default function FormandoDashboard() {
       const url = window.URL.createObjectURL(new Blob([res]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "meu_horario.ics");
+      link.setAttribute(
+        "download",
+        `horario_${nameUser.split(" ")[0]}_${getHojeISO()}.ics`,
+      );
       document.body.appendChild(link);
       link.click();
 
@@ -77,7 +82,9 @@ export default function FormandoDashboard() {
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Erro ao exportar:", error);
+      toast.error("Erro ao exportar o calendário.", {
+        id: "erro-exportar-calendario",
+      });
     }
   };
 
@@ -269,7 +276,7 @@ export default function FormandoDashboard() {
                   className="btn btn-outline-primary"
                   onClick={handleExportClick}
                 >
-                  📅 Exportar para Google Calendar
+                  📅 Exportar Calendário
                 </button>
               </div>
             </div>

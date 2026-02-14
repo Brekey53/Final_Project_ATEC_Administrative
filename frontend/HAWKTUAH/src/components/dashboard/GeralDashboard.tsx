@@ -6,6 +6,7 @@ import type { Curso } from "../../services/cursos/CursosService";
 import { getTurmasGeralDashboard } from "../../services/turmas/TurmasService";
 import type { Turma } from "../../services/turmas/TurmasService";
 import { checkEmailGetName } from "../../services/users/UserService";
+import toast from "react-hot-toast";
 
 export default function GeralDashboard() {
   const user = authService.decodeToken();
@@ -30,7 +31,7 @@ export default function GeralDashboard() {
         setTurmas(resTurmas);
         setNameUser(resNome.nome);
       } catch (error) {
-        console.error("Erro ao carregar dashboard", error);
+        toast.error("Erro ao carregar dados.", { id: "erro-geral-dashboard" });
       } finally {
         setLoading(false);
       }

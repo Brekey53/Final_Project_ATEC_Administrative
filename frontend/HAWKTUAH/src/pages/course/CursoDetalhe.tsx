@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getModulosFromCurso } from "../../services/cursos/CursosService";
 import type { Curso } from "../../services/cursos/CursosService";
+import toast from "react-hot-toast";
 
 export default function CursoDetalhe() {
   const { idCurso } = useParams<{ idCurso: string }>();
@@ -16,8 +17,8 @@ export default function CursoDetalhe() {
         if (!idCurso) return;
         const data = await getModulosFromCurso(Number(idCurso));
         setCurso(data);
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        toast.error("Erro ao carregar curso.", { id: "erro-curso" });
       } finally {
         setLoading(false);
       }

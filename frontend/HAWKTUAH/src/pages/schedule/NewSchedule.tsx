@@ -7,6 +7,7 @@ import {
   getHorariosById,
   postHorario,
   autoGenerateSchedule,
+  deleteHorario,
   type Horario,
 } from "../../services/shedules/HorariosService";
 import {
@@ -16,10 +17,11 @@ import {
 import { getSalasDisponiveis } from "../../services/rooms/SalasService";
 import { getFormadores } from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
-import { Search, XCircle } from "lucide-react";
+import { Search, XCircle, Trash, Pencil } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
 import toast from "react-hot-toast";
 import FormadorDisponibilidadePreview from "../../components/FormadorDisponibilidadePreview";
+import { Tooltip } from "bootstrap";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -46,6 +48,7 @@ export default function NewSchedule() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAutoGenerateModal, setShowAutoGenerateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedHorario, setSelectedHorario] = useState<Horario | null>(null);
 
   // --- Estado do Novo Horario ---
@@ -83,7 +86,9 @@ export default function NewSchedule() {
       const data = await getHorariosTotal();
       setHorarios(data);
     } catch (err) {
-      console.log(err);
+      toast.error("Erro ao carregar horários.", {
+        id: "erro-getHorarios",
+      });
     } finally {
       setLoading(false);
     }
@@ -96,7 +101,6 @@ export default function NewSchedule() {
         const res = await getFormadores();
         setFormadores(res);
       } catch (err) {
-        console.error(err);
         toast.error("Erro ao carregar formadores.", {
           id: "erro-getFormadores",
         });
@@ -104,6 +108,23 @@ export default function NewSchedule() {
     };
     loadFormadores();
   }, []);
+
+  useEffect(() => {
+    // Procurar os elementos
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]',
+    );
+
+    // Inicializar
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el),
+    );
+
+    // Limpeza
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [horarios, loading]); // Re-executa quando a lista carrega
 
   // Resetar paginação quando filtros mudam
   useEffect(() => {
@@ -152,7 +173,6 @@ export default function NewSchedule() {
       const res = await getTurmasFormadorHorario(Number(idFormador));
       setTurmasRaw(res);
     } catch (err) {
-      console.error(err);
       toast.error("Erro ao carregar turmas.", { id: "erro-getTurmasFormador" });
     }
   };
@@ -219,8 +239,10 @@ export default function NewSchedule() {
         idCursoModulo,
       );
       setSalasDisponiveis(dados);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Erro ao carregar salas.", {
+        id: "erro-getSalas",
+      });
     }
   };
 
@@ -233,6 +255,7 @@ export default function NewSchedule() {
     newHorario.idCursoModulo,
   ]);
 
+  /** Verifica se o formador ou turma estão já ocupados no mesmo slot horário (sobreposição) */
   const verificarConflitos = () => {
     const { data, horaInicio, horaFim, idFormador, idTurma } = newHorario;
     if (!data || !horaInicio || !horaFim)
@@ -322,7 +345,6 @@ export default function NewSchedule() {
       const res = await getTurmas();
       setTurmas(res);
     } catch (err) {
-      console.error(err);
       toast.error("Erro ao carregar turmas.", { id: "getTurmas" });
     }
   };
@@ -344,13 +366,41 @@ export default function NewSchedule() {
       // Mesmo que a API responda em 100ms, o spinner fica mais tempo
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast.success("Horário gerado com sucesso!", {id: "successHorarioGerado"});
+      toast.success("Horário gerado com sucesso!", {
+        id: "successHorarioGerado",
+      });
       await fetchHorarios();
     } catch (err) {
-      console.error(err);
       toast.error("Erro ao gerar horário.", { id: "fetchHorarios" });
     } finally {
       setLoadingGenerator(false);
+    }
+  };
+
+  const handleOpenDeleteModal = (horario: Horario) => {
+    setSelectedHorario({ ...horario });
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setSelectedHorario(null);
+  };
+
+  const handleDeleteHorario = async () => {
+    if (!selectedHorario) return;
+
+    try {
+      await deleteHorario(Number(selectedHorario.idHorario));
+      toast.success("Horário deletado com sucesso!", {
+        id: "successHorarioDeletado",
+      });
+      await fetchHorarios();
+      handleCloseDeleteModal();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao deletar.", {
+        id: "erro-fetch",
+      });
     }
   };
 
@@ -373,7 +423,9 @@ export default function NewSchedule() {
       );
 
       await updateHorario(selectedHorario.idHorario.toString(), data);
-      toast.success("Atualizado com sucesso!", {id: "successHorarioAtualizado2"});
+      toast.success("Atualizado com sucesso!", {
+        id: "successHorarioAtualizado2",
+      });
       await fetchHorarios();
       handleCloseModal();
     } catch (err: any) {
@@ -386,7 +438,9 @@ export default function NewSchedule() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newHorario.idCursoModulo) {
-      toast.error("Selecione um módulo válido.", { id: "erroSelecionarModulo" });
+      toast.error("Selecione um módulo válido.", {
+        id: "erroSelecionarModulo",
+      });
       return;
     }
 
@@ -558,7 +612,12 @@ export default function NewSchedule() {
                     className="form-control shadow-none"
                     style={{ maxWidth: "160px" }}
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(e) => {
+                      const newStart = e.target.value;
+                      setStartDate(newStart);
+                      if (endDate && newStart > endDate) setEndDate("");
+                    }}
+                    max={endDate || undefined}
                   />
                 </div>
                 <div className="d-flex align-items-center gap-2">
@@ -689,10 +748,22 @@ export default function NewSchedule() {
                             </small>
                           </div>
                           <button
-                            className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
+                            className="btn btn-success px-4 py-2 rounded-pill shadow-sm border border-success m-2"
+                            title="Editar informações Horário"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
                             onClick={() => handleOpenModal(h)}
                           >
-                            Editar
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            className="btn btn-danger px-4 py-2 rounded-pill shadow-sm border border-danger "
+                            title="Excluir Horário"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            onClick={() => handleOpenDeleteModal(h)}
+                          >
+                            <Trash size={18} />
                           </button>
                         </div>
                       </div>
@@ -1169,6 +1240,73 @@ export default function NewSchedule() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && selectedHorario && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          onClick={() => setShowDeleteModal(false)}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content rounded-4 shadow">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirmar Eliminação</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                />
+              </div>
+
+              <div className="modal-body">
+                <p>
+                  Tem a certeza que pretende eliminar o horário da aplicação?
+                  <br />
+                  <br />
+                  Data: <strong>{selectedHorario.data}</strong>
+                  <br />
+                  Hora:{" "}
+                  <strong>
+                    {selectedHorario.horaInicio}
+                    {" / "}
+                    {selectedHorario.horaFim}
+                    <br />
+                  </strong>
+                  Formando: <strong>{selectedHorario.nomeFormador}</strong>
+                  <br />
+                  Turma: <strong>{selectedHorario.nomeTurma}</strong>
+                  <br />
+                  Modulo: <strong>{selectedHorario.nomeModulo}</strong>
+                  <br />
+                </p>
+                <p className="text-muted mb-0">
+                  Esta ação não pode ser revertida.
+                </p>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  className="btn btn-light"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeleteHorario}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
         </div>
