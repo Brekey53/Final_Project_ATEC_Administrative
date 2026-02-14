@@ -206,20 +206,10 @@ export default function Perfil() {
             {perfil.tipo === 2 && (
               <>
                 <h5 className="text-primary mb-3">Dados de Formador</h5>
-
-                {perfil.iban && (
-                  <div className="mb-3">
-                    <label className="form-label">IBAN</label>
-                    <input
-                      className="form-control"
-                      value={perfil.iban}
-                      disabled
-                    />
-                  </div>
-                )}
+                <div className="row">
 
                 {perfil.qualificacoes && (
-                  <div className="mb-3">
+                  <div className="mb-3 col-md-6 text-wrap">
                     <label className="form-label">Qualificações</label>
                     <textarea
                       className="form-control"
@@ -228,6 +218,18 @@ export default function Perfil() {
                     />
                   </div>
                 )}
+
+                {perfil.iban && (
+                  <div className="mb-3 col-md-6">
+                    <label className="form-label">IBAN</label>
+                    <input
+                      className="form-control"
+                      value={perfil.iban}
+                      disabled
+                    />
+                  </div>
+                )}
+                </div>
               </>
             )}
 

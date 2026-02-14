@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CreateAccountNewUser } from "../../services/users/CreateAccountNewUser";
 import toast from "react-hot-toast";
-import { getHojeISO } from "../../utils/dataUtils";
+import { get1900ISO, getHojeISO } from "../../utils/dataUtils";
 
 export default function CreateAccount() {
   const navigate = useNavigate();
@@ -41,6 +41,13 @@ export default function CreateAccount() {
       return;
     }
 
+    if (birthDate < get1900ISO() || birthDate > getHojeISO()) {
+      toast.error("Introduza uma data de nascimento válida.", {
+        id: "erro-data-nascimento",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -61,7 +68,7 @@ export default function CreateAccount() {
       navigate("/Login", { replace: true });
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao criar conta.", {
-        id: "erro-criar-conta",
+        id: "erro-criar-contacerto",
       });
     } finally {
       setLoading(false);
@@ -150,7 +157,7 @@ export default function CreateAccount() {
                 Sexo <span className="required-star">*</span>
               </label>
               <select
-                className="form-control"
+                className="form-label form-select"
                 value={sexo}
                 onChange={(e) => setSexo(e.target.value)}
               >

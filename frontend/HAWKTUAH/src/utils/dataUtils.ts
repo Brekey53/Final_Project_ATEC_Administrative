@@ -17,3 +17,11 @@ export const getHojeISO = (): string => {
   const hoje = new Date();
   return hoje.toISOString().split("T")[0];
 };
+
+export const get1900ISO = (): string => {
+  const ano = 1900;
+  const mes = 1;
+  const dia = 1;
+  const data = new Date(ano, mes, dia);
+  return data.toISOString().split("T")[0];
+};
