@@ -5,7 +5,7 @@ import {
   postTurmaAvaliacao,
 } from "../../services/turmas/TurmasService";
 import { toast } from "react-hot-toast";
-import "../../css/EditAvaliacoesFormador.css";
+import "../../css/editAvaliacoesFormador.css";
 import "../../css/layoutTabelas.css";
 import { Search } from "lucide-react";
 
