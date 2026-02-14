@@ -13,6 +13,7 @@ export default function EditUser() {
   const { id } = useParams();
   const navigate = useNavigate();
   const user = authService.decodeToken();
+  const isSuperAdmin = Number(user?.tipoUtilizador) === 6;
   const isAdmin = Number(user?.tipoUtilizador) === 1;
 
   const [formData, setFormData] = useState<EditUtilizador>({
@@ -201,13 +202,14 @@ export default function EditUser() {
                   value={formData.IdTipoUtilizador}
                   onChange={handleChange}
                   required
-                >
-                  {isAdmin && <option value={1}>Admin</option>}
+                >isSuperAdmin
+                  {isSuperAdmin && <option value={1}>Admin</option>}
 
                   <option value={2}>Formador</option>
                   <option value={3}>Formando</option>
-                  <option value={4}>Administrativo</option>
+                  {isAdmin &&<option value={4}>Administrativo</option> }
                   <option value={5}>Geral</option>
+                  {isSuperAdmin && <option value={6}>SuperAdmin</option>}
                 </select>
               </div>
 

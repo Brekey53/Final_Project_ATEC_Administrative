@@ -55,29 +55,38 @@ export default function Login() {
     }
   }, [searchParams, navigate]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const loginData = await authService.login(email, password);
+  try {
+    const loginData = await authService.login(email, password);
 
-      if (loginData.requires2FA) {
-        setShow2FA(true);
-        setEmail(loginData.email);
-        toast.success("Código de verificação enviado para o seu e-mail.", {
-          id: "successSendMailToMail",
-        });
-      }
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.message || "Email ou password inválidos",
-        { id: "UnsuccessLog" },
-      );
-    } finally {
-      setLoading(false);
+    if (!loginData.requires2FA && loginData.token) {
+      localStorage.setItem("token", loginData.token);
+      toast.success("Bem-vindo!", { id: "login-direct" });
+      navigate("/dashboard", { replace: true });
+      return;
     }
+
+    if (loginData.requires2FA) {
+      setShow2FA(true);
+      setEmail(loginData.email);
+      toast.success("Código de verificação enviado para o seu e-mail.", {
+        id: "successSendMailToMail",
+      });
+    }
+
+  } catch (err: any) {
+    toast.error(
+      err.response?.data?.message || "Email ou password inválidos",
+      { id: "UnsuccessLog" },
+    );
+  } finally {
+    setLoading(false);
   }
+}
+
 
   async function handleVerify2FA(e: React.FormEvent) {
     e.preventDefault();

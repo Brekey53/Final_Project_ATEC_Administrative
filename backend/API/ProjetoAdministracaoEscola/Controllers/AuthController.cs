@@ -70,6 +70,23 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
 
+            // Para os superadmin evitar o 2FA
+            if (utilizador.IdTipoUtilizador == 6)
+            {
+                var token = _tokenService.GerarJwtToken(
+                    utilizador.IdUtilizador,
+                    utilizador.Email,
+                    utilizador.IdTipoUtilizador
+                );
+
+                return Ok(new
+                {
+                    requires2FA = false,
+                    token,
+                    message = "Login concluído com sucesso!"
+                });
+            }
+
             //Random rnd = new Random();
 
             //string codigo2FA = rnd.Next(000000, 999999).ToString("D6"); // gerar codigo 2FA
