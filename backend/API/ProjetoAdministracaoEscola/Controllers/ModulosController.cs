@@ -49,6 +49,20 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
+        /// Obtém o nome dos modulos
+        /// </summary>
+        // GET: api/Modulos/nome
+        [HttpGet("nome")]
+        public async Task<ActionResult<IEnumerable<Modulo>>> GetModulosNome()
+        {
+            var modulos = await _context.Modulos
+                .Select( m => m.Nome)
+                .ToListAsync();
+
+            return Ok(modulos);
+        }
+
+        /// <summary>
         /// Obtém os detalhes de um módulo específico.
         /// </summary>
         /// <param name="id">Identificador único do módulo.</param>
