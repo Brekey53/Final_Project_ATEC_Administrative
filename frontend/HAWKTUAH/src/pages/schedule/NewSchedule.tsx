@@ -86,7 +86,9 @@ export default function NewSchedule() {
       const data = await getHorariosTotal();
       setHorarios(data);
     } catch (err) {
-      console.log(err);
+      toast.error("Erro ao carregar horários.", {
+        id: "erro-getHorarios",
+      });
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,6 @@ export default function NewSchedule() {
         const res = await getFormadores();
         setFormadores(res);
       } catch (err) {
-        console.error(err);
         toast.error("Erro ao carregar formadores.", {
           id: "erro-getFormadores",
         });
@@ -172,7 +173,6 @@ export default function NewSchedule() {
       const res = await getTurmasFormadorHorario(Number(idFormador));
       setTurmasRaw(res);
     } catch (err) {
-      console.error(err);
       toast.error("Erro ao carregar turmas.", { id: "erro-getTurmasFormador" });
     }
   };
@@ -239,8 +239,10 @@ export default function NewSchedule() {
         idCursoModulo,
       );
       setSalasDisponiveis(dados);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Erro ao carregar salas.", {
+        id: "erro-getSalas",
+      });
     }
   };
 
@@ -253,6 +255,7 @@ export default function NewSchedule() {
     newHorario.idCursoModulo,
   ]);
 
+  /** Verifica se o formador ou turma estão já ocupados no mesmo slot horário (sobreposição) */
   const verificarConflitos = () => {
     const { data, horaInicio, horaFim, idFormador, idTurma } = newHorario;
     if (!data || !horaInicio || !horaFim)
@@ -342,7 +345,6 @@ export default function NewSchedule() {
       const res = await getTurmas();
       setTurmas(res);
     } catch (err) {
-      console.error(err);
       toast.error("Erro ao carregar turmas.", { id: "getTurmas" });
     }
   };
@@ -369,7 +371,6 @@ export default function NewSchedule() {
       });
       await fetchHorarios();
     } catch (err) {
-      console.error(err);
       toast.error("Erro ao gerar horário.", { id: "fetchHorarios" });
     } finally {
       setLoadingGenerator(false);
@@ -387,22 +388,21 @@ export default function NewSchedule() {
   };
 
   const handleDeleteHorario = async () => {
-    if (!selectedHorario) return
+    if (!selectedHorario) return;
 
-    try{
+    try {
       await deleteHorario(Number(selectedHorario.idHorario));
       toast.success("Horário deletado com sucesso!", {
         id: "successHorarioDeletado",
       });
       await fetchHorarios();
       handleCloseDeleteModal();
-
-    }catch(err: any){
+    } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao deletar.", {
         id: "erro-fetch",
       });
     }
-  }
+  };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -612,7 +612,12 @@ export default function NewSchedule() {
                     className="form-control shadow-none"
                     style={{ maxWidth: "160px" }}
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(e) => {
+                      const newStart = e.target.value;
+                      setStartDate(newStart);
+                      if (endDate && newStart > endDate) setEndDate("");
+                    }}
+                    max={endDate || undefined}
                   />
                 </div>
                 <div className="d-flex align-items-center gap-2">
@@ -1241,60 +1246,71 @@ export default function NewSchedule() {
       )}
 
       {showDeleteModal && selectedHorario && (
-            <div
-              className="modal fade show d-block"
-              tabIndex={-1}
-              onClick={() => setShowDeleteModal(false)}
-              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-            >
-              <div
-                className="modal-dialog modal-dialog-centered"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="modal-content rounded-4 shadow">
-                  <div className="modal-header">
-                    <h5 className="modal-title">Confirmar Eliminação</h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={() => setShowDeleteModal(false)}
-                    />
-                  </div>
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          onClick={() => setShowDeleteModal(false)}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content rounded-4 shadow">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirmar Eliminação</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                />
+              </div>
 
-                  <div className="modal-body">
-                    <p>
-                      Tem a certeza que pretende eliminar o horário da aplicação?<br/><br/>
-                        Data: <strong>{selectedHorario.data}</strong><br/>
-                        Hora: <strong>{selectedHorario.horaInicio}{" / "}{selectedHorario.horaFim}<br/></strong>
-                        Formando: <strong>{selectedHorario.nomeFormador}</strong><br/>
-                        Turma: <strong>{selectedHorario.nomeTurma}</strong><br/>
-                        Modulo: <strong>{selectedHorario.nomeModulo}</strong>
-                        <br/>
-                    </p>
-                    <p className="text-muted mb-0">
-                      Esta ação não pode ser revertida.
-                    </p>
-                  </div>
+              <div className="modal-body">
+                <p>
+                  Tem a certeza que pretende eliminar o horário da aplicação?
+                  <br />
+                  <br />
+                  Data: <strong>{selectedHorario.data}</strong>
+                  <br />
+                  Hora:{" "}
+                  <strong>
+                    {selectedHorario.horaInicio}
+                    {" / "}
+                    {selectedHorario.horaFim}
+                    <br />
+                  </strong>
+                  Formando: <strong>{selectedHorario.nomeFormador}</strong>
+                  <br />
+                  Turma: <strong>{selectedHorario.nomeTurma}</strong>
+                  <br />
+                  Modulo: <strong>{selectedHorario.nomeModulo}</strong>
+                  <br />
+                </p>
+                <p className="text-muted mb-0">
+                  Esta ação não pode ser revertida.
+                </p>
+              </div>
 
-                  <div className="modal-footer">
-                    <button
-                      className="btn btn-light"
-                      onClick={() => setShowDeleteModal(false)}
-                    >
-                      Cancelar
-                    </button>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-light"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
 
-                    <button
-                      className="btn btn-danger"
-                      onClick={handleDeleteHorario}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </div>
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeleteHorario}
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
