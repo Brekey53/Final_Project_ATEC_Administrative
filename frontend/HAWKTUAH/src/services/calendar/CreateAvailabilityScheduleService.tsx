@@ -7,6 +7,7 @@ export interface AvailabilityEvent {
   data: string;
   horaInicio: string;
   horaFim: string;
+  estaMarcado: boolean;
 }
 
 export interface ScheduleEvent {
