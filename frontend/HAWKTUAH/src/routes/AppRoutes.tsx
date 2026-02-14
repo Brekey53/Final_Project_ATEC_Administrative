@@ -71,7 +71,7 @@ function AppRoutes() {
           <Route path="cursos/:idCurso" element={<CursoDetalhe />} />
 
           {/** ADMIN e ADMINISTRATIVO */}
-          <Route element={<RoleRoute permitido={[1, 4]} />}>
+          <Route element={<RoleRoute permitido={[1, 4, 6]} />}>
             {/* Utilizadores - Admin, Administrativo*/}
             <Route path="/gerir-utilizadores" element={<ManageUsers />} />
             <Route
@@ -130,7 +130,7 @@ function AppRoutes() {
           </Route>
 
           {/* Admin, Administrativo e Formadores */}
-          <Route element={<RoleRoute permitido={[1, 2, 4]} />}>
+          <Route element={<RoleRoute permitido={[1, 2, 4, 6]} />}>
             {/* Formandos*/}
             <Route path="/formandos" element={<Formandos />} />
           </Route>

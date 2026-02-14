@@ -251,7 +251,8 @@ INSERT INTO tipo_utilizadores (tipo_utilizador) VALUES
 ('formador'),
 ('formando'),
 ('administrativo'),
-('geral');
+('geral'),
+('superadmin');
 
 -- ESCOLARIDADES
 INSERT INTO escolaridades (nivel) VALUES
@@ -297,8 +298,8 @@ INSERT INTO materia_sala_compatibilidade (id_tipo_materia, id_tipo_sala) VALUES
 INSERT INTO utilizadores
 (nome, nif, data_nascimento, morada, telefone, sexo, email, password_hash, id_google, id_facebook, id_tipo_utilizador, status_ativacao, token_ativacao, ativo, data_desativacao)
 VALUES
-('Admin1','999666555','1975-03-10','Palmela','999456123','Masculino','admin@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,1,1,'tok_001',TRUE,NULL),
-('Admin2','999666554','1975-03-10','Palmela','999456122','Masculino','admin2@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,1,1,'tok_001',TRUE,NULL),
+('SuperAdmin','999666555','1975-03-10','Palmela','999456123','Masculino','superadmin@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,6,1,'tok_001',TRUE,NULL),
+('Admin','999666554','1975-03-10','Palmela','999456122','Masculino','admin@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,1,1,'tok_001',TRUE,NULL),
 ('Carlos Professor','111222333','1975-03-10','Palmela','912300001','Masculino','carlos@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_001',TRUE,NULL),
 ('Ana Docente','222333444','1982-07-22','Setúbal','912300002','Feminino','ana@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_002',TRUE,NULL),
 ('Leonor Joaquim','333444555','1978-11-05','Lisboa','912300003','Feminino','bruno@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_003',TRUE,NULL),
@@ -359,8 +360,8 @@ VALUES
 
 -- FORMADORES (Ligar aos primeiros 7 utilizadores)
 INSERT INTO formadores (id_utilizador, iban, qualificacoes) VALUES 
-(1, 'PT500001', 'Mestre em Engenharia'),
-(2, 'PT500002', 'Licenciada em Matemática'),
+(8, 'PT500001', 'Mestre em Engenharia'),
+(9, 'PT500002', 'Licenciada em Matemática'),
 (3, 'PT500003', 'Especialista Redes'),
 (4, 'PT500004', 'Doutorada em IA'),
 (5, 'PT500005', 'Certificação Cisco'),

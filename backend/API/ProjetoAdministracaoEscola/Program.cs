@@ -32,7 +32,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOrAdministrativo", policy =>
-        policy.RequireClaim("tipoUtilizador", "1", "4")); // 1 = Admin, 4 = Administrativo
+        policy.RequireClaim("tipoUtilizador", "1", "4", "6")); // 1 = Admin, 4 = Administrativo, 6 = SuperAdmin
 
     options.AddPolicy("Formador", policy =>
         policy.RequireClaim("tipoUtilizador", "2")); // Formadores
@@ -41,8 +41,8 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("tipoUtilizador", "3")); // Formandos
 
     options.AddPolicy("FormadorOuAdminOuAdministrativo", policy =>
-        policy.RequireClaim("tipoUtilizador", "1", "2", "4")); 
-        // 1 = Admin 2 = Formador 4 = Administrativo
+        policy.RequireClaim("tipoUtilizador", "1", "2", "4", "6")); 
+        // 1 = Admin 2 = Formador 4 = Administrativo 6 = Superadmin 
 });
 
 // Add Authentication services
