@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
+import { toast } from "react-hot-toast";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -17,7 +18,24 @@ export default function ResetPassword() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setMessage("As passwords não coincidem.");
+      toast.error("As passwords não coincidem.");
+      return;
+    }
+
+    if (newPassword.length < 6 || confirmPassword.length < 6) {
+      toast.error("Tem de ter pelo menos 6 caracteres");
+    }
+
+    const isPasswordStrong = (pass: string) => {
+      const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+      return regex.test(pass);
+    };
+
+    if (!isPasswordStrong(newPassword)) {
+      toast.error(
+        "A password deve ter pelo menos 6 caracteres, incluindo uma letra e um número.",
+        { id: "erro-password-inválida" },
+      );
       return;
     }
 
@@ -27,12 +45,14 @@ export default function ResetPassword() {
         Token: token,
         NewPassword: newPassword,
       });
-      alert("Password alterada com sucesso!");
+      toast.success("Password alterada com sucesso!", {
+        id: "successChangePass",
+      });
       navigate("/login");
     } catch (err: any) {
-      setMessage(
-        err.response?.data?.message || "O link expirou ou é inválido.",
-      );
+      toast.error("Erro ao alterar a password, tente novamente.", {
+        id: "errorChangePass",
+      });
     } finally {
       setLoading(false);
     }
@@ -56,6 +76,10 @@ export default function ResetPassword() {
         <form onSubmit={handleSubmit} className="d-flex flex-column gap-3 mt-4">
           <div className="form-group">
             <label className="form-label">Nova Password:</label>
+            <br />
+            <small className="text-muted">
+              Tem de ter pelo menos 6 caracteres.
+            </small>
             <input
               type={showPassword ? "text" : "password"}
               className="form-control"
