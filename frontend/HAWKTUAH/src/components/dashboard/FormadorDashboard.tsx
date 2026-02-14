@@ -99,9 +99,9 @@ export default function FormadorDashboard() {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h3 className="mb-1">
-            Bem-vindo(a), <strong>{nameUser}</strong>
-          </h3>
+          <h2 className="fw-bold">
+            Bem-vindo(a), <span className="text-primary">{nameUser}</span>
+          </h2>
           <small className="text-muted">
             Aqui está o resumo da tua atividade
           </small>
