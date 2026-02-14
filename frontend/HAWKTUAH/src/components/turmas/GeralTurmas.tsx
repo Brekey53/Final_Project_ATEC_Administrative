@@ -5,6 +5,7 @@ import {
   getTurmasGeralDashboard,
   type Turma,
 } from "../../services/turmas/TurmasService";
+import { Search } from "lucide-react";
 
 export default function GeralTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -20,7 +21,9 @@ export default function GeralTurmas() {
         if (!data) return;
         setTurmas(data);
       } catch (err: any) {
-        toast.error(err || "Erro ao carregar turmas.", { id: "erroGeralTurmas" });
+        toast.error(err || "Erro ao carregar turmas.", {
+          id: "erroGeralTurmas",
+        });
       }
     }
 
@@ -53,15 +56,24 @@ export default function GeralTurmas() {
       </div>
 
       {/* PESQUISA */}
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar turmas (nome, curso)…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          {" "}
+          {/* Pesquisa Input*/}
+          <div className="col-md-12">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -105,7 +117,7 @@ export default function GeralTurmas() {
             ))
           ) : (
             <div className="p-5 text-center text-muted">
-              Nenhuma turma encontrada
+              Não existem turmas para começar
             </div>
           )}
         </div>
