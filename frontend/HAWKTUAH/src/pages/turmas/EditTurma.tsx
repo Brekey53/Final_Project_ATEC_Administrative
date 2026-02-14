@@ -25,6 +25,7 @@ import {
 import { Trash, Lock } from "lucide-react";
 import { Tooltip } from "bootstrap";
 import "../../css/layoutTabelas.css";
+import { isDataFimValida } from "../../utils/dataUtils";
 
 export default function EditTurma() {
   const { id } = useParams();
@@ -193,6 +194,13 @@ export default function EditTurma() {
     e.preventDefault();
     if (!id) return;
     setLoading(true);
+
+    if (formData.dataInicio && formData.dataFim && !isDataFimValida(formData.dataInicio, formData.dataFim)) {
+      toast.error("A data de fim deve ser igual ou posterior à data de início.", {
+        id: "erroDataFimTurma",
+      });
+      return;
+    }
 
     try {
       await updateTurma(id, formData);
@@ -371,6 +379,7 @@ export default function EditTurma() {
                     className="form-control"
                     value={formData.dataInicio}
                     onChange={handleChange}
+                    max={formData.dataFim || undefined}
                     required
                   />
                 </div>
@@ -383,6 +392,7 @@ export default function EditTurma() {
                     className="form-control"
                     value={formData.dataFim}
                     onChange={handleChange}
+                    min={formData.dataInicio || undefined}
                     required
                   />
                 </div>

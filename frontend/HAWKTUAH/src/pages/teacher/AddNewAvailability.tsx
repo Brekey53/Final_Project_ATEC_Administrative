@@ -76,12 +76,7 @@ export default function AddNewAvailability() {
   };
 
   {
-    /*Este é da segunda tab 
-    André, para evitar chamadas à API inuteis por utilziador inuteis coloquei aqui resta aprte para nao 
-    mandar para lá coisas burras 
-    
-
-    */
+  /* Tab "Dados": formulário manual em vez de calendário. Evita chamadas à API até o utilizador submeter. */
   }
 
   const handleAddDisponibilidade = async (e: React.FormEvent) => {
@@ -139,6 +134,7 @@ export default function AddNewAvailability() {
     }));
   };
 
+  // Apenas aceita horas cheias (:00) ou meias horas (:30)
   const isHoraValida = (hora: string): boolean => {
     const [, minutos] = hora.split(":");
     return minutos === "00" || minutos === "30";
@@ -217,8 +213,9 @@ export default function AddNewAvailability() {
                     className="form-control"
                     value={scheduleInput.dataInicio}
                     onChange={handleChange}
+                    max={scheduleInput.dataFim || undefined}
                     onBlur={() => {
-                      if (isFimDeSemana(scheduleInput.dataInicio)) {
+                      if (scheduleInput.dataInicio && isFimDeSemana(scheduleInput.dataInicio)) {
                         toast.error(
                           "Não é possível selecionar fins de semana.", { id: "erroSelecionarFDS" });
                       }
@@ -235,8 +232,9 @@ export default function AddNewAvailability() {
                     className="form-control"
                     value={scheduleInput.dataFim}
                     onChange={handleChange}
+                    min={scheduleInput.dataInicio || undefined}
                     onBlur={() => {
-                      if (isFimDeSemana(scheduleInput.dataInicio)) {
+                      if (scheduleInput.dataFim && isFimDeSemana(scheduleInput.dataFim)) {
                         toast.error(
                           "Não é possível selecionar fins de semana.", { id: "ErroSelecionarFDS" });
                       }

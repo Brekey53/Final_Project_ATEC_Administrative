@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CreateAccountNewUser } from "../../services/users/CreateAccountNewUser";
 import toast from "react-hot-toast";
+import { getHojeISO } from "../../utils/dataUtils";
 
 export default function CreateAccount() {
   const navigate = useNavigate();
@@ -120,6 +121,8 @@ export default function CreateAccount() {
                 className="form-control"
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
+                min={1900}
+                max={getHojeISO()}
                 required
               />
             </div>

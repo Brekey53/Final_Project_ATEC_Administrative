@@ -177,7 +177,6 @@ export default function EditFormando() {
       window.open(fileURL, "_blank");
     } catch (error) {
       toast.error("Não foi possível abrir o documento.", { id: "erroAoAbrirDoc" });
-      console.error(error);
     }
   };
 
