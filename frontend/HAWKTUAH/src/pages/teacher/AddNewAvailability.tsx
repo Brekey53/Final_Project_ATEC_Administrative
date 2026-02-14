@@ -75,10 +75,6 @@ export default function AddNewAvailability() {
     }
   };
 
-  {
-  /* Tab "Dados": formulário manual em vez de calendário. Evita chamadas à API até o utilizador submeter. */
-  }
-
   const handleAddDisponibilidade = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -116,7 +112,9 @@ export default function AddNewAvailability() {
 
     try {
       await postDisponibilidadeInput(scheduleInput);
-      toast.success("Horário adicionado com sucesso!", { id: "successHorarioAdicionadoC" });
+      toast.success("Horário adicionado com sucesso!", {
+        id: "successHorarioAdicionadoC",
+      });
     } catch (err: any) {
       toast.error(
         err.response?.data?.message || "Erro ao adicionar horário disponível",
@@ -158,7 +156,7 @@ export default function AddNewAvailability() {
       <div className="mb-3 mb-md-0 text-center text-md-start">
         <h2 className="fw-bold mb-1">Adicionar Disponibilidade</h2>
         <p className="text-muted mb-0">
-          Inserir, alterar, eliminar ou consultar disponibilidade.
+          Inserir, eliminar ou consultar disponibilidades.
         </p>
       </div>
 
@@ -171,7 +169,7 @@ export default function AddNewAvailability() {
               onClick={() => setActiveTab("Schedule")}
               type="button"
             >
-              Vista Horário
+              Adicionar via Horário
             </button>
           </li>
           <li className="nav-item">
@@ -180,7 +178,7 @@ export default function AddNewAvailability() {
               onClick={() => setActiveTab("Dados")}
               type="button"
             >
-              Vista nAUM SEI A PALAVRA CERTA ANDRÉ
+              Adicionar via Datas
             </button>
           </li>
         </ul>
@@ -195,83 +193,96 @@ export default function AddNewAvailability() {
         </div>
       )}
       {activeTab === "Dados" && (
-        <>
-          <div className="my-5">
-            {/* Período */}
+        <div className="mt-4 mt-md-5">
+          <div className="card shadow-sm border-0 rounded-4 p-4 p-md-5">
+            <div className="mb-4">
+              <h4 className="fw-bold mb-1">Adicionar várias datas</h4>
+              <p className="text-muted mb-0">
+                Defina um intervalo de datas e um horário fixo.
+              </p>
+              <div className="alert alert-light border rounded-3 small mb-0">
+                <ul className="mb-0 ps-3">
+                  <li>Disponibilidade apenas para daqui a pelo menos 1 mês</li>
+                  <li>Não são permitidos fins de semana</li>
+                  <li>Horário entre as 08:00 e as 23:00</li>
+                  <li>Apenas horas cheias (:00) ou meias horas (:30)</li>
+                </ul>
+              </div>
+            </div>
+
             <form onSubmit={handleAddDisponibilidade}>
-              <div className="d-flex justify-content-end justify-content-md-end">
-                <button className="btn btn-success w-100 w-md-auto pt-2 py-md-1">
+              {/* BLOCO DATAS */}
+              <div className="mb-4">
+                <h6 className="fw-semibold mb-3 text-secondary">Período</h6>
+
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Data início</label>
+                    <input
+                      type="date"
+                      name="dataInicio"
+                      className="form-control"
+                      value={scheduleInput.dataInicio}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Data fim</label>
+                    <input
+                      type="date"
+                      name="dataFim"
+                      className="form-control"
+                      value={scheduleInput.dataFim}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <hr className="my-4" />
+
+              {/* BLOCO HORÁRIO */}
+              <div className="mb-4">
+                <h6 className="fw-semibold mb-3 text-secondary">Horário</h6>
+
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Hora início</label>
+                    <input
+                      type="time"
+                      name="horaInicio"
+                      className="form-control"
+                      value={scheduleInput.horaInicio}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Hora fim</label>
+                    <input
+                      type="time"
+                      name="horaFim"
+                      className="form-control"
+                      value={scheduleInput.horaFim}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* BOTÃO */}
+              <div className="d-flex justify-content-end">
+                <button className="btn btn-success px-4 py-2">
                   + Adicionar Disponibilidade
                 </button>
               </div>
-              <div className="row g-3 mt-4">
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Válido de</label>
-                  <input
-                    type="date"
-                    name="dataInicio"
-                    className="form-control"
-                    value={scheduleInput.dataInicio}
-                    onChange={handleChange}
-                    max={scheduleInput.dataFim || undefined}
-                    onBlur={() => {
-                      if (scheduleInput.dataInicio && isFimDeSemana(scheduleInput.dataInicio)) {
-                        toast.error(
-                          "Não é possível selecionar fins de semana.", { id: "erroSelecionarFDS" });
-                      }
-                    }}
-                    required
-                  />
-                </div>
-
-                <div className="col-md-4 mb-3 ">
-                  <label className="form-label">Até</label>
-                  <input
-                    type="date"
-                    name="dataFim"
-                    className="form-control"
-                    value={scheduleInput.dataFim}
-                    onChange={handleChange}
-                    min={scheduleInput.dataInicio || undefined}
-                    onBlur={() => {
-                      if (scheduleInput.dataFim && isFimDeSemana(scheduleInput.dataFim)) {
-                        toast.error(
-                          "Não é possível selecionar fins de semana.", { id: "ErroSelecionarFDS" });
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Horário */}
-              <div className="row">
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Hora início</label>
-                  <input
-                    type="time"
-                    name="horaInicio"
-                    className="form-control"
-                    value={scheduleInput.horaInicio}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Hora fim</label>
-                  <input
-                    type="time"
-                    name="horaFim"
-                    className="form-control"
-                    value={scheduleInput.horaFim}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
             </form>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
