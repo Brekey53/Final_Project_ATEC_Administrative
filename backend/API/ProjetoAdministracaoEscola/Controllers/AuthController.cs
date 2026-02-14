@@ -70,7 +70,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
 
-            // Para os superadmin evitar o 2FA
+            // Para o superadmin evitar o 2FA
             if (utilizador.IdTipoUtilizador == 6)
             {
                 var token = _tokenService.GerarJwtToken(
