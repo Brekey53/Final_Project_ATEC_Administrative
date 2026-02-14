@@ -185,7 +185,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// Retorna 'Não Autorizado' se o utilizador não estiver autenticado, ou 'Não Encontrado' se o formando não existir.
         /// </returns>
         [HttpGet("exportar/formandoCalendar")]
-        public async Task<IActionResult> ExportarHorario()
+        public async Task<IActionResult> ExportarHorarioFormando()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
@@ -243,6 +243,82 @@ namespace ProjetoAdministracaoEscola.Controllers
                 ics.AppendLine($"DTSTART:{start}");
                 ics.AppendLine($"DTEND:{end}");
                 ics.AppendLine($"SUMMARY:{h.Modulo}");
+                ics.AppendLine($"LOCATION:{h.Sala}");
+                ics.AppendLine($"DESCRIPTION:Aula do módulo {h.Modulo}");
+                ics.AppendLine("END:VEVENT");
+            }
+
+            ics.AppendLine("END:VCALENDAR");
+
+            var bytesDoCalendario = Encoding.UTF8.GetBytes(ics.ToString());
+
+            return File(bytesDoCalendario, "text/calendar", $"horario_formando_{userId}.ics");
+
+        }
+
+        /// <summary>
+        /// Exporta o horário do utilizador autenticado como um ficheiro iCalendar (.ics).
+        /// </summary>
+        /// <remarks>
+        /// O calendário exportado inclui todas as aulas agendadas para o utilizador.
+        /// O ficheiro pode ser importado na maioria das aplicações de calendário, como Google Calendar ou Outlook.
+        /// Apenas utilizadores autenticados podem aceder ao seu próprio horário.
+        /// </remarks>
+        /// <returns>
+        /// Um ficheiro contendo o horário do utilizador no formato iCalendar. 
+        /// Retorna 'Não Autorizado' se o utilizador não estiver autenticado, ou 'Não Encontrado' se o formador não existir.
+        /// </returns>
+        [HttpGet("exportar/formadorCalendar")]
+        public async Task<IActionResult> ExportarHorarioFormador()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim);
+
+            var formador = await _context.Formadores.FirstOrDefaultAsync(f => f.IdUtilizador == userId);
+
+            if (formador == null)
+            {
+                return NotFound(new { message = "Formador não encontrado." });
+            }
+
+            // Horários
+            var horarios = await _context.Horarios
+                .Where(h => h.IdFormador == formador.IdFormador)
+                .Select(h => new
+                {
+                    h.Data,
+                    h.HoraInicio,
+                    h.HoraFim,
+                    Sala = h.IdSalaNavigation.Descricao,
+                    Modulo = h.IdCursoModuloNavigation.IdCursoNavigation.Nome,
+                    Turma = h.IdTurmaNavigation.NomeTurma
+                })
+                .OrderBy(h => h.Data)
+                .ThenBy(h => h.HoraInicio)
+                .ToListAsync();
+
+            var ics = new StringBuilder();
+            ics.AppendLine("BEGIN:VCALENDAR");
+            ics.AppendLine("VERSION:2.0");
+            ics.AppendLine("PROID:-//HAWKPORTAL//PT");
+            ics.AppendLine("CALSCALE:GREGORIAN");
+            ics.AppendLine("METHOD:PUBLISH");
+
+            foreach (var h in horarios)
+            {
+                // Formato padrao ICS: YYYYMMDDTHHMMSS
+                string start = h.Data.ToString("yyyyMMdd") + "T" + h.HoraInicio.ToString("HHmm") + "00";
+                string end = h.Data.ToString("yyyyMMdd") + "T" + h.HoraFim.ToString("HHmm") + "00";
+
+                ics.AppendLine("BEGIN:VEVENT");
+                ics.AppendLine($"UID:{Guid.NewGuid()}@hawkportal.pt"); // ID único para o Google não duplicar
+                ics.AppendLine($"DTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}");
+                ics.AppendLine($"DTSTART:{start}");
+                ics.AppendLine($"DTEND:{end}");
+                ics.AppendLine($"SUMMARY:{h.Turma}");
                 ics.AppendLine($"LOCATION:{h.Sala}");
                 ics.AppendLine($"DESCRIPTION:Aula do módulo {h.Modulo}");
                 ics.AppendLine("END:VEVENT");
