@@ -10,6 +10,9 @@ import { checkEmailGetName } from "../../services/users/UserService";
 import CalendarSchedule from "../CalendarSchedule";
 import { Link } from "react-router";
 import { Calendar, Clock, Users } from "lucide-react";
+import { getHojeISO } from "../../utils/dataUtils";
+import { exportHorarioFormador } from "../../services/calendar/CalendarService";
+import toast from "react-hot-toast";
 
 export default function FormadorDashboard() {
   const [events, setEvents] = useState<[]>([]);
@@ -40,12 +43,36 @@ export default function FormadorDashboard() {
 
         setEvents(events);
       } catch (error) {
-        console.error("Erro ao carregar horários", error);
+        toast.error("Erro ao carregar horários");
       }
     }
 
     fetchHorarios();
   }, []);
+
+  const handleExportClick = async () => {
+    if (!user) return null;
+
+    try {
+      const res = await exportHorarioFormador();
+
+      const url = window.URL.createObjectURL(new Blob([res]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `horario_${nameUser.split(" ")[0]}_${getHojeISO()}.ics`,
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      // Limpeza
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error("Erro ao exportar horario formador");
+    }
+  };
 
   useEffect(() => {
     async function fetchEstatisticasFormador() {
@@ -58,7 +85,7 @@ export default function FormadorDashboard() {
         setHorasMesAnterior(dataAnterior);
         setTurmasAtuais(numeroTurmas);
       } catch (error) {
-        console.error("Erro ao carregar horas", error);
+        toast.error("Erro ao carregar horas");
       }
     }
 
@@ -153,6 +180,15 @@ export default function FormadorDashboard() {
         </div>
         <div className="card-body p-4">
           <CalendarSchedule events={events} />
+          <div>
+            <br />
+            <button
+              className="btn btn-outline-primary"
+              onClick={handleExportClick}
+            >
+              📅 Exportar Calendário
+            </button>
+          </div>
         </div>
       </div>
     </div>
