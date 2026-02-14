@@ -126,7 +126,6 @@ export default function NewSchedule() {
     };
   }, [horarios, loading]); // Re-executa quando a lista carrega
 
-  // Resetar paginação quando filtros mudam
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, startDate, endDate, dataSelecionada]);
@@ -398,7 +397,7 @@ export default function NewSchedule() {
       await fetchHorarios();
       handleCloseDeleteModal();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao deletar.", {
+      toast.error(err.response?.data?.message || "Erro ao apagar.", {
         id: "erro-fetch",
       });
     }
@@ -569,7 +568,7 @@ export default function NewSchedule() {
             onClick={handleAutoGenerateModal}
             style={{ cursor: "pointer" }}
           >
-            Criar Horário automatico para turma
+            Gerar Horário Automático para Turma
           </div>
 
           <div
