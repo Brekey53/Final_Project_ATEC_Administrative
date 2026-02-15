@@ -21,7 +21,7 @@ export default function EditUser() {
     nome: "",
     nif: "",
     telefone: "",
-    IdTipoUtilizador: 0,
+    IdTipoUtilizador: 5,
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
@@ -93,7 +93,7 @@ export default function EditUser() {
     try {
       await updateUtilizador(id, data);
       toast.success("Perfil do Utilizador atualizado!", { id: "successPerfilAtualizado" });
-      navigate(-1); // Volta para a listagem
+      navigate(-1);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar dados.", { id: "erro-atualizar-dados" });
     } finally {
@@ -202,7 +202,7 @@ export default function EditUser() {
                   value={formData.IdTipoUtilizador}
                   onChange={handleChange}
                   required
-                >isSuperAdmin
+                >
                   {isSuperAdmin && <option value={1}>Admin</option>}
 
                   <option value={2}>Formador</option>

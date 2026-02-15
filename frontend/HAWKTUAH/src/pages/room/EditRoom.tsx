@@ -33,9 +33,9 @@ export default function EditRoom() {
         setFormData(sala);
         setTiposSala(tipos);
       } catch {
-        toast.error("Erro ao carregar dados da sala.",
-          {id: "erro-dados-sala"}
-        );
+        toast.error("Erro ao carregar dados da sala.", {
+          id: "erro-dados-sala",
+        });
         navigate("/gerir-salas");
       } finally {
         setFetching(false);
@@ -67,12 +67,18 @@ export default function EditRoom() {
 
     try {
       await updateSala(id, formData);
-      toast.success("Sala atualizada com sucesso!", {id: "sucessSalaAtualizada"});
+      toast.success("Sala atualizada com sucesso!", {
+        id: "sucessSalaAtualizada",
+      });
       navigate("/gerir-salas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar sala.",
-        {id: "erro-atualizar-sala"}
-      );
+      if (formData.numMaxAlunos < 5) 
+        toast.error("Número Mínimo de alunos é 5.", 
+          { id: "erro-atualizar-sala-max-alunos" });
+
+        toast.error(err.response?.data?.message || "Erro ao atualizar sala.", {
+          id: "erro-atualizar-sala",
+        });
     } finally {
       setLoading(false);
     }
@@ -133,7 +139,7 @@ export default function EditRoom() {
             <h5 className="text-primary mb-4 border-bottom pb-2">
               Informações Gerais
             </h5>
-            
+
             <div className="row">
               {/* Descrição da Sala */}
               <div className="col-md-8 mb-3">
@@ -160,7 +166,7 @@ export default function EditRoom() {
                   className="form-control form-control-lg form-control-sm"
                   value={formData.numMaxAlunos}
                   onChange={handleChange}
-                  min="1"
+                  min="5"
                   required
                 />
                 <div className="form-text text-muted">

@@ -6,7 +6,7 @@
 
         public string Email { get; set; } = string.Empty;
 
-        public string NomeCompleto { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
 
         public string NIF { get; set; } = string.Empty;
 
@@ -15,7 +15,7 @@
         public DateOnly DataNascimento { get; set; }
 
         public string Telefone { get; set; } = string.Empty;
-
+        public int IdTipoUtilizador { get; set; }
         public string TipoUtilizador { get; set; } = string.Empty;
 
         public bool? Ativo { get; set; }

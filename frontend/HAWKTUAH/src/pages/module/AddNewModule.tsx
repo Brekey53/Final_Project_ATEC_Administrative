@@ -142,7 +142,7 @@ export default function AddNewModule() {
                   type="number"
                   name="horasTotais"
                   className="form-control"
-                  min="0"
+                  min="1"
                   value={formData.horasTotais}
                   onChange={handleChange}
                   required
@@ -154,10 +154,10 @@ export default function AddNewModule() {
                 <label className="form-label fw-bold">Créditos</label>
                 <input
                   type="number"
-                  step="0.1"
+                  step="1"
                   name="creditos"
                   className="form-control"
-                  min="0"
+                  min="1"
                   value={formData.creditos}
                   onChange={handleChange}
                   required
