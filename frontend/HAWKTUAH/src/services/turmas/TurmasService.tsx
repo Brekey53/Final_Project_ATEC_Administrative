@@ -178,3 +178,10 @@ export interface Metodologia {
   pausaRefeicaoInicio: string;
   pausaRefeicaoFim: string;
 }
+
+export interface TurmaRaw {
+  idTurma: number;
+  nomeTurma: string;
+  idModulo: number;
+  idCursoModulo: number;
+}
