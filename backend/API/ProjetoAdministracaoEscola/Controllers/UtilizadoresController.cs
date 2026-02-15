@@ -280,12 +280,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 // Atualizar na tabela formandos
                 var formando = await _context.Formandos
+                    .IgnoreQueryFilters()
                     .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
                 if (formando != null)
                     formando.Ativo = dto.Ativo;
 
                 // // Atualizar na tabela Formador
                 var formador = await _context.Formadores
+                    .IgnoreQueryFilters()
                     .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
                 if (formador != null)
                     formador.Ativo = dto.Ativo;
@@ -296,11 +298,13 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 // Desativar em ambas
                 var formando = await _context.Formandos
+                    .IgnoreQueryFilters()
                     .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
                 if (formando != null)
                     formando.Ativo = false;
 
                 var formador = await _context.Formadores
+                    .IgnoreQueryFilters()
                     .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
                 if (formador != null)
                     formador.Ativo = false;

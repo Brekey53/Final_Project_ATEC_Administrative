@@ -597,14 +597,15 @@ namespace ProjetoAdministracaoEscola.Controllers
             if (formando == null) return NotFound(new { message = "Formando não encontrado." });
 
             // Verificar se existe alguma inscição associada
-            bool temAulasFuturas = await _context.Inscricoes
-                .Where(i => i.IdFormando == id) 
+            bool temAulasFuturasEInscrisaoAtiva = await _context.Inscricoes
+                .Where(i => i.IdFormando == id && i.Estado == "Ativo") 
                 .AnyAsync(i => _context.Horarios.Any(h =>
                     h.IdTurma == i.IdTurma && 
                     h.Data > DateOnly.FromDateTime(DateTime.Now)
                 ));
 
-            if (temAulasFuturas)
+
+            if (temAulasFuturasEInscrisaoAtiva)
             {
                 return BadRequest(new { message = "Não é possível eliminar o formando pois ele está inscrito numa turma com aulas agendadas para o futuro." });
             }

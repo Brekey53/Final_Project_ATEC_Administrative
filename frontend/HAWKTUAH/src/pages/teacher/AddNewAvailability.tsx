@@ -115,6 +115,7 @@ export default function AddNewAvailability() {
       toast.success("Horário adicionado com sucesso!", {
         id: "successHorarioAdicionadoC",
       });
+      setHorariosDisponiveis([]);
     } catch (err: any) {
       toast.error(
         err.response?.data?.message || "Erro ao adicionar horário disponível",
