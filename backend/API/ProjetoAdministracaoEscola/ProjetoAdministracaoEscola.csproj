@@ -37,8 +37,6 @@
     <Folder Include="ModelsDTO\GetMinhaTurma\Responses\" />
     <Folder Include="ModelsDTO\Login\Requests\" />
     <Folder Include="ModelsDTO\MobileDTO\Requests\" />
-    <Folder Include="ModelsDTO\Responses\" />
-    <Folder Include="ModelsDTO\Requests\" />
     <Folder Include="ModelsDTO\TipoMateria\Requests\" />
   </ItemGroup>
 
