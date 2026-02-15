@@ -24,9 +24,17 @@ namespace ProjetoAdministracaoEscola.Services
         /// </summary>
         /// <returns>
         /// Gera o horário de uma turma, encaixando os módulos de acordo com a disponibilidade dos formadores e salas,
-        ///  e respeitando a metodologia (diurno ou pós-laboral) da turma
+        ///  e respeitando a metodologia (diurno ou pós-laboral) da turma.
+        ///  Retorna um objeto com os horários gerados e um resumo do processo.
         /// </returns>
-        public async Task<List<Horario>> GerarHorario(Turma turma, List<CursosModulo> cursoModulos, List<TurmaAlocaco> turmaAlocacao, List<Sala> salas, HashSet<Horario> horariosOcupados) 
+        public async Task<HorarioGeradorResultado> GerarHorario(
+            Turma turma,
+            List<CursosModulo> cursoModulos,
+            List<TurmaAlocaco> turmaAlocacao,
+            List<Sala> salas,
+            HashSet<Horario> horariosOcupados,
+            DateOnly? dataInicioMinima = null,
+            Dictionary<int, int>? horasJaLeccionadas = null)
         {
 
             //// Ordendar modulos
@@ -36,20 +44,31 @@ namespace ProjetoAdministracaoEscola.Services
             var filaModulosPendentes = new Queue<CursosModulo>(cursoModulos.OrderBy(mo => mo.Prioridade));
 
             // Dicionario para controlar as horas restantes de cada módulo
-            var horasRestantesPorModulo = cursoModulos.ToDictionary(cm => cm.IdModulo, cm => cm.IdModuloNavigation.HorasTotais);
+            var horasRestantesPorModulo = cursoModulos.ToDictionary(cm => cm.IdModulo, cm => {
+                int total = cm.IdModuloNavigation.HorasTotais;
+                if (horasJaLeccionadas != null && horasJaLeccionadas.TryGetValue(cm.IdModulo, out int jaDado))
+                {
+                    return Math.Max(0, total - jaDado);
+                }
+                return total;
+            });
 
             // Cursor dataInicio
             DateOnly cursorData = turma.DataInicio;
+            if (dataInicioMinima.HasValue && dataInicioMinima.Value > cursorData)
+            {
+                cursorData = dataInicioMinima.Value;
+            }
 
-            // Guardar horarios novos
-            List<Horario> novosHorarios = new List<Horario>();
+            // Guardar resultados
+            var resultado = new HorarioGeradorResultado();
 
             // Gerar slots de aulas possíveis de acordo com a metodologia da turma
             var metodologia = turma.IdMetodologiaNavigation;
 
 
             // Definir limites de blocos de aulas
-            int maxBloco = 3; 
+            int maxBloco = 3;
             int minBloco = 1; // minimo aceitavel para uma aula
 
             int maxModulosSimultaneos = 3; // Para evitar tentar alocar muitos módulos ao mesmo tempo.
@@ -63,7 +82,7 @@ namespace ProjetoAdministracaoEscola.Services
             int anoFim = turma.DataFim.Year;
 
             var feriados = GetFeriados(anoInicio);
-            if(anoFim > anoInicio)
+            if (anoFim > anoInicio)
             {
                 feriados.UnionWith(GetFeriados(anoFim));
             }
@@ -72,7 +91,7 @@ namespace ProjetoAdministracaoEscola.Services
             {
                 // Validar fim de semana e passa o dia à frente
                 if (cursorData.DayOfWeek == DayOfWeek.Saturday || cursorData.DayOfWeek == DayOfWeek.Sunday)
-                 {
+                {
                     cursorData = cursorData.AddDays(1);
                     continue;
                 }
@@ -84,7 +103,11 @@ namespace ProjetoAdministracaoEscola.Services
                     continue;
                 }
 
-
+                // Verificar se já passou a data de fim da turma
+                if (cursorData > turma.DataFim)
+                {
+                    break;
+                }
 
                 // Obter blocos de horario do Dia
                 var slotsDoDia = GerarSlotsPossiveis(metodologia, maxBloco);
@@ -143,7 +166,7 @@ namespace ProjetoAdministracaoEscola.Services
                                 // SUCESSO!
                                 var novoBlocoHorario = CriarHorario(turma.IdTurma, modulo.IdCursoModulo, formadorAlocado.IdFormador, salaLivre.IdSala, cursorData, inicio, fimCalculado);
 
-                                novosHorarios.Add(novoBlocoHorario);
+                                resultado.HorariosGerados.Add(novoBlocoHorario);
                                 horariosOcupados.Add(novoBlocoHorario);
 
                                 // Atualiza as horas restantes no Dicionário
@@ -181,11 +204,62 @@ namespace ProjetoAdministracaoEscola.Services
                 // Avançar Dia
                 cursorData = cursorData.AddDays(1);
 
-                // Proteção contra loop infinito (caso acabem as datas ou erro lógico)
-                if (cursorData > turma.DataInicio.AddYears(2)) break;
+                // Proteção contra loop infinito (caso acabem as datas ou erro lógico, ou ultrapasse muito a data fim prevista)
+                if (cursorData > turma.DataFim.AddMonths(6)) break;
             }
 
-            return novosHorarios;
+            // Geração do Resumo
+            foreach (var cm in cursoModulos)
+            {
+                var formador = turmaAlocacao.FirstOrDefault(ta => ta.IdModulo == cm.IdModulo)?.IdFormadorNavigation;
+
+                var resumo = new ResumoAgendamentoModulo
+                {
+                    NomeModulo = cm.IdModuloNavigation.Nome,
+                    NomeFormador = formador?.IdUtilizadorNavigation?.Nome ?? "Sem Formador",
+                    HorasTotais = cm.IdModuloNavigation.HorasTotais,
+                    HorasAgendadas = cm.IdModuloNavigation.HorasTotais - horasRestantesPorModulo[cm.IdModulo],
+                    ConcluidoComSucesso = horasRestantesPorModulo[cm.IdModulo] == 0
+                };
+
+                if (resumo.ConcluidoComSucesso)
+                {
+                    resumo.DescricaoDetalhada = "Done";
+                }
+                else
+                {
+                    // Diagnóstico de falha - Priorizar problemas de Formador
+                    if (formador == null)
+                    {
+                        resumo.DescricaoDetalhada = "Módulo sem formador alocado";
+                    }
+                    else
+                    {
+                        var ultimaDisponibilidade = formador.DisponibilidadeFormadores.OrderByDescending(d => d.DataDisponivel).FirstOrDefault();
+
+                        if (!formador.DisponibilidadeFormadores.Any())
+                        {
+                            resumo.DescricaoDetalhada = "Formador sem qualquer disponibilidade registada";
+                        }
+                        else if (ultimaDisponibilidade != null && ultimaDisponibilidade.DataDisponivel < turma.DataFim)
+                        {
+                            resumo.DescricaoDetalhada = $"Formador sem disponibilidades marcadas além de {ultimaDisponibilidade.DataDisponivel:dd/MM/yyyy}";
+                        }
+                        else if (cursorData > turma.DataFim)
+                        {
+                            resumo.DescricaoDetalhada = "A data de fim da turma foi atingida antes de concluir o módulo";
+                        }
+                        else
+                        {
+                            resumo.DescricaoDetalhada = "Não foi possível encontrar slots compatíveis: verifique compatibilidade de horários, salas ou feriados";
+                        }
+                    }
+                }
+
+                resultado.ResumoModulos.Add(resumo);
+            }
+
+            return resultado;
         }
 
 

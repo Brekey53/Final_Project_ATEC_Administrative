@@ -662,10 +662,12 @@ namespace ProjetoAdministracaoEscola.Controllers
                 }
 
                 var turmaAlocacoes = await _context.TurmaAlocacoes
-                    .Include(ta => ta.IdFormadorNavigation)
-                        .ThenInclude(f => f.DisponibilidadeFormadores)
-                    .Where(ta => ta.IdTurma == idTurma)
-                    .ToListAsync();
+                   .Include(ta => ta.IdFormadorNavigation)
+                       .ThenInclude(f => f.DisponibilidadeFormadores)
+                   .Include(ta => ta.IdFormadorNavigation)
+                       .ThenInclude(f => f.IdUtilizadorNavigation)
+                   .Where(ta => ta.IdTurma == idTurma)
+                   .ToListAsync();
 
                 if (!turmaAlocacoes.Any())
                 {
@@ -681,46 +683,87 @@ namespace ProjetoAdministracaoEscola.Controllers
                     return BadRequest(new { message = "Não existem salas disponíveis." });
                 }
 
+                // Definir data de corte para "Hoje" (ou inicio da turma se não tiver começado ainda)
+                // O gerador vai agendar de "Hoje" para a frente.
+                // O que está para trás é considerado "Já dado" e não se mexe.
+                DateOnly dataCorte = DateOnly.FromDateTime(DateTime.Now).AddDays(14);
+                if (dataCorte < turma.DataInicio) dataCorte = turma.DataInicio;
+
+                // Calcular horas já lecionadas (Schedules ANTES da data de corte)
+                var horariosPassados = await _context.Horarios
+                    .Include(h => h.IdCursoModuloNavigation)
+                    .Where(h => h.IdTurma == idTurma && h.Data < dataCorte)
+                    .ToListAsync();
+
+                var horasJaLeccionadas = horariosPassados
+                    .GroupBy(h => h.IdCursoModuloNavigation.IdModulo)
+                    .ToDictionary(
+                        g => g.Key, // key - id do módulo
+                        g => (int)g.Sum(h => (h.HoraFim - h.HoraInicio).TotalHours) // value - horas já lecionadas por módulo
+                    );
+
                 // para blacklist de horários já ocupados (para evitar gerar sobreposições)
                 // buscar apenas horarios que coincidam com o horário da turma para não carregar horarios antigos que não interessam
+                // Excluir horarios futuros desta turma, pois esses serão apagados e re-gerados, mas manter os de outras turmas
                 var listaHorariosOcupados = await _context.Horarios
-                    .Where(h => h.Data >= turma.DataInicio && h.Data <= turma.DataFim)
-                    .ToListAsync();
+                   .Where(h =>
+                       h.Data >= dataCorte && // Só interessa conflitos futuros
+                       h.IdTurma != idTurma   // Ignora a própria turma (pois vamos apagar estes)
+                   )
+                   .ToListAsync();
 
                 // Converter os horarios em HashSet para pesquisa mais rápida (e é o que está a ser esperado na função)
                 var horariosHashSet = new HashSet<Horario>(listaHorariosOcupados);
 
                 // Executar o serviço de geração automática
-                var novosHorarios = await _horarioGeradorService.GerarHorario(
+                var resultado = await _horarioGeradorService.GerarHorario(
                     turma,
                     cursoModulos,
                     turmaAlocacoes,
                     salas,
-                    horariosHashSet
+                    horariosHashSet,
+                    dataInicioMinima: dataCorte,
+                    horasJaLeccionadas: horasJaLeccionadas
                     );
 
-                if (novosHorarios.Count == 0)
+                if (resultado.HorariosGerados.Count == 0 && resultado.ResumoModulos.All(r => !r.ConcluidoComSucesso))
                 {
-                    return BadRequest(new { message = "Não foi possível gerar um horário automático com as condições atuais." });
+                    // Não gerou nada. Retornamos OK com o resumo para o utilizador perceber o que falhou.
+                    // Como não houve sucesso, não apagamos os horários antigos (return antes do commit).
+                    return Ok(new
+                    {
+                        Mensagem = "Não foi possível gerar nenhum horário (a partir de " + dataCorte + "). Verifique o resumo de erros.",
+                        TotalAulasAgendadas = 0,
+                        DataInicio = (DateOnly?)null,
+                        DataFim = (DateOnly?)null,
+                        Resumo = resultado.ResumoModulos
+                    });
                 }
 
-                // Apagar horários antigos desta turma
-                var horariosAntigos = await _context.Horarios.Where(h => h.IdTurma == idTurma).ToListAsync();
-                _context.Horarios.RemoveRange(horariosAntigos);
+                // Apagar APENAS horários futuros desta turma para serem substituídos
+                var horariosFuturos = await _context.Horarios
+                    .Where(h => h.IdTurma == idTurma && h.Data >= dataCorte)
+                    .ToListAsync();
+
+                _context.Horarios.RemoveRange(horariosFuturos);
 
                 // Adicionar os novos
-                await _context.Horarios.AddRangeAsync(novosHorarios);
-                await _context.SaveChangesAsync();
+                if (resultado.HorariosGerados.Any())
+                {
+                    await _context.Horarios.AddRangeAsync(resultado.HorariosGerados);
+                    await _context.SaveChangesAsync();
+                }
 
                 // Confirmar a transação
                 await transaction.CommitAsync();
 
                 return Ok(new
                 {
-                    Mensagem = "Horário gerado com sucesso!",
-                    TotalAulasAgendadas = novosHorarios.Count,
-                    DataInicio = novosHorarios.Min(h => h.Data),
-                    DataFim = novosHorarios.Max(h => h.Data)
+                    Mensagem = "Processo de geração concluído.",
+                    TotalAulasAgendadas = resultado.HorariosGerados.Count,
+                    DataInicio = resultado.HorariosGerados.Any() ? resultado.HorariosGerados.Min(h => h.Data) : (DateOnly?)null,
+                    DataFim = resultado.HorariosGerados.Any() ? resultado.HorariosGerados.Max(h => h.Data) : (DateOnly?)null,
+                    Resumo = resultado.ResumoModulos
                 });
             }
             catch (Exception ex)

@@ -17,6 +17,23 @@ export interface Horario {
   horaFim: string;
 }
 
+export interface ResumoAgendamentoModulo {
+  nomeModulo: string;
+  nomeFormador: string;
+  horasTotais: number;
+  horasAgendadas: number;
+  concluidoComSucesso: boolean;
+  descricaoDetalhada: string;
+}
+
+export interface HorarioGeradorResultado {
+  mensagem: string;
+  totalAulasAgendadas: number;
+  dataInicio?: string;
+  dataFim?: string;
+  resumo: ResumoAgendamentoModulo[];
+}
+
 export async function getHorarios() {
   const res = await axios.get(`${API_BASE_URL}/horarios`);
 
