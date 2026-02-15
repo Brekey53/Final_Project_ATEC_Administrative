@@ -467,29 +467,12 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
             
-            // Utilizador geral não pode fazer login pela app
-            if (utilizador.IdTipoUtilizador == 5)
+            // Utilizador geral ou superadmin não pode fazer login pela app
+            if (utilizador.IdTipoUtilizador == 5 || utilizador.IdTipoUtilizador == 6)
             {
                 return Unauthorized(new
                 {
-                    message = "Ainda não tem acesso à aplicação mobile. Contacte os serviços administrativos"
-                });
-            }
-
-            // SuperAdmin sem 2FA
-            if (utilizador.IdTipoUtilizador == 6)
-            {
-                var token = _tokenService.GerarJwtToken(
-                    utilizador.IdUtilizador,
-                    utilizador.Email,
-                    utilizador.IdTipoUtilizador
-                );
-
-                return Ok(new
-                {
-                    requires2FA = false,
-                    token,
-                    message = "Login concluído com sucesso!"
+                    message = "Não tem acesso à aplicação mobile. Contacte os serviços administrativos"
                 });
             }
 
