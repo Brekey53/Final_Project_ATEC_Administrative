@@ -18,16 +18,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,52 +30,82 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.atec.hawk_portal_app.model.TurmaFormador
+import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.TurmasFormadorViewModel
-import pt.atec.hawk_portal_app.viewmodel.TurmasFormandoViewModel
 
 @Composable
 fun TurmasFormadorScreen(
+    onDashboard: () -> Unit,
+    onCursos: () -> Unit,
+    onTurmas: () -> Unit,
+    onSalas: (() -> Unit)?,
+    onLogout: () -> Unit,
     viewModel: TurmasFormadorViewModel = viewModel()
 ) {
+
     val uiState = viewModel.uiState.collectAsState().value
 
     LaunchedEffect(Unit) {
         viewModel.getTurmasFormador()
     }
 
-    if (uiState.loading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    val turmas = uiState.turmas
-
-    if (turmas.isNullOrEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Sem turmas atribuídas.")
-        }
-        return
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    AppMenuHamburger(
+        title = "Minhas Turmas",
+        onDashboard = onDashboard,
+        onCursos = onCursos,
+        onTurmas = onTurmas,
+        onSalas = onSalas,
+        onLogout = onLogout
     ) {
-        items(turmas) { turma ->
-            TurmaFormadorItem(turma)
+
+        Scaffold(
+            containerColor = Color(0xFF014D4E)
+        ) { paddingValues ->
+
+            if (uiState.loading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+                return@Scaffold
+            }
+
+            val turmas = uiState.turmas
+
+            if (turmas.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Sem turmas atribuídas.",
+                        color = Color.White
+                    )
+                }
+                return@Scaffold
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(turmas) { turma ->
+                    TurmaFormadorItem(turma)
+                }
+            }
         }
     }
 }
+
 
 
 @Composable
@@ -100,56 +125,63 @@ fun TurmaFormadorItem(turma: TurmaFormador) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
 
             Text(
                 text = turma.nomeTurma,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFF014D4E),
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF014D4E)
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = turma.nomeCurso,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // MÓDULO
+            Text(
+                text = "Módulo:",
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.Gray
+            )
 
             Text(
                 text = turma.nomeModulo,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            LinearProgressIndicator(
+                progress = { progresso },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = Color(0xFF014D4E),
+                trackColor = Color.LightGray,
+                strokeCap = ProgressIndicatorDefaults.LinearStrokeCap
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            LinearProgressIndicator(
-            progress = { progresso },
-            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp),
-            color = Color(0xFF014D4E),
-            trackColor = Color.LightGray,
-            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+
                 Text(
                     text = "${turma.horasDadas}h / ${turma.horasTotaisModulo}h",
                     style = MaterialTheme.typography.bodySmall
@@ -157,11 +189,12 @@ fun TurmaFormadorItem(turma: TurmaFormador) {
 
                 Text(
                     text = turma.estado,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = estadoColor,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = estadoColor
                 )
             }
         }
     }
 }
+

@@ -7,48 +7,49 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
-import pt.atec.hawk_portal_app.states.AvaliacoesUiState
+import pt.atec.hawk_portal_app.model.AvaliacoesFormando
 
-class AvaliacoesViewModel(application: Application)
-    : AndroidViewModel(application) {
+data class AvaliacoesUiState(
+    val loading: Boolean = false,
+    val avaliacoes: List<AvaliacoesFormando> = emptyList(),
+    val error: String? = null
+)
+
+class AvaliacoesViewModel(
+    application: Application
+) : AndroidViewModel(application) {
+
+    private val api = RetrofitClient.create(application)
 
     private val _uiState = MutableStateFlow(AvaliacoesUiState())
     val uiState: StateFlow<AvaliacoesUiState> = _uiState
 
-    private val api = RetrofitClient.create(application)
-
     fun getAvaliacoes() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                loading = true,
-                message = null
-            )
+
+            _uiState.value = AvaliacoesUiState(loading = true)
 
             try {
-                val response = api.getAvaliacoes()
+                val response = api.getAvaliacoesFormando()
 
                 if (response.isSuccessful) {
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.value = AvaliacoesUiState(
                         loading = false,
-                        success = true,
                         avaliacoes = response.body() ?: emptyList()
                     )
                 } else {
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.value = AvaliacoesUiState(
                         loading = false,
-                        success = false,
-                        message = "Erro: ${response.code()}"
+                        error = "Erro ao carregar avaliações"
                     )
                 }
 
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.value = AvaliacoesUiState(
                     loading = false,
-                    success = false,
-                    message = "Erro a ligar ao servidor"
+                    error = "Erro de rede"
                 )
             }
         }
     }
 }
-

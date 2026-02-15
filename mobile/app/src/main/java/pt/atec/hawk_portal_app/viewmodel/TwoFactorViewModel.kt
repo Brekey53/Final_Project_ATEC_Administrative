@@ -66,4 +66,8 @@ class TwoFactorViewModel(application: Application)
     fun clearError() {
         _error.value = null
     }
+
+    fun clearToken() {
+        _token.value = null
+    }
 }

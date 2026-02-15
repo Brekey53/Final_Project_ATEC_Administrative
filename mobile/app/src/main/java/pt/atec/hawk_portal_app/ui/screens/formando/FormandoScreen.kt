@@ -22,7 +22,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,38 +30,65 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import pt.atec.hawk_portal_app.R
 import pt.atec.hawk_portal_app.model.Formando
+import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.FormandosViewModel
 
-
 @Composable
-fun FormandoScreen(viewModel: FormandosViewModel = viewModel()) {
-    Scaffold(
-        topBar = {
+fun FormandoScreen(
+    onDashboard: () -> Unit,
+    onCursos: (() -> Unit)?,
+    onFormandos: (() -> Unit)?,
+    onFormadores: (() -> Unit)?,
+    onSalas: (() -> Unit)?,
+    onLogout: () -> Unit,
+    viewModel: FormandosViewModel = viewModel()
+) {
+
+    AppMenuHamburger(
+        title = "Formandos",
+        onDashboard = onDashboard,
+        onCursos = onCursos,
+        onFormandos = onFormandos,
+        onFormadores = onFormadores,
+        onSalas = onSalas,
+        onLogout = onLogout
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF014D4E))
+        ) {
+
+            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF014D4E))
-                    .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 16.dp),
+                    .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.aluno_hawk),
-                    contentDescription = "Logo Hawk Portal Aluno",
+                    contentDescription = "Logo Hawk Portal",
                     modifier = Modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(8.dp))
                 )
-                Column(modifier = Modifier.weight(1f)) {
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
                     Text(
                         text = "Formandos",
                         style = MaterialTheme.typography.headlineMedium,
                         color = Color.White,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Consultar Lista de Formandos",
@@ -70,30 +96,40 @@ fun FormandoScreen(viewModel: FormandosViewModel = viewModel()) {
                         color = Color.White.copy(alpha = 0.7f)
                     )
                 }
+            }
 
-            }
-        },
-        containerColor = Color(0xFF014D4E)
-    ) { paddingValues ->
-        if (viewModel.isLoading.value) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = Color.White)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(viewModel.formandos.value) { formando ->
-                    FormandoItem(formando)
+            // Conteúdo
+            when {
+                viewModel.isLoading.value -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                }
+
+                viewModel.formandos.value.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Sem formandos disponíveis.",
+                            color = Color.White
+                        )
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(viewModel.formandos.value) { formando ->
+                            FormandoItem(formando)
+                        }
+                    }
                 }
             }
         }

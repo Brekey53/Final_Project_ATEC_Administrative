@@ -120,6 +120,61 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
+        /// Obtém os horários da semana atual associados ao formador autenticado.
+        /// </summary>
+        /// <returns>
+        /// Lista de horários em formato <see cref="ScheduleCalendarDTO"/>.
+        /// </returns>
+        /// <response code="200">Horários devolvidos com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        [HttpGet("formador/semana")]
+        public async Task<ActionResult<IEnumerable<ScheduleCalendarDTO>>> GetHorariosFormadorSemana()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            var formadorId = await _context.Formadores
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.IdFormador)
+                .FirstOrDefaultAsync();
+
+            if (formadorId == 0)
+                return Ok(new List<ScheduleCalendarDTO>());
+
+            // 🔹 Calcular semana atual (segunda a domingo)
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var inicioSemana = today.AddDays(-diff);
+            var fimSemana = inicioSemana.AddDays(6);
+
+            var horarios = await _context.Horarios
+                .Where(h =>
+                    h.IdFormador == formadorId &&
+                    h.Data >= inicioSemana &&
+                    h.Data <= fimSemana
+                )
+                .Select(h => new ScheduleCalendarDTO
+                {
+                    IdHorario = h.IdHorario,
+                    Data = h.Data,
+                    HoraInicio = h.HoraInicio,
+                    HoraFim = h.HoraFim,
+                    NomeSala = h.IdSalaNavigation.Descricao,
+                    NomeTurma = h.IdTurmaNavigation.NomeTurma,
+                    NomeModulo = h.IdCursoModuloNavigation.IdModuloNavigation.Nome
+                })
+                .OrderBy(h => h.Data)
+                .ThenBy(h => h.HoraInicio)
+                .ToListAsync();
+
+            return Ok(horarios);
+        }
+
+        /// <summary>
         /// Obtém os horários das turmas em que o formando autenticado está inscrito.
         /// </summary>
         /// <returns>
@@ -171,6 +226,66 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(horarios);
         }
+
+        /// <summary>
+        /// Obtém os horários das turmas em que o formando autenticado da semana atual
+        /// </summary>
+        /// <returns>
+        /// Lista de horários em formato <see cref="ScheduleCalendarDTO"/>.
+        /// </returns>
+        /// <response code="200">Horários devolvidos com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        [HttpGet("formando/semana")]
+        public async Task<IActionResult> GetHorariosFormandoSemana()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim);
+
+            var formando = await _context.Formandos
+                .FirstOrDefaultAsync(f => f.IdUtilizador == userId);
+
+            if (formando == null)
+                return Ok(new List<ScheduleCalendarDTO>());
+
+            var turmasIds = await _context.Inscricoes
+                .Where(i => i.IdFormando == formando.IdFormando)
+                .Select(i => i.IdTurma)
+                .ToListAsync();
+
+            if (!turmasIds.Any())
+                return Ok(new List<ScheduleCalendarDTO>());
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var inicioSemana = today.AddDays(-diff);
+            var fimSemana = inicioSemana.AddDays(6);
+
+            var horarios = await _context.Horarios
+                .Where(h =>
+                    turmasIds.Contains(h.IdTurma) &&
+                    h.Data >= inicioSemana &&
+                    h.Data <= fimSemana
+                )
+                .Select(h => new ScheduleCalendarDTO
+                {
+                    IdHorario = h.IdHorario,
+                    Data = h.Data,
+                    HoraInicio = h.HoraInicio,
+                    HoraFim = h.HoraFim,
+                    NomeSala = h.IdSalaNavigation.Descricao,
+                    NomeModulo = h.IdCursoModuloNavigation.IdModuloNavigation.Nome
+                })
+                .OrderBy(h => h.Data)
+                .ThenBy(h => h.HoraInicio)
+                .ToListAsync();
+
+            return Ok(horarios);
+        }
+
 
         /// <summary>
         /// Exporta o horário do utilizador autenticado como um ficheiro iCalendar (.ics).

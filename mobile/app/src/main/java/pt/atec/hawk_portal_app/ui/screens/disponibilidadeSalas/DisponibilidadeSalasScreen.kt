@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,114 +53,130 @@ import pt.atec.hawk_portal_app.R
 import pt.atec.hawk_portal_app.model.DatePickerFragment
 import pt.atec.hawk_portal_app.model.DisponibilidadeSalas
 import pt.atec.hawk_portal_app.states.DisponibilidadeSalasUiState
+import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
+import pt.atec.hawk_portal_app.viewmodel.CursosViewModel
 import pt.atec.hawk_portal_app.viewmodel.DisponibilidadeSalasViewModel
 
 private val VerdePrincipal = Color(0xFF014D4E)
 
 @Composable
 fun DisponibilidadeSalasScreen(
+    onDashboard: () -> Unit,
+    onCursos: (() -> Unit)?,
+    onFormandos: (() -> Unit)?,
+    onFormadores: (() -> Unit)?,
+    onTurmas: (() -> Unit)?,
+    onSalas: (() -> Unit)?,
+    onLogout: () -> Unit,
     viewModel: DisponibilidadeSalasViewModel = viewModel()
 ) {
+
     val uiState by viewModel.uiState.collectAsState()
 
+    AppMenuHamburger(
+        title = "Salas",
+        onDashboard = onDashboard,
+        onCursos = onCursos,
+        onFormandos = onFormandos,
+        onFormadores = onFormadores,
+        onTurmas = onTurmas,
+        onSalas = onSalas,
+        onLogout = onLogout
+    ) {
 
-    Scaffold(
-        topBar = {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(VerdePrincipal)
+        ) {
+
+            // HEADER
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(VerdePrincipal)
-                    .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 16.dp),
+                    .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.salas),
-                    contentDescription = "Logo Hawk Portal",
-                    modifier = Modifier
-                        .size(64.dp)
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp)
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
+                Column {
                     Text(
                         text = "Salas Disponíveis",
                         style = MaterialTheme.typography.headlineMedium,
                         color = Color.White,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Consultar disponibilidade de salas",
+                        text = "Consultar disponibilidade",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.7f)
                     )
                 }
             }
-        },
-        containerColor = VerdePrincipal
-    ) { paddingValues ->
 
-        when (uiState) {
+            when (uiState) {
 
-            is DisponibilidadeSalasUiState.LoadingModulos -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color.White)
-                }
-            }
-
-            is DisponibilidadeSalasUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = (uiState as DisponibilidadeSalasUiState.Error).message,
-                        color = Color.White
-                    )
-                }
-            }
-
-            is DisponibilidadeSalasUiState.Ready -> {
-                val state = uiState as DisponibilidadeSalasUiState.Ready
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-
-                    item {
-                        FiltrosSalas(state, viewModel)
+                is DisponibilidadeSalasUiState.LoadingModulos -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color.White)
                     }
+                }
 
-                    if (state.loadingSalas) {
+                is DisponibilidadeSalasUiState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = (uiState as DisponibilidadeSalasUiState.Error).message,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                is DisponibilidadeSalasUiState.Ready -> {
+
+                    val state = uiState as DisponibilidadeSalasUiState.Ready
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+
                         item {
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(color = Color.White)
+                            FiltrosSalas(state, viewModel)
+                        }
+
+                        if (state.loadingSalas) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = Color.White)
+                                }
                             }
-                        }
-                    } else if (state.salas.isEmpty() && state.pesquisaFeita) {
-                        item {
-                            Text(
-                                text = "Nenhuma sala disponível",
-                                color = Color.White
-                            )
-                        }
-                    } else {
-                        items(state.salas) { sala ->
-                            SalaItem(sala)
+                        } else if (state.salas.isEmpty() && state.pesquisaFeita) {
+                            item {
+                                Text(
+                                    text = "Nenhuma sala disponível",
+                                    color = Color.White
+                                )
+                            }
+                        } else {
+                            items(state.salas) { sala ->
+                                SalaItem(sala)
+                            }
                         }
                     }
                 }

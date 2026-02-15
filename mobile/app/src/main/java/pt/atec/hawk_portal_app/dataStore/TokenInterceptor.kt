@@ -14,9 +14,6 @@ class TokenInterceptor(private val context: Context) : Interceptor {
             TokenDataStore.getToken(context).first()
         }
 
-        println("INTERCEPTOR TOKEN: $token")
-        println("INTERCEPTOR URL: ${chain.request().url}")
-
         val requestBuilder = chain.request().newBuilder()
 
         token?.let {
@@ -25,9 +22,6 @@ class TokenInterceptor(private val context: Context) : Interceptor {
 
         val response = chain.proceed(requestBuilder.build())
 
-        println("INTERCEPTOR RESPONSE CODE: ${response.code}")
-
         return response
     }
-
 }

@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.atec.hawk_portal_app.Routes
 import pt.atec.hawk_portal_app.model.Colegas
 import pt.atec.hawk_portal_app.model.ModulosTurmaFormandos
 import pt.atec.hawk_portal_app.model.ProfessoresTurmaFormando
@@ -43,11 +44,10 @@ import pt.atec.hawk_portal_app.viewmodel.TurmasFormandoViewModel
 
 @Composable
 fun TurmasFormandosScreen(
+    onDashboard: () -> Unit,
     onCursos: () -> Unit,
-    onAvaliacoes: () -> Unit,
+    onAvaliacoes: (() -> Unit)?,
     onTurmas: () -> Unit,
-    onFormandos: () -> Unit,
-    onFormadores: () -> Unit,
     onLogout: () -> Unit,
     viewModel: TurmasFormandoViewModel = viewModel()
 ) {
@@ -61,11 +61,10 @@ fun TurmasFormandosScreen(
 
     AppMenuHamburger(
         title = "Minha Turma",
+        onDashboard = onDashboard,
         onCursos = onCursos,
         onAvaliacoes = onAvaliacoes,
         onTurmas = onTurmas,
-        onFormandos = onFormandos,
-        onFormadores = onFormadores,
         onLogout = onLogout
     ) {
 

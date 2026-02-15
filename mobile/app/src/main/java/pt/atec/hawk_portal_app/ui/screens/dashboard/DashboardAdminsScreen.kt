@@ -21,6 +21,7 @@ import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 
 @Composable
 fun DashboardScreen(
+    onDashboard: () -> Unit,
     onCursos: () -> Unit,
     onFormandos: () -> Unit,
     onFormadores: () -> Unit,
@@ -30,6 +31,7 @@ fun DashboardScreen(
 
     AppMenuHamburger(
         title = "Dashboard",
+        onDashboard = onDashboard,
         onCursos = onCursos,
         onFormandos = onFormandos,
         onFormadores = onFormadores,

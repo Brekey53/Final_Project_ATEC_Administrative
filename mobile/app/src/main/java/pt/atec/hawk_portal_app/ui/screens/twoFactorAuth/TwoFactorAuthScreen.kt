@@ -154,7 +154,7 @@ fun TwoFactorAuthScreen(
             if (error != null) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Surface(
-                    color = Color.Red.copy(alpha = 0.1f), // Subtle red background
+                    color = Color.Red.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {

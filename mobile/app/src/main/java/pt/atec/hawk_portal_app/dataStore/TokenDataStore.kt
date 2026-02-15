@@ -25,12 +25,6 @@ object TokenDataStore {
         }
     }
 
-    suspend fun clearToken(context: Context) {
-        context.dataStore.edit { prefs ->
-            prefs.remove(TOKEN_KEY)
-        }
-    }
-
     suspend fun getTokenOnce(context: Context): String? {
         return getToken(context).first()
     }

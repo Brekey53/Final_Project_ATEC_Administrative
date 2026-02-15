@@ -3,12 +3,14 @@ package pt.atec.hawk_portal_app.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.model.LoginRequest
 import pt.atec.hawk_portal_app.states.LoginUiState
+import kotlin.jvm.java
 
 
 class LoginViewModel(application: Application)
@@ -34,11 +36,21 @@ class LoginViewModel(application: Application)
                         isSuccess = true
                     )
                 } else {
+                    val errorBody = response.errorBody()?.string()
+
+                    val errorMessage = try {
+                        val parsed = Gson().fromJson(errorBody, uiState.value::class.java)
+                        parsed.message
+                    } catch (e: Exception) {
+                        "Erro no login"
+                    }
+
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        message = "Credenciais inválidas"
+                        message = errorMessage
                     )
                 }
+
 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
