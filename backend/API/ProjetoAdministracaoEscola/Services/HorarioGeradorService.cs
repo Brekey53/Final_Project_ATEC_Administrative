@@ -219,6 +219,7 @@ namespace ProjetoAdministracaoEscola.Services
                     NomeFormador = formador?.IdUtilizadorNavigation?.Nome ?? "Sem Formador",
                     HorasTotais = cm.IdModuloNavigation.HorasTotais,
                     HorasAgendadas = cm.IdModuloNavigation.HorasTotais - horasRestantesPorModulo[cm.IdModulo],
+                    Prioridades = cm.Prioridade,
                     ConcluidoComSucesso = horasRestantesPorModulo[cm.IdModulo] == 0
                 };
 

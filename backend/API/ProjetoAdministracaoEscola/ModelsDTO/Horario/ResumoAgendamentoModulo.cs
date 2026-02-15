@@ -7,6 +7,7 @@
         public int HorasTotais { get; set; }
         public int HorasAgendadas { get; set; }
         public bool ConcluidoComSucesso { get; set; }
+        public int Prioridades { get; set; }
         public string DescricaoDetalhada { get; set; }
     }
 }
