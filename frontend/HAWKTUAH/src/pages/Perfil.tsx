@@ -48,12 +48,16 @@ export default function Perfil() {
     e.preventDefault();
     try {
       if (!currentPassword || !newPassword || !confirmPassword) {
-        toast.error("Preencha todos os campos", { id: "erroCamposIncompletos" });
+        toast.error("Preencha todos os campos", {
+          id: "erroCamposIncompletos",
+        });
         return;
       }
 
       if (newPassword !== confirmPassword) {
-        toast.error("As passwords não coincidem", { id: "erroPasswordsCoincidem" });
+        toast.error("As passwords não coincidem", {
+          id: "erroPasswordsCoincidem",
+        });
         return;
       }
       setLoading(true);
@@ -78,7 +82,9 @@ export default function Perfil() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao alterar password", { id: "erroAlterarPassword" });
+      toast.error(err.response?.data?.message || "Erro ao alterar password", {
+        id: "erroAlterarPassword",
+      });
     } finally {
       setLoading(false);
     }
@@ -94,7 +100,7 @@ export default function Perfil() {
 
   return (
     <div className="container my-5">
-      <h2 className="fw-bold mb-4 text-primary">O meu Perfil</h2>
+      <h2 className="fw-bold mb-4 text-primary">O Meu Perfil</h2>
 
       <div className="row">
         {/* FOTO */}
@@ -116,7 +122,7 @@ export default function Perfil() {
         {/* DADOS */}
         <div className="col-lg-8">
           <div className="card p-4 shadow-sm">
-            <h5 className="text-primary mb-3">Dados pessoais</h5>
+            <h5 className="text-primary mb-3">Dados Pessoais</h5>
 
             <div className="row">
               <div className="col-md-12 mb-3">
@@ -207,28 +213,27 @@ export default function Perfil() {
               <>
                 <h5 className="text-primary mb-3">Dados de Formador</h5>
                 <div className="row">
+                  {perfil.qualificacoes && (
+                    <div className="mb-3 col-md-6 text-wrap">
+                      <label className="form-label">Qualificações</label>
+                      <textarea
+                        className="form-control"
+                        value={perfil.qualificacoes}
+                        disabled
+                      />
+                    </div>
+                  )}
 
-                {perfil.qualificacoes && (
-                  <div className="mb-3 col-md-6 text-wrap">
-                    <label className="form-label">Qualificações</label>
-                    <textarea
-                      className="form-control"
-                      value={perfil.qualificacoes}
-                      disabled
-                    />
-                  </div>
-                )}
-
-                {perfil.iban && (
-                  <div className="mb-3 col-md-6">
-                    <label className="form-label">IBAN</label>
-                    <input
-                      className="form-control"
-                      value={perfil.iban}
-                      disabled
-                    />
-                  </div>
-                )}
+                  {perfil.iban && (
+                    <div className="mb-3 col-md-6">
+                      <label className="form-label">IBAN</label>
+                      <input
+                        className="form-control"
+                        value={perfil.iban}
+                        disabled
+                      />
+                    </div>
+                  )}
                 </div>
               </>
             )}
