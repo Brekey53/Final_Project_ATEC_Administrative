@@ -23,6 +23,7 @@ export default function Login() {
 
   // useEffect para verificar os parâmetros da URL assim que o componente carrega
   useEffect(() => {
+    setCode("");
     const ativado = searchParams.get("ativado");
     const socialSuccessG = searchParams.get("socialLoginG");
     const token = searchParams.get("token");
