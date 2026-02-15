@@ -59,11 +59,17 @@ namespace ProjetoAdministracaoEscola.Controllers
                     Data = df.DataDisponivel,
                     HoraInicio = df.HoraInicio,
                     HoraFim = df.HoraFim,
-                }
-                )
+                    EstaMarcado = _context.Horarios.Any(h =>
+                        h.IdFormador == df.IdFormador &&
+                        h.Data == df.DataDisponivel &&
+                        h.HoraInicio == df.HoraInicio &&
+                        h.HoraFim == df.HoraFim
+                    )
+                })
                 .ToListAsync();
 
-            if(disponibilidadeFormador == null)
+
+            if (disponibilidadeFormador == null)
             {
                 return BadRequest(new {message = "Ainda não marcou nenhuma disponibilidade"});
             }

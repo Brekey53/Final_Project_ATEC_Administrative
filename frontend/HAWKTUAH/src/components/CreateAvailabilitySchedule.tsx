@@ -26,19 +26,33 @@ export default function CreateAvailabilitySchedule({
     const startISO = `${ev.data}T${ev.horaInicio}`;
     const endISO = `${ev.data}T${ev.horaFim}`;
     const dataEvento = new Date(startISO);
-    const hoje = new Date();
-    hoje.setDate(hoje.getDate() + 1);
-    
-     // Eventos de ontem ou antes: marcados como "Realizado" (vermelho)
-    const dataMarcada = dataEvento < hoje;
 
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const eventoPassado = dataEvento < hoje;
+    const eventoMarcado = ev.estaMarcado;
+
+    let title = "";
+    let color = "";
+
+    if (eventoPassado) {
+      title = "Realizado";
+      color = "#dd4c4c";
+    } else if (eventoMarcado) {
+      title = "Ocupado";
+      color = "#dd4c4c";
+    } else {
+      title = "Disponível";
+      color = "#4caf50";
+    }
     return {
       id: String(ev.id),
       start: startISO,
       end: endISO,
-      title: dataMarcada ? "Realizado" : "Disponível",
-      backgroundColor: dataMarcada ? "#dd4c4c" : "#4caf50",
-      borderColor: dataMarcada ? "#dd4c4c" : "#4caf50",
+      title,
+      backgroundColor: color,
+      borderColor: color,
       display: "block",
     };
   });
@@ -131,7 +145,7 @@ export default function CreateAvailabilitySchedule({
           const diff = end.getTime() - start.getTime();
           const duracaoMinimaHoras = 1;
           const milissegundosPorHora = 3600000;
-          
+
           if (diff < duracaoMinimaHoras * milissegundosPorHora) {
             return false; // Mínimo 1 hora
           }

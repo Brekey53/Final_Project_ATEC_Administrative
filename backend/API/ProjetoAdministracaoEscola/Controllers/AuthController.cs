@@ -62,6 +62,12 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return BadRequest( new { message = "Necessita de ativar a conta via email antes do login." });
             }
 
+            if(utilizador.Ativo != true)
+            {
+                return BadRequest(new { message = "A sua conta encontra-se desativada. Contacte os serviços " +
+                    "administrativos para ativar a conta" });
+            }
+
             // Verificar a senha
             bool isValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, utilizador.PasswordHash);
 
@@ -70,7 +76,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
 
-            // Para os superadmin evitar o 2FA
+            // Para o superadmin evitar o 2FA
             if (utilizador.IdTipoUtilizador == 6)
             {
                 var token = _tokenService.GerarJwtToken(

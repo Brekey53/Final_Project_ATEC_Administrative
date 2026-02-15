@@ -12,7 +12,11 @@ export default function Cursos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const nomeAreas = [...new Set(cursos.map(c => c.nomeArea))];
+
+  
   const ITEMS_PER_PAGE = 10;
+
 
   useEffect(() => {
     async function fetchCursos() {
@@ -54,6 +58,7 @@ export default function Cursos() {
     setCurrentPage(1);
   }, [searchTerm]);
 
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
@@ -62,7 +67,7 @@ export default function Cursos() {
           <p className="text-muted mb-0">Consulta de Cursos Disponíveis</p>
         </div>
       </div>
-      
+
       {/* PESQUISA */}
       <div className="row mb-4">
         <div className="col-12">
@@ -94,9 +99,9 @@ export default function Cursos() {
                       onChange={(e) => setAreaFiltro(e.target.value)}
                     >
                       <option value="">Filtrar por Área</option>
-                      {cursos.map((c) => (
-                        <option key={c.idArea} value={c.nomeArea}>
-                          {c.nomeArea}
+                      {nomeAreas.map((area) => (
+                        <option key={area} value={area}>
+                          {area}
                         </option>
                       ))}
                     </select>

@@ -7,6 +7,7 @@ import { getTurmasGeralDashboard } from "../../services/turmas/TurmasService";
 import type { Turma } from "../../services/turmas/TurmasService";
 import { checkEmailGetName } from "../../services/users/UserService";
 import toast from "react-hot-toast";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GeralDashboard() {
   const user = authService.decodeToken();
@@ -15,7 +16,10 @@ export default function GeralDashboard() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [loading, setLoading] = useState(true);
   const [nameUser, setNameUser] = useState("");
+  const [currentPageCursos, setCurrentPageCursos] = useState(1);
+  const [currentPageTurmas, setCurrentPageTurmas] = useState(1);
 
+  const ITEMS_PER_PAGE = 10;
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
@@ -39,6 +43,16 @@ export default function GeralDashboard() {
 
     fetchData();
   }, []);
+
+  const totalPagesCursos = Math.ceil(cursos.length / ITEMS_PER_PAGE);
+  const inicioCursos = (currentPageCursos - 1) * ITEMS_PER_PAGE;
+  const fimCursos = inicioCursos + ITEMS_PER_PAGE;
+  const cursosPaginados = cursos.slice(inicioCursos, fimCursos);
+
+  const totalPagesTurmas = Math.ceil(turmas.length / ITEMS_PER_PAGE);
+  const inicioTurmas = (currentPageCursos - 1) * ITEMS_PER_PAGE;
+  const fimTurmas = inicioTurmas + ITEMS_PER_PAGE;
+  const turmasPaginadas = turmas.slice(inicioTurmas, fimTurmas);
 
   if (!user) return null;
 
@@ -74,7 +88,7 @@ export default function GeralDashboard() {
                 </div>
               ) : (
                 <div className="list-group list-group-flush">
-                  {cursos.map((c) => (
+                  {cursosPaginados.map((c) => (
                     <Link
                       key={c.idCurso}
                       to={`/cursos/${c.idCurso}`}
@@ -84,6 +98,29 @@ export default function GeralDashboard() {
                       <span className="text-muted small">Ver detalhes →</span>
                     </Link>
                   ))}
+                </div>
+              )}
+              {totalPagesCursos > 1 && (
+                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageCursos === 1}
+                    onClick={() => setCurrentPageCursos((p) => p - 1)}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  <span className="text-muted small">
+                    Página {currentPageCursos} de {totalPagesCursos}
+                  </span>
+
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageCursos === totalPagesCursos}
+                    onClick={() => setCurrentPageCursos((p) => p + 1)}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
               )}
             </div>
@@ -100,11 +137,11 @@ export default function GeralDashboard() {
                 <div className="text-muted">A carregar turmas…</div>
               ) : turmas.length === 0 ? (
                 <div className="text-muted">
-                  Não existem turmas disponíveis.
+                  Não existem turmas para começar.
                 </div>
               ) : (
                 <ul className="list-group list-group-flush">
-                  {turmas.map((t) => (
+                  {turmasPaginadas.map((t) => (
                     <li
                       key={t.idTurma}
                       className="list-group-item d-flex justify-content-between align-items-start py-3"
@@ -117,11 +154,34 @@ export default function GeralDashboard() {
                       </div>
 
                       <span className="badge bg-success rounded-pill">
-                        Soon
+                        Em breve
                       </span>
                     </li>
                   ))}
                 </ul>
+              )}
+              {totalPagesTurmas > 1 && (
+                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageTurmas === 1}
+                    onClick={() => setCurrentPageTurmas((p) => p - 1)}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  <span className="text-muted small">
+                    Página {currentPageTurmas} de {totalPagesTurmas}
+                  </span>
+
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageTurmas === totalPagesTurmas}
+                    onClick={() => setCurrentPageTurmas((p) => p + 1)}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
               )}
             </div>
           </div>
