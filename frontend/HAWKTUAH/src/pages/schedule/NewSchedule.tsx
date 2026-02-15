@@ -9,19 +9,29 @@ import {
   autoGenerateSchedule,
   deleteHorario,
   type Horario,
+  type HorarioGeradorResultado,
 } from "../../services/shedules/HorariosService";
 import {
   getTurmasFormadorHorario,
   getTurmas,
+  type Turma,
+  type TurmaRaw,
 } from "../../services/turmas/TurmasService";
-import { getSalasDisponiveis } from "../../services/rooms/SalasService";
-import { getFormadores } from "../../services/formador/FormadorService";
+import {
+  getSalasDisponiveis,
+  type SalaGetDTO,
+} from "../../services/rooms/SalasService";
+import {
+  getFormadores,
+  type Formador,
+} from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
 import { Search, XCircle, Trash, Pencil } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
 import toast from "react-hot-toast";
 import FormadorDisponibilidadePreview from "../../components/FormadorDisponibilidadePreview";
 import { Tooltip } from "bootstrap";
+import ScheduleGenerationSummary from "../../components/ScheduleGenerationSummary";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -51,6 +61,11 @@ export default function NewSchedule() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedHorario, setSelectedHorario] = useState<Horario | null>(null);
 
+  // --- Estados para o Resumo ---
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [generationSummary, setGenerationSummary] =
+    useState<HorarioGeradorResultado | null>(null);
+
   // --- Estado do Novo Horario ---
   const [newHorario, setNewHorario] = useState({
     idTurma: "",
@@ -64,10 +79,10 @@ export default function NewSchedule() {
   });
 
   // --- Estados das listas ---
-  const [turmasRaw, setTurmasRaw] = useState<any[]>([]);
-  const [formadores, setFormadores] = useState<any[]>([]);
-  const [salasDisponiveis, setSalasDisponiveis] = useState<any[]>([]);
-  const [turmas, setTurmas] = useState<any[]>([]);
+  const [turmasRaw, setTurmasRaw] = useState<TurmaRaw[]>([]);
+  const [formadores, setFormadores] = useState<Formador[]>([]);
+  const [salasDisponiveis, setSalasDisponiveis] = useState<SalaGetDTO[]>([]);
+  const [turmas, setTurmas] = useState<Turma[]>([]);
 
   // --- HELPER ---
   const formatarData = (data: any) => {
@@ -225,29 +240,41 @@ export default function NewSchedule() {
 
   // --- SALAS E VALIDAÇÃO ---
 
-  const fetchSalasDisponiveis = async () => {
-    const { data, horaInicio, horaFim, idCursoModulo } = newHorario;
-    if (!data || !horaInicio || !horaFim) {
-      setSalasDisponiveis([]);
-      return;
-    }
-    try {
-      const dados = await getSalasDisponiveis(
-        data,
-        horaInicio,
-        horaFim,
-        idCursoModulo,
-      );
-      setSalasDisponiveis(dados);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erro ao carregar salas.", {
-        id: "erro-getSalas",
-      });
-    }
-  };
-
   useEffect(() => {
-    fetchSalasDisponiveis();
+    const fetchSalasDisponiveis = async (
+      dataVal: string,
+      horaInicioVal: string,
+      horaFimVal: string,
+      idCursoModuloVal: string,
+    ) => {
+      if (!dataVal || !horaInicioVal || !horaFimVal) {
+        setSalasDisponiveis([]);
+        return;
+      }
+      try {
+        const dados = await getSalasDisponiveis(
+          dataVal,
+          horaInicioVal,
+          horaFimVal,
+          idCursoModuloVal,
+        );
+        setSalasDisponiveis(dados);
+      } catch (error: any) {
+        toast.error(
+          error.response?.data?.message || "Erro ao carregar salas.",
+          {
+            id: "erro-getSalas",
+          },
+        );
+      }
+    };
+
+    fetchSalasDisponiveis(
+      newHorario.data,
+      newHorario.horaInicio,
+      newHorario.horaFim,
+      newHorario.idCursoModulo,
+    );
   }, [
     newHorario.data,
     newHorario.horaInicio,
@@ -255,7 +282,7 @@ export default function NewSchedule() {
     newHorario.idCursoModulo,
   ]);
 
-  /** Verifica se o formador ou turma estão já ocupados no mesmo slot horário (sobreposição) */
+  // Verifica se o formador ou turma estão já ocupados no mesmo slot horário (sobreposição)
   const verificarConflitos = () => {
     const { data, horaInicio, horaFim, idFormador, idTurma } = newHorario;
     if (!data || !horaInicio || !horaFim)
@@ -361,17 +388,32 @@ export default function NewSchedule() {
     setLoadingGenerator(true);
 
     try {
-      await autoGenerateSchedule(Number(autoGenData.idTurma));
+      // Esperamos um objeto com o resumo
+      const HorarioRes: HorarioGeradorResultado = await autoGenerateSchedule(
+        Number(autoGenData.idTurma),
+      );
 
-      // Mesmo que a API responda em 100ms, o spinner fica mais tempo
+      // Mesmo que a API responda em 100ms, o spinner fica mais tempo hehehe
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast.success("Horário gerado com sucesso!", {
-        id: "successHorarioGerado",
+      setGenerationSummary(HorarioRes); // Guardar o resumo
+      setShowSummaryModal(true); // Abrir o modal de resumo
+
+      if (HorarioRes.totalAulasAgendadas > 0) {
+        toast.success("Horário gerado com sucesso!", {
+          id: "successHorarioGerado",
+        });
+        await fetchHorarios();
+      } else {
+        toast("Processo concluído, mas verifique o resumo.", {
+          icon: "⚠️",
+          id: "warningHorarioGerado",
+        });
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao gerar horário.", {
+        id: "fetchHorarios",
       });
-      await fetchHorarios();
-    } catch (err) {
-      toast.error("Erro ao gerar horário.", { id: "fetchHorarios" });
     } finally {
       setLoadingGenerator(false);
     }
@@ -563,6 +605,7 @@ export default function NewSchedule() {
           </p>
         </div>
 
+        {/* Botão de autoGerar horário */}
         <div className="d-flex gap-2">
           <div
             className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
@@ -572,6 +615,7 @@ export default function NewSchedule() {
             Criar Horário automatico para turma
           </div>
 
+          {/* Botão de criar novo horário */}
           <div
             className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
             onClick={handleOpenCreateModal}
@@ -582,7 +626,7 @@ export default function NewSchedule() {
         </div>
       </div>
 
-      {/* BARRA DE FILTROS E PESQUISA */}
+      {/* Barra de filtros e pesquisas */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body col-md-12">
           <div className="row g-2 align-items-center">
@@ -833,6 +877,7 @@ export default function NewSchedule() {
               <form onSubmit={handleUpdate}>
                 <div className="modal-body p-4">
                   <div className="row g-3">
+                      {/* Curso */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Curso</label>
                       <input
@@ -842,6 +887,7 @@ export default function NewSchedule() {
                         disabled
                       />
                     </div>
+                    {/* Módulo */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Módulo</label>
                       <input
@@ -851,6 +897,7 @@ export default function NewSchedule() {
                         disabled
                       />
                     </div>
+                    {/* Formador */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Formador</label>
                       <input
@@ -860,6 +907,7 @@ export default function NewSchedule() {
                         disabled
                       />
                     </div>
+                    {/* Sala */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Sala</label>
                       <input
@@ -869,6 +917,7 @@ export default function NewSchedule() {
                         disabled
                       />
                     </div>
+                    {/* Início Horario */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Início</label>
                       <input
@@ -884,6 +933,7 @@ export default function NewSchedule() {
                         required
                       />
                     </div>
+                    {/* Fim Horário */}
                     <div className="col-md-6">
                       <label className="form-label fw-semibold">Fim</label>
                       <input
@@ -900,6 +950,7 @@ export default function NewSchedule() {
                       />
                     </div>
                   </div>
+                  {/* Botões */}
                 </div>
                 <div className="modal-footer border-0">
                   <button
@@ -1245,6 +1296,7 @@ export default function NewSchedule() {
         </div>
       )}
 
+      {/* --- MODAL Eliminar (DELETE) --- */}
       {showDeleteModal && selectedHorario && (
         <div
           className="modal fade show d-block"
@@ -1311,6 +1363,14 @@ export default function NewSchedule() {
           </div>
         </div>
       )}
+
+       {/* --- MODAL Resumo de geração --- */}
+      <ScheduleGenerationSummary
+        isOpen={showSummaryModal}
+        onClose={() => setShowSummaryModal(false)}
+        summary={generationSummary?.resumo || []}
+        totalScheduled={generationSummary?.totalAulasAgendadas || 0}
+      />
     </div>
   );
 }

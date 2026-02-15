@@ -42,7 +42,7 @@ export default function EditTurma() {
     idMetodologia: 0,
   });
 
-  type Tabs = "dados" | "formadores";
+  type Tabs = "dados" | "formadores" | "alunos";
 
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<Tabs>("dados");
@@ -321,6 +321,15 @@ export default function EditTurma() {
             Formadores
           </button>
         </li>
+        <li className="nav-item flex-shrink-0">
+          <button
+            className={`nav-link ${activeTab === "alunos" ? "active" : ""}`}
+            onClick={() => setActiveTab("alunos")}
+            type="button"
+          >
+            Alunos
+          </button>
+        </li>
       </ul>
 
       {activeTab === "dados" && (
@@ -442,6 +451,102 @@ export default function EditTurma() {
               onClick={openModal}
             >
               + Alocar Formador
+            </button>
+          </div>
+
+          <div className="card-body p-0">
+            {/* Header */}
+            <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turma-alocacoes tabela-turma-alocacoes-header small text-uppercase">
+              <div>Módulo</div>
+              <div>Formador</div>
+              <div>Estado</div>
+              <div>Ações</div>
+            </div>
+
+            {/* Conteúdo */}
+            {!loadingFormadores && formadoresPaginados.length > 0 ? (
+              formadoresPaginados.map((a) => (
+                <div
+                  key={`${a.idFormador}-${a.idModulo}`}
+                  className="px-4 py-3 border-bottom tabela-turma-alocacoes"
+                >
+                  {/* Módulo */}
+                  <div data-label="Módulo" className="fw-semibold">
+                    {a.nomeModulo}
+                  </div>
+
+                  {/* Formador */}
+                  <div data-label="Formador" className="text-muted">
+                    {a.nomeFormador}
+                  </div>
+
+                  {/* Estado */}
+                  <div data-label="Estado">
+                    {a.horasDadas === 0 ? (
+                      <span className="badge bg-info-subtle text-info fw-medium">
+                        Por iniciar
+                      </span>
+                    ) : (
+                      <span className="badge bg-success-subtle text-success fw-medium">
+                        Já iniciado
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Ação */}
+                  <div data-label="Ações">
+                    {a.horasDadas === 0 ? (
+                      <span
+                        className="action-icon text-danger cursor-pointer"
+                        title="Eliminar Formador"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        onClick={() => {
+                          setAlocacaoParaRemover({
+                            idFormador: a.idFormador,
+                            idModulo: a.idModulo,
+                            nomeFormador: a.nomeFormador,
+                            nomeModulo: a.nomeModulo,
+                          });
+                          setShowRemoveModal(true);
+                        }}
+                      >
+                        <Trash size={18} />
+                      </span>
+                    ) : (
+                      <span
+                        className="action-icon text-warning cursor-not-allowed"
+                        title="Formador já deu horas neste módulo"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                      >
+                        <Lock size={18} />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : !loadingFormadores ? (
+              <div className="p-5 text-center text-muted">
+                Ainda não existem formadores alocados a esta turma.
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "alunos" && (
+        <div className="card shadow-sm border-0 rounded-4">
+          <div className="card-header bg-white border-0 d-flex justify-content-between align-items-center px-4 py-3">
+            <h5 className="mb-0 text-primary fw-semibold">
+              Alunos da Turma
+            </h5>
+
+            <button
+              className="btn btn-primary btn-sm rounded-pill px-3"
+              onClick={openModal}
+            >
+              + Alocar Aluno
             </button>
           </div>
 

@@ -21,7 +21,7 @@ export default function CreateAccount() {
   const [showPassword, setShowPassword] = useState(false);
 
   const isPasswordStrong = (pass: string) => {
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!.%*?&]{6,}$/;
     return regex.test(pass);
   };
 
@@ -35,7 +35,7 @@ export default function CreateAccount() {
 
     if (!isPasswordStrong(password)) {
       toast.error(
-        "A password deve ter pelo menos 6 caracteres, incluindo uma letra e um número.",
+        "A password deve ter pelo menos 6 caracteres, incluindo uma letra e um número, alguns caracteres especiais podem não ser aceites!",
         { id: "erro-password-inválida" },
       );
       return;
