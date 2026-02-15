@@ -23,6 +23,7 @@ export interface ResumoAgendamentoModulo {
   horasTotais: number;
   horasAgendadas: number;
   concluidoComSucesso: boolean;
+  prioridades: number;
   descricaoDetalhada: string;
 }
 

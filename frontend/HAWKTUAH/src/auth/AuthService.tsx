@@ -45,6 +45,7 @@ export const authService = {
   // Remove o token e envia para a pagina login
   logout() {
     localStorage.removeItem("token");
+    sessionStorage.removeItem("dashboardIntroShown");
     window.location.href = "/login";
   },
 
