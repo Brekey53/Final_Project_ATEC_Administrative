@@ -185,3 +185,53 @@ export interface TurmaRaw {
   idModulo: number;
   idCursoModulo: number;
 }
+
+export interface AlunoTurma {
+  idInscricao: number;
+  idFormando: number;
+  idUtilizador: number;
+  nome: string;
+  email: string;
+  foto?: string;
+}
+
+export interface CandidatoSemTurma {
+  idUtilizador: number;
+  nome: string;
+  email: string;
+  tipo: "Formando" | "Geral";
+}
+
+export async function getAlunosTurma(idTurma: string | number) {
+  const res = await axios.get(`${API_BASE_URL}/turmas/${idTurma}/alunos`);
+  return res.data;
+}
+
+export async function getCandidatosSemTurma() {
+  const res = await axios.get(`${API_BASE_URL}/turmas/candidatos-sem-turma`);
+  return res.data;
+}
+
+export async function adicionarAlunoTurma(
+  idTurma: string | number,
+  idUtilizador: number,
+) {
+  const res = await axios.post(
+    `${API_BASE_URL}/turmas/${idTurma}/alunos`,
+    idUtilizador,
+    {
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+  return res.data;
+}
+
+export async function removerAlunoTurma(
+  idTurma: string | number,
+  idUtilizador: number,
+) {
+  const res = await axios.delete(
+    `${API_BASE_URL}/turmas/${idTurma}/alunos/${idUtilizador}`,
+  );
+  return res.data;
+}

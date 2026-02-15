@@ -509,5 +509,198 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return resultado;
         }
+
+        /// <summary>
+        /// Obtém a lista de alunos (Formandos) inscritos numa turma.
+        /// </summary>
+        /// <param name="id">O identificador da turma.</param>
+        /// <remarks>
+        /// Retorna apenas inscrições com estado "Ativo".
+        /// Inclui informação do utilizador (Nome, Email) e do formando.
+        /// </remarks>
+        /// <returns>
+        /// Uma lista de objetos anónimos contendo os detalhes dos alunos inscritos.
+        /// </returns>
+        /// <response code="200">Lista de alunos devolvida com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="403">Utilizador sem permissões (apenas Admin ou Administrativo).</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpGet("{id}/alunos")]
+        public async Task<ActionResult<IEnumerable<object>>> GetAlunosTurma(int id)
+        {
+            var alunos = await _context.Inscricoes
+                .Where(i => i.IdTurma == id && i.Estado == "Ativo")
+                .Include(i => i.IdFormandoNavigation)
+                    .ThenInclude(f => f.IdUtilizadorNavigation)
+                .Select(i => new
+                {
+                    i.IdInscricao,
+                    i.IdFormando,
+                    i.IdFormandoNavigation.IdUtilizador,
+                    Nome = i.IdFormandoNavigation.IdUtilizadorNavigation.Nome,
+                    Email = i.IdFormandoNavigation.IdUtilizadorNavigation.Email,
+                    Foto = i.IdFormandoNavigation.Fotografia // Optional, if needed
+                })
+                .ToListAsync();
+
+            return Ok(alunos);
+        }
+
+        /// <summary>
+        /// Obtém candidatos (Tipo 3 ou 5) que NÃO estão inscritos em nenhuma turma ativa.
+        /// </summary>
+        /// <remarks>
+        /// Utilizado para alocar novos alunos a turmas.
+        /// Filtra utilizadores que já possuem uma inscrição ativa em qualquer turma.
+        /// Considera apenas utilizadores ativos com Tipo 3 (Formando) ou Tipo 5 (Geral).
+        /// </remarks>
+        /// <returns>
+        /// Lista de candidatos elegíveis para inscrição.
+        /// </returns>
+        /// <response code="200">Lista de candidatos devolvida com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="403">Utilizador sem permissões.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpGet("candidatos-sem-turma")]
+        public async Task<ActionResult<IEnumerable<object>>> GetCandidatosSemTurma()
+        {
+            var usuariosComTurmaAtivaIds = await _context.Inscricoes
+                .Where(i => i.Estado == "Ativo")
+                .Select(i => i.IdFormandoNavigation.IdUtilizador)
+                .Distinct()
+                .ToListAsync();
+
+            // Ir buscar apenas tipo de user 3 (formandos) e 5 (geral)
+            var candidatos = await _context.Utilizadores
+                .Where(u => (u.IdTipoUtilizador == 3 || u.IdTipoUtilizador == 5) && u.StatusAtivacao == true) // Active users only
+                .Where(u => !usuariosComTurmaAtivaIds.Contains(u.IdUtilizador))
+                .Select(u => new
+                {
+                    u.IdUtilizador,
+                    u.Nome,
+                    u.Email,
+                    Tipo = u.IdTipoUtilizador == 3 ? "Formando" : "Geral"
+                })
+                .OrderBy(u => u.Nome)
+                .ToListAsync();
+
+            return Ok(candidatos);
+        }
+
+        /// <summary>
+        /// Adiciona um aluno à turma (cria inscrição).
+        /// </summary>
+        /// <param name="id">O identificador da turma.</param>
+        /// <param name="idUtilizador">O identificador do utilizador a inscrever.</param>
+        /// <remarks>
+        /// Se o utilizador for do Tipo 5 (Geral), passa automaticamente a Tipo 3 (Formando).
+        /// Cria um registo na tabela de Formandos se ainda não existir.
+        /// Cria uma nova inscrição com estado "Ativo".
+        /// Valida se o utilizador já está inscrito em alguma turma ativa.
+        /// </remarks>
+        /// <returns>
+        /// Mensagem de sucesso.
+        /// </returns>
+        /// <response code="200">Aluno adicionado com sucesso.</response>
+        /// <response code="400">Utilizador inválido, turma inexistente ou aluno já inscrito.</response>
+        /// <response code="404">Utilizador ou Turma não encontrados.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpPost("{id}/alunos")]
+        public async Task<IActionResult> AdicionarAlunoTurma(int id, [FromBody] int idUtilizador)
+        {
+            // Check if user exists
+            var user = await _context.Utilizadores.FindAsync(idUtilizador);
+            if (user == null) return NotFound("Utilizador não encontrado.");
+
+            // Check if Turma exists
+            var turma = await _context.Turmas.FindAsync(id);
+            if (turma == null) return NotFound("Turma não encontrada.");
+
+            // Check if already enrolled in ANY active class
+            bool jaInscrito = await _context.Inscricoes
+                .AnyAsync(i => i.IdFormandoNavigation.IdUtilizador == idUtilizador && i.Estado == "Ativo");
+
+            if (jaInscrito) return BadRequest("Utilizador já se encontra inscrito numa turma ativa.");
+
+            // Ensure user is Formando (Type 3). If Type 5, convert.
+            Formando? formando = null;
+            if (user.IdTipoUtilizador == 5)
+            {
+                user.IdTipoUtilizador = 3; // Promote to Formando
+                formando = new Formando { IdUtilizador = idUtilizador, Ativo = true };
+                _context.Formandos.Add(formando);
+                await _context.SaveChangesAsync(); // Save to get IdFormando
+            }
+            else if (user.IdTipoUtilizador == 3)
+            {
+                formando = await _context.Formandos.FirstOrDefaultAsync(f => f.IdUtilizador == idUtilizador);
+                if (formando == null)
+                {
+                    // Should exist, but if not create
+                    formando = new Formando { IdUtilizador = idUtilizador, Ativo = true };
+                    _context.Formandos.Add(formando);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                return BadRequest("Apenas utilizadores Geral ou Formando podem ser inscritos.");
+            }
+
+            // Create Inscricao
+            var novaInscricao = new Inscrico
+            {
+                IdTurma = id,
+                IdFormando = formando.IdFormando,
+                DataInscricao = DateOnly.FromDateTime(DateTime.Now),
+                Estado = "Ativo"
+            };
+
+            _context.Inscricoes.Add(novaInscricao);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Aluno adicionado com sucesso." });
+        }
+
+        /// <summary>
+        /// Remove um aluno de uma turma específica.
+        /// </summary>
+        /// <param name="id">O identificador da turma.</param>
+        /// <param name="idUtilizador">O identificador do utilizador (aluno) a remover.</param>
+        /// <remarks>
+        /// Remove fisicamente o registo de inscrição do aluno na turma especificada.
+        /// A operação é impedida se o aluno já tiver avaliações ou outros dados associados a essa inscrição, 
+        /// para garantir a integridade dos dados históricos.
+        /// </remarks>
+        /// <returns>
+        /// Sem conteúdo (204) em caso de sucesso.
+        /// </returns>
+        /// <response code="204">Aluno removido da turma com sucesso.</response>
+        /// <response code="400">Não é possível remover o aluno devido a dependências existentes (ex: avaliações).</response>
+        /// <response code="404">Formando, Turma ou Inscrição não encontrados.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpDelete("{id}/alunos/{idUtilizador}")]
+        public async Task<IActionResult> RemoverAlunoTurma(int id, int idUtilizador)
+        {
+            var formando = await _context.Formandos.FirstOrDefaultAsync(f => f.IdUtilizador == idUtilizador);
+            if (formando == null) return NotFound("Formando não encontrado.");
+
+            var inscricao = await _context.Inscricoes
+                .FirstOrDefaultAsync(i => i.IdTurma == id && i.IdFormando == formando.IdFormando && i.Estado == "Ativo");
+
+            if (inscricao == null) return NotFound("Inscrição não encontrada nesta turma.");
+
+            try
+            {
+                _context.Inscricoes.Remove(inscricao);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception)
+            {
+                // Catch FK constraint issues (e.g., existing grades)
+                return BadRequest(new { message = "Não é possível remover o aluno pois já existem avaliações/dados associados a esta inscrição." });
+            }
+        }
     }
 }

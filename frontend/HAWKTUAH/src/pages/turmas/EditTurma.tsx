@@ -7,7 +7,13 @@ import {
   type Turma,
   getCursos,
   getMetodologias,
-  type Metodologia
+  type Metodologia,
+  getAlunosTurma,
+  getCandidatosSemTurma,
+  adicionarAlunoTurma,
+  removerAlunoTurma,
+  type AlunoTurma,
+  type CandidatoSemTurma,
 } from "../../services/turmas/TurmasService";
 import type { Curso } from "../../services/cursos/CursosService";
 import {
@@ -22,7 +28,7 @@ import {
   alocarFormador,
   removerFormador,
 } from "../../services/turmaAlocacoes/TurmaAlocacoes";
-import { Trash, Lock } from "lucide-react";
+import { Trash, Lock, UserPlus, UserX } from "lucide-react";
 import { Tooltip } from "bootstrap";
 import "../../css/layoutTabelas.css";
 import { isDataFimValida } from "../../utils/dataUtils";
@@ -75,6 +81,19 @@ export default function EditTurma() {
     nomeModulo: string;
   } | null>(null);
 
+  // Estados para Alunos
+  const [alunosTurma, setAlunosTurma] = useState<AlunoTurma[]>([]);
+  const [loadingAlunos, setLoadingAlunos] = useState(false);
+  const [showAlunoModal, setShowAlunoModal] = useState(false);
+  const [candidatos, setCandidatos] = useState<CandidatoSemTurma[]>([]);
+  const [selectedCandidato, setSelectedCandidato] = useState<number | null>(
+    null,
+  );
+  const [alunoParaRemover, setAlunoParaRemover] = useState<AlunoTurma | null>(
+    null,
+  );
+  const [showRemoveAlunoModal, setShowRemoveAlunoModal] = useState(false);
+
   const openModal = async () => {
     if (!id) return;
     try {
@@ -82,7 +101,9 @@ export default function EditTurma() {
       setModulosDisponiveis(data);
       setShowModal(true);
     } catch {
-      toast.error("Erro ao carregar módulos disponíveis.", { id: "erroCarregarModulosDisponiveissa" });
+      toast.error("Erro ao carregar módulos disponíveis.", {
+        id: "erroCarregarModulosDisponiveissa",
+      });
     }
   };
 
@@ -131,7 +152,9 @@ export default function EditTurma() {
         setCursos(cursosRes);
         setMetodologias(metodologiasRes);
       } catch {
-        toast.error("Erro ao carregar dados da turma.", { id: "erroCarregarDadosTurmaas" });
+        toast.error("Erro ao carregar dados da turma.", {
+          id: "erroCarregarDadosTurmaas",
+        });
         navigate("/turmas");
       } finally {
         setFetching(false);
@@ -150,7 +173,9 @@ export default function EditTurma() {
         const data = await getFormadoresDaTurma(id);
         setFormadoresTurma(data);
       } catch {
-        toast.error("Erro ao carregar formadores da turma.", { id: "erroLifTeacherTurma" });
+        toast.error("Erro ao carregar formadores da turma.", {
+          id: "erroLifTeacherTurma",
+        });
       } finally {
         setLoadingFormadores(false);
       }
@@ -158,6 +183,70 @@ export default function EditTurma() {
 
     fetchFormadores();
   }, [activeTab, id]);
+
+  // Fetch Alunos
+  useEffect(() => {
+    if (activeTab !== "alunos" || !id) return;
+
+    const fetchAlunos = async () => {
+      try {
+        setLoadingAlunos(true);
+        const data = await getAlunosTurma(id);
+        setAlunosTurma(data);
+      } catch {
+        toast.error("Erro ao carregar alunos da turma.");
+      } finally {
+        setLoadingAlunos(false);
+      }
+    };
+
+    fetchAlunos();
+  }, [activeTab, id]);
+
+  const openAlunoModal = async () => {
+    try {
+      const data = await getCandidatosSemTurma();
+      setCandidatos(data);
+      setShowAlunoModal(true);
+    } catch {
+      toast.error("Erro ao carregar candidatos disponíveis.");
+    }
+  };
+
+  const handleadicionarAluno = async () => {
+    if (!id || !selectedCandidato) return;
+
+    try {
+      await adicionarAlunoTurma(id, selectedCandidato);
+      toast.success("Aluno adicionado com sucesso!");
+
+      setShowAlunoModal(false);
+      setSelectedCandidato(null);
+
+      // Refresh list
+      const data = await getAlunosTurma(id);
+      setAlunosTurma(data);
+    } catch (err: any) {
+      toast.error(err.response?.data || "Erro ao adicionar aluno.");
+    }
+  };
+
+  const handleRemoverAluno = async () => {
+    if (!id || !alunoParaRemover) return;
+
+    try {
+      await removerAlunoTurma(id, alunoParaRemover.idUtilizador);
+      toast.success("Aluno removido com sucesso.");
+
+      const data = await getAlunosTurma(id);
+      setAlunosTurma(data);
+    } catch (err: any) {
+      toast.error("Erro ao remover aluno.");
+    } finally {
+      setShowRemoveAlunoModal(false);
+      setAlunoParaRemover(null);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -195,16 +284,25 @@ export default function EditTurma() {
     if (!id) return;
     setLoading(true);
 
-    if (formData.dataInicio && formData.dataFim && !isDataFimValida(formData.dataInicio, formData.dataFim)) {
-      toast.error("A data de fim deve ser igual ou posterior à data de início.", {
-        id: "erroDataFimTurma",
-      });
+    if (
+      formData.dataInicio &&
+      formData.dataFim &&
+      !isDataFimValida(formData.dataInicio, formData.dataFim)
+    ) {
+      toast.error(
+        "A data de fim deve ser igual ou posterior à data de início.",
+        {
+          id: "erroDataFimTurma",
+        },
+      );
       return;
     }
 
     try {
       await updateTurma(id, formData);
-      toast.success("Turma atualizada com sucesso!", { id: "successTurmaUpdate" });
+      toast.success("Turma atualizada com sucesso!", {
+        id: "successTurmaUpdate",
+      });
       navigate("/turmas");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar turma.", {
@@ -225,7 +323,9 @@ export default function EditTurma() {
         idFormador: selectedFormador,
       });
 
-      toast.success("Formador alocado com sucesso!", { id: "successTeacherPut" });
+      toast.success("Formador alocado com sucesso!", {
+        id: "successTeacherPut",
+      });
 
       setShowModal(false);
       setSelectedModulo(null);
@@ -249,7 +349,9 @@ export default function EditTurma() {
         alocacaoParaRemover.idModulo,
       );
 
-      toast.success("Formador removido com sucesso.", { id: "successTeacherNoPut" });
+      toast.success("Formador removido com sucesso.", {
+        id: "successTeacherNoPut",
+      });
 
       const data = await getFormadoresDaTurma(id);
       setFormadoresTurma(data);
@@ -540,93 +642,175 @@ export default function EditTurma() {
           <div className="card-header bg-white border-0 d-flex justify-content-between align-items-center px-4 py-3">
             <h5 className="mb-0 text-primary fw-semibold">
               Alunos da Turma
+              <span className="ms-2 badge bg-primary-subtle text-primary small rounded-pill">
+                {alunosTurma.length}
+              </span>
             </h5>
 
             <button
               className="btn btn-primary btn-sm rounded-pill px-3"
-              onClick={openModal}
+              onClick={openAlunoModal}
             >
-              + Alocar Aluno
+              <UserPlus size={18} className="me-2" />
+              Alocar Aluno
             </button>
           </div>
 
           <div className="card-body p-0">
             {/* Header */}
-            <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turma-alocacoes tabela-turma-alocacoes-header small text-uppercase">
-              <div>Módulo</div>
-              <div>Formador</div>
-              <div>Estado</div>
-              <div>Ações</div>
+            <div
+              className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turma-alocacoes tabela-turma-alocacoes-header small text-uppercase"
+              style={{ gridTemplateColumns: "2fr 2fr 1fr" }}
+            >
+              <div>Nome</div>
+              <div>Email</div>
+              <div className="text-end">Ações</div>
             </div>
 
             {/* Conteúdo */}
-            {!loadingFormadores && formadoresPaginados.length > 0 ? (
-              formadoresPaginados.map((a) => (
+            {!loadingAlunos && alunosTurma.length > 0 ? (
+              alunosTurma.map((a) => (
                 <div
-                  key={`${a.idFormador}-${a.idModulo}`}
+                  key={a.idInscricao}
                   className="px-4 py-3 border-bottom tabela-turma-alocacoes"
+                  style={{ gridTemplateColumns: "2fr 2fr 1fr" }}
                 >
-                  {/* Módulo */}
-                  <div data-label="Módulo" className="fw-semibold">
-                    {a.nomeModulo}
+                  {/* Nome */}
+                  <div data-label="Nome" className="fw-semibold">
+                    {a.nome}
                   </div>
 
-                  {/* Formador */}
-                  <div data-label="Formador" className="text-muted">
-                    {a.nomeFormador}
-                  </div>
-
-                  {/* Estado */}
-                  <div data-label="Estado">
-                    {a.horasDadas === 0 ? (
-                      <span className="badge bg-info-subtle text-info fw-medium">
-                        Por iniciar
-                      </span>
-                    ) : (
-                      <span className="badge bg-success-subtle text-success fw-medium">
-                        Já iniciado
-                      </span>
-                    )}
+                  {/* Email */}
+                  <div data-label="Email" className="text-muted">
+                    {a.email}
                   </div>
 
                   {/* Ação */}
-                  <div data-label="Ações">
-                    {a.horasDadas === 0 ? (
-                      <span
-                        className="action-icon text-danger cursor-pointer"
-                        title="Eliminar Formador"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        onClick={() => {
-                          setAlocacaoParaRemover({
-                            idFormador: a.idFormador,
-                            idModulo: a.idModulo,
-                            nomeFormador: a.nomeFormador,
-                            nomeModulo: a.nomeModulo,
-                          });
-                          setShowRemoveModal(true);
-                        }}
-                      >
-                        <Trash size={18} />
-                      </span>
-                    ) : (
-                      <span
-                        className="action-icon text-warning cursor-not-allowed"
-                        title="Formador já deu horas neste módulo"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                      >
-                        <Lock size={18} />
-                      </span>
-                    )}
+                  <div data-label="Ações" className="text-end">
+                    <span
+                      className="action-icon text-danger cursor-pointer"
+                      title="Remover Aluno"
+                      onClick={() => {
+                        setAlunoParaRemover(a);
+                        setShowRemoveAlunoModal(true);
+                      }}
+                    >
+                      <UserX size={18} />
+                    </span>
                   </div>
                 </div>
               ))
-            ) : !loadingFormadores ? (
+            ) : !loadingAlunos ? (
               <div className="p-5 text-center text-muted">
-                Ainda não existem formadores alocados a esta turma.
+                Ainda não existem alunos nesta turma.
               </div>
-            ) : null}
+            ) : (
+              <div className="p-5 text-center text-muted">
+                A carregar alunos...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL ADICIONAR ALUNO */}
+      {showAlunoModal && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 z-3">
+          <div
+            className="card shadow-lg rounded-4 w-50"
+            style={{ maxWidth: "500px" }}
+          >
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Alocar Aluno</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowAlunoModal(false)}
+              />
+            </div>
+
+            <div className="card-body">
+              <div className="mb-3">
+                <label className="form-label fw-semibold">
+                  Aluno (Candidato)
+                </label>
+                <select
+                  className="form-select"
+                  value={selectedCandidato ?? ""}
+                  onChange={(e) => setSelectedCandidato(Number(e.target.value))}
+                >
+                  <option value="">Selecionar aluno...</option>
+                  {candidatos.map((c) => (
+                    <option key={c.idUtilizador} value={c.idUtilizador}>
+                      {c.nome} ({c.tipo}) - {c.email}
+                    </option>
+                  ))}
+                </select>
+                {candidatos.length === 0 && (
+                  <div className="form-text text-warning">
+                    Não existem candidatos disponíveis (Tipo 3 ou 5 sem turma
+                    ativa).
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="card-footer d-flex justify-content-end gap-2">
+              <button
+                className="btn btn-light"
+                onClick={() => setShowAlunoModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn btn-primary"
+                disabled={!selectedCandidato}
+                onClick={handleadicionarAluno}
+              >
+                Alocar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL REMOVER ALUNO */}
+      {showRemoveAlunoModal && alunoParaRemover && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 z-3">
+          <div className="card shadow-lg rounded-4" style={{ width: 360 }}>
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h6 className="mb-0 fw-semibold">Remover Aluno</h6>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowRemoveAlunoModal(false)}
+              />
+            </div>
+
+            <div className="card-body">
+              <p className="mb-2 text-muted">
+                Tens a certeza que queres remover o aluno:
+                <br />
+                <span className="fw-semibold">{alunoParaRemover.nome}</span>
+              </p>
+              <p className="small text-muted mb-0">
+                O aluno será removido da turma. Se tiver faltas ou notas, a
+                inscrição ficará registada como "Desistente".
+              </p>
+            </div>
+
+            <div className="card-footer d-flex justify-content-end gap-2">
+              <button
+                className="btn btn-light border"
+                onClick={() => setShowRemoveAlunoModal(false)}
+              >
+                Cancelar
+              </button>
+
+              <button className="btn btn-danger" onClick={handleRemoverAluno}>
+                Remover
+              </button>
+            </div>
           </div>
         </div>
       )}
