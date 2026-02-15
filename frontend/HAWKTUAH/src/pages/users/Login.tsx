@@ -243,7 +243,7 @@ async function handleSubmit(e: React.FormEvent) {
               </button>
               <button
                 type="button"
-                className="btn btn-link mt-2 text-muted"
+                className="btn btn-light border"
                 onClick={() => setShow2FA(false)}
               >
                 Voltar para Login

@@ -78,7 +78,7 @@ export default function CreateAccount() {
   return (
     <div className="credentials-login">
       <div className="modal-login">
-        <Link to="/login" className="btn btn-link mb-3">
+        <Link to="/login" className="btn btn-light border">
           <button className="btn text-muted rounded-3">← Voltar</button>
         </Link>
 

@@ -202,7 +202,7 @@ export default function CreateAvailabilitySchedule({
             </div>
             <div className="card-footer d-flex justify-content-end gap-2">
               <button
-                className="btn btn-light"
+                className="btn btn-light border"
                 onClick={() => setShowRemoveModal(false)}
               >
                 Voltar

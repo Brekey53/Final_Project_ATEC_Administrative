@@ -105,7 +105,7 @@ export default function EditAvaliacoesFormador() {
 
         <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
           <button
-            className="btn btn-outline-secondary px-4 py-2 rounded-pill"
+            className="btn btn-light border"
             onClick={() => navigate(-1)}
           >
             Voltar

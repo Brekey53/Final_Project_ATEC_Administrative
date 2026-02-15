@@ -127,7 +127,7 @@ export default function AddNewTurma() {
           </p>
         </div>
         <button
-          className="btn btn-light border rounded-pill px-4"
+          className="btn btn-light border"
           onClick={() => navigate("/turmas")}
         >
           Voltar

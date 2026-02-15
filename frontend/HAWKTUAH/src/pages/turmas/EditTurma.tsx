@@ -295,7 +295,7 @@ export default function EditTurma() {
           </p>
         </div>
         <button
-          className="btn btn-light border rounded-pill px-4"
+          className="btn btn-light border"
           onClick={() => navigate("/turmas")}
         >
           Voltar
@@ -659,7 +659,7 @@ export default function EditTurma() {
 
             <div className="card-footer d-flex justify-content-end gap-2">
               <button
-                className="btn btn-light"
+                className="btn btn-light border"
                 onClick={() => setShowRemoveModal(false)}
               >
                 Voltar
