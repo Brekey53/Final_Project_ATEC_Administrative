@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -100,39 +102,44 @@ fun HorarioFormandoSection(
 
     val groupedByDate = horarios.groupBy { it.data }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
 
-        Text(
-            text = "Horário",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        groupedByDate.forEach { (data, aulasDoDia) ->
+        item {
             Text(
-                text = formatarData(data),
+                text = "Horário",
+                style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            aulasDoDia
-                .sortedBy { it.horaInicio }
-                .forEach { aula ->
-                    AulaCard(aula)
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
             Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        groupedByDate.forEach { (data, aulasDoDia) ->
+
+            item {
+                Text(
+                    text = formatarData(data),
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            items(aulasDoDia.sortedBy { it.horaInicio }) { aula ->
+                AulaCard(aula)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 }
