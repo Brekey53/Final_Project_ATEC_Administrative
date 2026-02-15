@@ -55,6 +55,9 @@ export default function ScheduleGenerationSummary({
                   <thead className="table-light">
                     <tr>
                       <th scope="col">Módulo</th>
+                      <th scope="col" className="text-center">
+                        Prioridade
+                      </th>
                       <th scope="col">Formador</th>
                       <th scope="col" className="text-center">
                         Progresso
@@ -69,6 +72,9 @@ export default function ScheduleGenerationSummary({
                     {summary.map((item, index) => (
                       <tr key={index}>
                         <td className="fw-medium">{item.nomeModulo}</td>
+                        <td className="fw-bold text-center">
+                          {item.prioridades}
+                        </td>
                         <td className="text-muted">{item.nomeFormador}</td>
                         <td className="text-center">
                           <span

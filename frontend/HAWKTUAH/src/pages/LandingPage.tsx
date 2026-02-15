@@ -13,34 +13,38 @@ export default function Dashboard() {
   });
 
   const user = authService.decodeToken();
-  if (!user) 
-    return null;
+  if (!user) return null;
 
   const role = mapUserRole(Number(user.tipoUtilizador));
-
-  if (showIntro) {
-    return (
-      <DashboardIntro
-        onFinish={() => {
-          sessionStorage.setItem("dashboardIntroShown", "true");
-          setShowIntro(false);
-        }}
-      />
-    );
-  }
+  let DashboardComponent;
 
   switch (role) {
     case "ADMIN":
-      return <AdminDashboard />;
-
+      DashboardComponent = <AdminDashboard />;
+      break;
     case "FORMADOR":
-      return <FormadorDashboard />;
-
+      DashboardComponent = <FormadorDashboard />;
+      break;
     case "FORMANDO":
-      return <FormandoDashboard />;
-
+      DashboardComponent = <FormandoDashboard />;
+      break;
     case "GERAL":
     default:
-      return <GeralDashboard />;
+      DashboardComponent = <GeralDashboard />;
+      break;
   }
+
+   return (
+    <>
+      {showIntro && (
+        <DashboardIntro
+          onFinish={() => {
+            sessionStorage.setItem("dashboardIntroShown", "true");
+            setShowIntro(false);
+          }}
+        />
+      )}
+      {DashboardComponent}
+    </>
+  );
 }
