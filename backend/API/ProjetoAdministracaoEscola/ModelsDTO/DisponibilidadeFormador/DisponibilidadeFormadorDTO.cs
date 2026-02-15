@@ -12,5 +12,7 @@
 
         public TimeOnly HoraFim { get; set; }
 
+        public bool EstaMarcado { get; set; }
+
     }
 }

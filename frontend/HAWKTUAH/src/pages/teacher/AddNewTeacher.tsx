@@ -57,7 +57,7 @@ export default function AddNewTeacher() {
 
   const handleVerificarEmail = async () => {
     if (!formData.email) {
-      toast.error("Insira o email institucional.");
+      toast.error("Insira o email institucional.", { id: "erroInsiraEmailInstusio" });
       return;
     }
 
@@ -81,13 +81,13 @@ export default function AddNewTeacher() {
           qualificacoes: res.data.qualificacoes || "",
           password: "ChangeMe123!", // Valor fictício para passar na validação do DTO se necessário
         });
-        toast.success("Utilizador encontrado! Dados carregados.");
+        toast.success("Utilizador encontrado! Dados carregados.", { id: "successUserFind" });
       } else {
         setEmailStatus("new");
-        toast.success("Novo email detetado. Defina uma password.");
+        toast.success("Novo email detetado. Defina uma password.", { id: "successMailFoundPa" });
       }
     } catch (err) {
-      toast.error("Erro ao validar o email.");
+      toast.error("Erro ao validar o email.", { id: "errorValidarEmails" });
     } finally {
       setVerificandoEmail(false);
     }
@@ -139,7 +139,7 @@ export default function AddNewTeacher() {
 
     try {
       await postNewFormador(data);
-      toast.success("Formador registado com sucesso!");
+      toast.success("Formador registado com sucesso!", { id: "successRegistFormadorS" });
       navigate("/gerir-formadores"); // Volta para a lista de formadores
     } catch (err: any) {
       const errorData = err.response?.data;
@@ -148,12 +148,12 @@ export default function AddNewTeacher() {
         Object.values(errorData.errors)
           .flat()
           .forEach((msg: any) => {
-            toast.error(msg);
+            toast.error(msg, { id: "errorAoCriarFormadorsa" });
           });
       } else if (errorData?.message) {
-        toast.error(errorData.message);
+        toast.error(errorData.message, { id: "errorAoCriarFormador" });
       } else {
-        toast.error("Erro inesperado ao criar formador.");
+        toast.error("Erro inesperado ao criar formador.", { id: "erroInspFormador" });
       }
     } finally {
       setLoading(false);

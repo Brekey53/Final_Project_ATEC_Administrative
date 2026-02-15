@@ -15,6 +15,7 @@ using ProjetoAdministracaoEscola.ModelsDTO.MobileDTO;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class FormandosController : ControllerBase
@@ -26,8 +27,15 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os formandos registados no sistema,
+        /// incluindo informação básica do utilizador e a turma ativa (caso exista).
+        /// </summary>
+        /// <returns>
+        /// Lista de formandos com dados resumidos.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
         // GET: api/Formandos
-        // Retorna a lista simplificada para a tabela/grid
         [HttpGet]
         public async Task<ActionResult> GetFormandos()
         {
@@ -38,24 +46,51 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .Select(f => new
                 {
                     f.IdFormando,
-                    Nome = f.IdUtilizadorNavigation.Nome,
-                    Email = f.IdUtilizadorNavigation.Email,
-                    Nif = f.IdUtilizadorNavigation.Nif,
-                    Telefone = f.IdUtilizadorNavigation.Telefone,
+                    f.IdUtilizadorNavigation.Nome,
+                    f.IdUtilizadorNavigation.Email,
+                    f.IdUtilizadorNavigation.Nif,
+                    f.IdUtilizadorNavigation.Telefone,
                     Status = f.IdUtilizadorNavigation.StatusAtivacao,
                     // Procuramos o nome da turma onde a inscrição esteja Ativa
-                    Turma = f.Inscricos
+                    TurmaAtiva = f.Inscricos
                         .Where(i => i.Estado == "Ativo")
-                        .Select(i => i.IdTurmaNavigation.NomeTurma)
-                        .FirstOrDefault() ?? "Sem Turma"
+                        .Select(i => new
+                        {
+                            i.IdTurmaNavigation.NomeTurma,
+                            i.IdTurmaNavigation.DataFim
+                        })
+                        .FirstOrDefault()
                 })
                 .OrderBy(f => f.Nome)
                 .ToListAsync();
 
-            return Ok(formandos);
+            var resultado = formandos.Select(f => new
+            {
+                f.IdFormando,
+                f.Nome,
+                f.Email,
+                f.Nif,
+                f.Telefone,
+                f.Status,
+                NomeTurma = f.TurmaAtiva != null ? f.TurmaAtiva.NomeTurma : "Sem Turma",
+                DataFim = f.TurmaAtiva != null ? f.TurmaAtiva.DataFim.ToString("dd/MM/yyyy") : "N/A"
+            });
+
+            return Ok(resultado);
         }
 
+        /// <summary>
+        /// Obtém os dados completos de um formando específico,
+        /// incluindo dados pessoais, escolaridade, estado de inscrição e ficheiros associados.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <returns>
+        /// Dados detalhados do formando.
+        /// </returns>
+        /// <response code="200">Formando encontrado.</response>
+        /// <response code="404">Formando não encontrado.</response>
         // GET: api/Formandos/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
         public async Task<ActionResult> GetFormando(int id)
         {
@@ -70,24 +105,28 @@ namespace ProjetoAdministracaoEscola.Controllers
                 return NotFound(new { message = "Formando não encontrado!" });
 
             // Identificar a inscrição ativa para extrair os dados da turma
-            var inscricaoAtiva = formando.Inscricos.FirstOrDefault(i => i.Estado == "Ativo");
+            var inscricao = formando.Inscricos
+                .OrderByDescending(i => i.DataInscricao)
+                .FirstOrDefault();
 
             var resposta = new
             {
-                IdFormando = formando.IdFormando,
-                IdUtilizador = formando.IdUtilizador,
-                Nome = formando.IdUtilizadorNavigation.Nome,
-                Nif = formando.IdUtilizadorNavigation.Nif,
-                DataNascimento = formando.IdUtilizadorNavigation.DataNascimento,
-                Morada = formando.IdUtilizadorNavigation.Morada,
-                Telefone = formando.IdUtilizadorNavigation.Telefone,
-                Sexo = formando.IdUtilizadorNavigation.Sexo,
-                Email = formando.IdUtilizadorNavigation.Email,
-                IdEscolaridade = formando.IdEscolaridade,
+                formando.IdFormando,
+                formando.IdUtilizador,
+                formando.IdUtilizadorNavigation.Nome,
+                formando.IdUtilizadorNavigation.Nif,
+                formando.IdUtilizadorNavigation.DataNascimento,
+                formando.IdUtilizadorNavigation.Morada,
+                formando.IdUtilizadorNavigation.Telefone,
+                formando.IdUtilizadorNavigation.Sexo,
+                formando.IdUtilizadorNavigation.Email,
+                formando.IdEscolaridade,
                 EscolaridadeNivel = formando.IdEscolaridadeNavigation?.Nivel,
+                //Estado Inscrição
+                Estado = inscricao?.Estado ?? "Suspenso",
                 // Dados da Turma
-                IdTurma = inscricaoAtiva?.IdTurma,
-                NomeTurma = inscricaoAtiva?.IdTurmaNavigation?.NomeTurma ?? "Sem Turma",
+                inscricao?.IdTurma,
+                NomeTurma = inscricao?.IdTurmaNavigation?.NomeTurma ?? "Sem Turma",
                 // Ficheiros
                 Fotografia = formando.Fotografia != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(formando.Fotografia)}" : null,
                 AnexoFicheiro = formando.AnexoFicheiro != null ? $"data:application/pdf;base64,{Convert.ToBase64String(formando.AnexoFicheiro)}" : null
@@ -96,7 +135,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(resposta);
         }
 
+        /// <summary>
+        /// Gera e devolve um ficheiro PDF com a ficha completa do formando,
+        /// incluindo dados pessoais, percurso formativo e média final.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <returns>
+        /// Ficheiro PDF com a ficha do formando.
+        /// </returns>
+        /// <response code="200">PDF gerado com sucesso.</response>
+        /// <response code="404">Formando não encontrado.</response>
         // GET: api/Formandos/5{id}/download-ficha
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}/download-ficha")]
         public async Task<IActionResult> DownloadFicha(int id)
         {
@@ -228,6 +278,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        
+        /// <summary>
+        /// Retorna um alista de formandos com foto (caso exista),
+        /// para visualização na aplicação mobile
+        /// </summary>
+        /// <returns>
+        /// Retorna lista de formandos
+        /// </returns>
         [HttpGet("com-foto")]
         public async Task<ActionResult<IEnumerable<FormandosFotosDTO>>> GetFormandoComFoto()
         {
@@ -250,6 +308,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(formadores);
         }
 
+        /// <summary>
+        /// Metodo para retornar a fotografia do formando
+        /// pesquisando pelo id do mesmo
+        /// </summary>
+        /// <param name="id">Id do formando.</param>
+        /// <returns>
+        /// Retorna foto do formando
+        /// </returns>
         [HttpGet("{id}/foto")]
         public async Task<IActionResult> GetFotoFormando(int id)
         {
@@ -264,6 +330,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             return File(foto, "image/jpeg");
         }
 
+        /// <summary>
+        /// Cria um novo perfil completo de formando.
+        /// Caso o utilizador ainda não exista, é criado automaticamente.
+        /// Permite associar inscrição numa turma e anexar ficheiros.
+        /// </summary>
+        /// <param name="dto">Dados completos do formando.</param>
+        /// <returns>
+        /// Resultado da operação de criação.
+        /// </returns>
+        /// <response code="200">Formando criado com sucesso.</response>
+        /// <response code="400">Erro de validação ou dados inválidos.</response>
+        /// <response code="409">Email ou NIF já registado.</response>
         // POST: api/Formandos/completo
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost("completo")]
@@ -275,6 +353,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             {
                 var utilizadorExistente = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Email == dto.Email);
                 int userId;
+
 
                 if (utilizadorExistente == null)
                 {
@@ -352,12 +431,17 @@ namespace ProjetoAdministracaoEscola.Controllers
                     novoFormando.AnexoFicheiro = ms.ToArray();
                 }
 
+                // adicionar o formando ao contexto para gerar o IdFormando necessário para a inscrição
+                _context.Formandos.Add(novoFormando);
+
                 // Inscrição em Turma
                 if (dto.IdTurma.HasValue && dto.IdTurma > 0)
                 {
                     _context.Inscricoes.Add(new Inscrico
                     {
-                        IdFormando = novoFormando.IdFormando,
+                        // EM VEZ DE: IdFormando = novoFormando.IdFormando (que é 0) usar a navegação
+                        IdFormandoNavigation = novoFormando,
+
                         IdTurma = dto.IdTurma.Value,
                         DataInscricao = DateOnly.FromDateTime(DateTime.Now),
                         Estado = "Ativo"
@@ -365,7 +449,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                _context.Formandos.Add(novoFormando);
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
@@ -378,7 +461,19 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Atualiza os dados de um formando existente,
+        /// incluindo dados pessoais, escolaridade, ficheiros e estado de inscrição.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <param name="dto">Dados atualizados do formando.</param>
+        /// <returns>
+        /// Resultado da operação de atualização.
+        /// </returns>
+        /// <response code="200">Atualização realizada com sucesso.</response>
+        /// <response code="400">Dados inválidos.</response>
+        /// <response code="404">Formando não encontrado.</response>
+        /// <response code="409">NIF já pertence a outro utilizador.</response>
         // PUT: api/Formandos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
@@ -425,13 +520,15 @@ namespace ProjetoAdministracaoEscola.Controllers
                 }
 
                 // Gestão de Inscrição
-                var inscricaoAtual = await _context.Inscricoes
-                    .FirstOrDefaultAsync(i => i.IdFormando == id && i.Estado == "Ativo");
+                var inscricao = await _context.Inscricoes
+                    .FirstOrDefaultAsync(i => i.IdFormando == id);
 
+                // Se foi atribuída uma turma
                 if (dto.IdTurma.HasValue && dto.IdTurma > 0)
                 {
-                    if (inscricaoAtual == null)
+                    if (inscricao == null)
                     {
+                        // Criar nova inscrição ativa
                         _context.Inscricoes.Add(new Inscrico
                         {
                             IdFormando = id,
@@ -440,15 +537,30 @@ namespace ProjetoAdministracaoEscola.Controllers
                             Estado = "Ativo"
                         });
                     }
-                    else if (inscricaoAtual.IdTurma != dto.IdTurma.Value)
+                    else
                     {
-                        inscricaoAtual.IdTurma = dto.IdTurma.Value;
+                        // Se mudou de turma
+                        if (inscricao.IdTurma != dto.IdTurma.Value)
+                        {
+                            inscricao.IdTurma = dto.IdTurma.Value;
+                            inscricao.Estado = "Ativo";
+                        }
+                        else if (!string.IsNullOrEmpty(dto.Estado))
+                        {
+                            // Atualiza estado mesmo mantendo a turma
+                            inscricao.Estado = dto.Estado;
+                        }
                     }
                 }
-                else if (inscricaoAtual != null)
+                else
                 {
-                    inscricaoAtual.Estado = "Suspenso";
+                    // apenas atualizar estado
+                    if (inscricao != null && !string.IsNullOrEmpty(dto.Estado))
+                    {
+                        inscricao.Estado = dto.Estado;
+                    }
                 }
+
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -462,6 +574,17 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
         }
 
+        /// <summary>
+        /// Inativa (soft delete) um formando do sistema.
+        /// A operação falha caso existam aulas futuras associadas à turma onde está inscrito.
+        /// </summary>
+        /// <param name="id">Identificador do formando.</param>
+        /// <returns>
+        /// Resultado da operação de remoção.
+        /// </returns>
+        /// <response code="204">Formando inativado com sucesso.</response>
+        /// <response code="400">Existem aulas futuras associadas.</response>
+        /// <response code="404">Formando não encontrado.</response>
         // DELETE: api/Formandos/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]

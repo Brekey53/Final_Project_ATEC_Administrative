@@ -25,13 +25,14 @@ export default function Login() {
   useEffect(() => {
     const ativado = searchParams.get("ativado");
     const socialSuccessG = searchParams.get("socialLoginG");
-    const socialSuccessF = searchParams.get("socialLoginF");
     const token = searchParams.get("token");
 
-    if (!ativado && !socialSuccessG && !socialSuccessF) return;
+    if (!ativado && !socialSuccessG) return;
 
     if (ativado === "true") {
-      toast.success("Conta ativada com sucesso! Já pode fazer login." , { id: "ativado-toast"} );
+      toast.success("Conta ativada com sucesso! Já pode fazer login.", {
+        id: "ativado-toast",
+      });
       navigate("/login", { replace: true });
       return;
     }
@@ -39,13 +40,9 @@ export default function Login() {
     if (token) {
       localStorage.setItem("token", token);
 
-      if (socialSuccessF === "success") {
-        toast.success("Facebook login efetuado com sucesso!", {
-          id: "social-toast",
-        });
-      } else if (socialSuccessG === "success") {
+      if (socialSuccessG === "success") {
         toast.success("Google login efetuado com sucesso!", {
-          id: "social-toast",
+          id: "social-toasts",
         });
       }
 
@@ -58,31 +55,47 @@ export default function Login() {
     }
   }, [searchParams, navigate]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const loginData = await authService.login(email, password);
+  try {
+    const loginData = await authService.login(email, password);
 
-      if (loginData.requires2FA) {
-        setShow2FA(true);
-        setEmail(loginData.email);
-        toast.success("Código de verificação enviado para o seu e-mail.");
-      }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Email ou password inválidos");
-    } finally {
-      setLoading(false);
+    if (!loginData.requires2FA && loginData.token) {
+      localStorage.setItem("token", loginData.token);
+      toast.success("Bem-vindo!", { id: "login-direct" });
+      navigate("/dashboard", { replace: true });
+      return;
     }
+
+    if (loginData.requires2FA) {
+      setShow2FA(true);
+      setEmail(loginData.email);
+      toast.success("Código de verificação enviado para o seu e-mail.", {
+        id: "successSendMailToMail",
+      });
+    }
+
+  } catch (err: any) {
+    toast.error(
+      err.response?.data?.message || "Email ou password inválidos",
+      { id: "UnsuccessLog" },
+    );
+  } finally {
+    setLoading(false);
   }
+}
+
 
   async function handleVerify2FA(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (code.length !== 6) {
-        toast.error("O código deve ter 6 dígitos.");
+        toast.error("O código deve ter 6 dígitos.", {
+          id: "erroNeedMoreDigits",
+        });
         return;
       }
 
@@ -90,7 +103,7 @@ export default function Login() {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
-        toast.success("Bem-vindo de volta!");
+        toast.success("Bem-vindo de volta!", { id: "successWelcomeBack" });
         navigate("/dashboard", { replace: true });
       }
     } catch (err: any) {
@@ -109,7 +122,9 @@ export default function Login() {
       });
 
       localStorage.setItem("token", response.data.token);
-      toast.success("Google login efetuado com sucesso!", { id: "google-success" });
+      toast.success("Google login efetuado com sucesso!", {
+        id: "google-success",
+      });
 
       navigate("/dashboard", { replace: true });
     } catch (error: any) {
@@ -188,7 +203,9 @@ export default function Login() {
                   width="100%"
                   text="continue_with"
                   onSuccess={handleGoogleSuccess}
-                  onError={() => toast.error("Falha no login Google")}
+                  onError={() =>
+                    toast.error("Falha no login Google", { id: "erroGoogles" })
+                  }
                 />
               </div>
 

@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.atec.hawk_portal_app.R
 import pt.atec.hawk_portal_app.viewmodel.LoginViewModel
@@ -105,6 +106,7 @@ fun LoginScreen(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
                     focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = Color(0xFF014D4E)
                 )
             )
@@ -126,7 +128,7 @@ fun LoginScreen(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
                     focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = Color(0xFF014D4E)
                 )
             )
@@ -160,7 +162,9 @@ fun LoginScreen(
                 Spacer(Modifier.height(16.dp))
                 Text(
                     text = uiState.message,
-                    color = Color(0xFFFFB4AB)
+                    color = Color(0xFFFEB2B1),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
             }
         }

@@ -24,7 +24,7 @@ export default function Perfil() {
         const data = await getMyPerfil();
         setPerfil(data);
       } catch {
-        toast.error("Erro ao carregar perfil", {id: "loadPerfil"});
+        toast.error("Erro ao carregar perfil", { id: "loadPerfil" });
       } finally {
         setLoading(false);
       }
@@ -36,7 +36,9 @@ export default function Perfil() {
   useEffect(() => {
     async function loadFoto() {
       const url = await getFotoPerfil();
-      setFotoUrl(url); // pode ser null
+      if (!url) {
+        setFotoUrl(FotoPlaceholder);
+      } else setFotoUrl(url);
     }
 
     loadFoto();
@@ -46,12 +48,12 @@ export default function Perfil() {
     e.preventDefault();
     try {
       if (!currentPassword || !newPassword || !confirmPassword) {
-        toast.error("Preencha todos os campos");
+        toast.error("Preencha todos os campos", { id: "erroCamposIncompletos" });
         return;
       }
 
       if (newPassword !== confirmPassword) {
-        toast.error("As passwords não coincidem");
+        toast.error("As passwords não coincidem", { id: "erroPasswordsCoincidem" });
         return;
       }
       setLoading(true);
@@ -76,7 +78,7 @@ export default function Perfil() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao alterar password");
+      toast.error(err.response?.data?.message || "Erro ao alterar password", { id: "erroAlterarPassword" });
     } finally {
       setLoading(false);
     }
@@ -102,16 +104,12 @@ export default function Perfil() {
               src={fotoUrl ?? FotoPlaceholder}
               alt="Foto de perfil"
               className="img-fluid rounded mb-3"
-              style={{ maxHeight: "300px", objectFit: "cover" }}
+              style={{ maxHeight: "350px", objectFit: "cover" }}
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = FotoPlaceholder;
               }}
             />
-
-            <button className="btn btn-outline-secondary btn-sm" disabled>
-              Alterar fotografia
-            </button>
           </div>
         </div>
 
@@ -208,20 +206,10 @@ export default function Perfil() {
             {perfil.tipo === 2 && (
               <>
                 <h5 className="text-primary mb-3">Dados de Formador</h5>
-
-                {perfil.iban && (
-                  <div className="mb-3">
-                    <label className="form-label">IBAN</label>
-                    <input
-                      className="form-control"
-                      value={perfil.iban}
-                      disabled
-                    />
-                  </div>
-                )}
+                <div className="row">
 
                 {perfil.qualificacoes && (
-                  <div className="mb-3">
+                  <div className="mb-3 col-md-6 text-wrap">
                     <label className="form-label">Qualificações</label>
                     <textarea
                       className="form-control"
@@ -230,6 +218,18 @@ export default function Perfil() {
                     />
                   </div>
                 )}
+
+                {perfil.iban && (
+                  <div className="mb-3 col-md-6">
+                    <label className="form-label">IBAN</label>
+                    <input
+                      className="form-control"
+                      value={perfil.iban}
+                      disabled
+                    />
+                  </div>
+                )}
+                </div>
               </>
             )}
 

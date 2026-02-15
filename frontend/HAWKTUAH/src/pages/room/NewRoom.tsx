@@ -1,15 +1,16 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import {
   getSalas,
   deleteSala,
+  getTipoSalas,
+  type TipoSala,
   type Salas,
 } from "../../services/rooms/SalasService";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import "../../css/salas.css";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
 export default function NewRoom() {
@@ -19,6 +20,8 @@ export default function NewRoom() {
   const [salaSelecionado, setSalaSelecionada] = useState<Salas | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [tiposSala, setTiposSala] = useState<TipoSala[]>([]);
+  const [tipoSalaFilter, setTipoSalaFilter] = useState<number | "">("");
 
   const ITEMS_PER_PAGE = 10;
 
@@ -28,18 +31,27 @@ export default function NewRoom() {
       setSalas(data);
       setLoading(false);
     }
+    async function loadTiposSala() {
+      const data = await getTipoSalas();
+      setTiposSala(data);
+    }
 
+    loadTiposSala();
     fetchSalas();
   }, []);
 
   const filteredSalas = salas.filter((s) => {
     const term = normalizarTexto(searchTerm);
-    return (
-      normalizarTexto(s.idSala.toLocaleString()).includes(term) ||
-      normalizarTexto(s.descricao).includes(term)
-    );
-  });
 
+    const matchSearch =
+      normalizarTexto(s.idSala.toString()).includes(term) ||
+      normalizarTexto(s.descricao).includes(term);
+
+    const matchTipoSala =
+      tipoSalaFilter === "" || s.idTipoSala === tipoSalaFilter;
+
+    return matchSearch && matchTipoSala;
+  });
 
   const totalPages = Math.ceil(filteredSalas.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -47,22 +59,18 @@ export default function NewRoom() {
 
   const salasPaginadas = filteredSalas.slice(startIndex, endIndex);
 
+  /* Para o bootstrap dos icons editar e apagar */
   useEffect(() => {
-    // 1. Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
-
-    // 2. Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
-
-    // 3. Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
-  }, [salasPaginadas, loading]); // Re-executa quando a lista carrega
+  }, [salasPaginadas, loading]);
 
   async function handleDeleteSala() {
     if (!salaSelecionado) return;
@@ -76,19 +84,19 @@ export default function NewRoom() {
 
       setShowDeleteModal(false);
       setSalaSelecionada(null);
-      toast.success("Sala eliminada com sucesso");
+      toast.success("Sala eliminada com sucesso", {id: "successDelSala"});
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.message) {
-        toast.error(errorData.message || "Erro ao eliminar sala");
+        toast.error(errorData.message || "Erro ao eliminar sala", {id: "erroDelSala"});
       }
     }
   }
 
-  // Quando pesquisa muda → voltar à página 1
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, salas.length]);
+
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
@@ -105,22 +113,59 @@ export default function NewRoom() {
         </Link>
       </div>
 
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar Salas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* PESQUISA */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div className="card-body">
+              <div className="row g-3 align-items-center">
+                {/* INPUT PESQUISA */}
+                <div className="col-md-8">
+                  <div className="input-group input-group-custom px-2">
+                    <span className="input-group-text bg-white border-0">
+                      <Search size={20} className="text-muted" />
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control border-0 shadow-none"
+                      placeholder="Pesquisar Salas..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* SELECT FILTRO */}
+                <div className="col-md-4">
+                  <div className="input-group input-group-custom px-2">
+                    <select
+                      className="form-select border-0 shadow-none bg-white"
+                      value={tipoSalaFilter}
+                      onChange={(e) =>
+                        setTipoSalaFilter(
+                          e.target.value === "" ? "" : Number(e.target.value),
+                        )
+                      }
+                    >
+                      <option value="">Filtrar Tipo Sala</option>
+
+                      {tiposSala.map((tipo) => (
+                        <option key={tipo.idTipoSala} value={tipo.idTipoSala}>
+                          {tipo.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-salas">
-            {/* TODO: Criar css e alterar tabela-alunos ?? */}
             <div>Sala</div>
             <div>Tipo Sala</div>
             <div>N. Sala</div>

@@ -12,11 +12,34 @@ export interface Utilizador {
   email: string;
   idTipoUtilizador: number;
   tipoUtilizador: string;
+  status: boolean;
   fotografia: File | null;
   anexoFicheiro: File | null;
 }
 
-export async function getUtilizadores(): Promise<Utilizador[]> {
+export interface UtilizadorListItem {
+  idUtilizador: string;
+  nome: string;
+  email: string;
+  telefone?: string;
+  nif: string;
+  tipoUtilizador: string;
+  ativo: boolean;
+}
+
+export interface EditUtilizador {
+    email: string;
+    nome: string;
+    nif: string;
+    telefone: string;
+    morada: string;
+    sexo: string;
+    dataNascimento: string;
+    IdTipoUtilizador: number;
+    ativo: boolean;
+}
+
+export async function getUtilizadores(): Promise<UtilizadorListItem[]> {
   const res = await axios.get(`${API_BASE_URL}/utilizadores`);
 
   return res.data;

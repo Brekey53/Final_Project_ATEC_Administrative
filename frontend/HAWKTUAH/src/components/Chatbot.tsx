@@ -1,42 +1,19 @@
-import { useState, useEffect } from "react";
-import ChatModal from "./ChatbotModal";
-import "../css/chatbot.css";
-import chatbotimg from "../img/hawktu.png";
-import { Tooltip } from "bootstrap";
+import { useEffect } from "react";
 
 export default function Chatbot() {
-  const [open, setOpen] = useState(false);
-
   useEffect(() => {
-    // 1. Procurar os elementos
-    const tooltipTriggerList = document.querySelectorAll(
-      '[data-bs-toggle="tooltip"]',
-    );
+    const script = document.createElement("script");
+    script.src = "https://embed.tawk.to/698a397455a5d71c35acb6c0/1jh1v0rru";
+    script.async = true;
+    script.charset = "UTF-8";
+    script.setAttribute("crossorigin", "*");
 
-    // 2. Inicializar
-    const tooltipList = Array.from(tooltipTriggerList).map(
-      (el) => new Tooltip(el),
-    );
+    document.body.appendChild(script);
 
-    // 3. Limpeza
     return () => {
-      tooltipList.forEach((t) => t.dispose());
+      document.body.removeChild(script);
     };
-  }, []); // Re-executa quando a lista carrega
+  }, []);
 
-  return (
-    <>
-      <div
-        className="chatbot-button"
-        onClick={() => setOpen(true)}
-        title="Chatbot"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-      >
-        <img src={chatbotimg}></img>
-      </div>
-
-      {open && <ChatModal onClose={() => setOpen(false)} />}
-    </>
-  );
+  return null;
 }

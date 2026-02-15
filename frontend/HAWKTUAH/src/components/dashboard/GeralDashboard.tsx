@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { authService } from "../../auth/AuthService";
 import { getCursos } from "../../services/cursos/CursosService";
 import type { Curso } from "../../services/cursos/CursosService";
-import { getTurmas } from "../../services/turmas/TurmasService";
+import { getTurmasGeralDashboard } from "../../services/turmas/TurmasService";
 import type { Turma } from "../../services/turmas/TurmasService";
 import { checkEmailGetName } from "../../services/users/UserService";
+import toast from "react-hot-toast";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GeralDashboard() {
   const user = authService.decodeToken();
@@ -14,102 +16,175 @@ export default function GeralDashboard() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [loading, setLoading] = useState(true);
   const [nameUser, setNameUser] = useState("");
+  const [currentPageCursos, setCurrentPageCursos] = useState(1);
+  const [currentPageTurmas, setCurrentPageTurmas] = useState(1);
 
+  const ITEMS_PER_PAGE = 10;
   useEffect(() => {
-    async function fetchCursos() {
-      if (!user) return null;
+    async function fetchData() {
+      if (!user) return;
 
       try {
-        const [resData, resNome] = await Promise.all([
+        const [resCursos, resTurmas, resNome] = await Promise.all([
           getCursos(),
+          getTurmasGeralDashboard(),
           checkEmailGetName(user.email),
         ]);
+
+        setCursos(resCursos);
+        setTurmas(resTurmas);
         setNameUser(resNome.nome);
-
-        //const data = await getCursos();
-        setCursos(resData);
       } catch (error) {
-        console.error("Erro ao carregar cursos", error);
-        setCursos([]);
+        toast.error("Erro ao carregar dados.", { id: "erro-geral-dashboard" });
       } finally {
         setLoading(false);
       }
     }
 
-    fetchCursos();
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    async function fetchTurmas() {
-      try {
-        const data = await getTurmas();
-        setTurmas(data);
-      } catch (error) {
-        console.error("Erro ao carregar turmas", error);
-        setTurmas([]);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const totalPagesCursos = Math.ceil(cursos.length / ITEMS_PER_PAGE);
+  const inicioCursos = (currentPageCursos - 1) * ITEMS_PER_PAGE;
+  const fimCursos = inicioCursos + ITEMS_PER_PAGE;
+  const cursosPaginados = cursos.slice(inicioCursos, fimCursos);
 
-    fetchTurmas();
-  }, []);
+  const totalPagesTurmas = Math.ceil(turmas.length / ITEMS_PER_PAGE);
+  const inicioTurmas = (currentPageCursos - 1) * ITEMS_PER_PAGE;
+  const fimTurmas = inicioTurmas + ITEMS_PER_PAGE;
+  const turmasPaginadas = turmas.slice(inicioTurmas, fimTurmas);
 
   if (!user) return null;
 
   return (
     <div className="container my-5">
-      {/* Welcome */}
-      <div className="mb-4">
-        <h3 className="mb-1">
-          Bem-vindo(a), <strong>{nameUser}</strong>
-        </h3>
-        <small className="text-muted">
-          Explora os cursos e vê as próximas turmas disponíveis
-        </small>
+      {/* HEADER */}
+      <div className="mb-5">
+        <h2 className="fw-bold">
+          Bem-vindo(a), <span className="text-primary">{nameUser}</span>
+        </h2>
+        <p className="text-muted mb-0">
+          Explora os cursos disponíveis e consulta as próximas turmas.
+        </p>
       </div>
 
-      {/* Cursos disponíveis */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <h5 className="mb-3">Cursos disponíveis</h5>
+      <div className="alert alert-info mb-4">
+        Ainda não estás inscrito em nenhuma turma. De momento, tens de aguardar
+        pela abertura de novas turmas.
+      </div>
 
-          {loading ? (
-            <div className="text-muted">A carregar cursos...</div>
-          ) : cursos.length === 0 ? (
-            <div className="text-muted">Não existem cursos disponíveis.</div>
-          ) : (
-            <ul className="list-group">
-              {cursos.map((c) => (
-                <Link to={`/cursos/${c.idCurso}`}>
-                  <li key={c.idCurso} className="list-group-item">
-                    {c.nome}
-                  </li>
-                </Link>
-              ))}
-            </ul>
-          )}
+      <div className="row g-4">
+        {/* CURSOS */}
+        <div className="col-lg-6">
+          <div className="card shadow-sm h-100">
+            <div className="card-body">
+              <h5 className="fw-bold mb-3">Cursos disponíveis</h5>
+
+              {loading ? (
+                <div className="text-muted">A carregar cursos…</div>
+              ) : cursos.length === 0 ? (
+                <div className="text-muted">
+                  Não existem cursos disponíveis.
+                </div>
+              ) : (
+                <div className="list-group list-group-flush">
+                  {cursosPaginados.map((c) => (
+                    <Link
+                      key={c.idCurso}
+                      to={`/cursos/${c.idCurso}`}
+                      className="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3"
+                    >
+                      <span>{c.nome}</span>
+                      <span className="text-muted small">Ver detalhes →</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {totalPagesCursos > 1 && (
+                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageCursos === 1}
+                    onClick={() => setCurrentPageCursos((p) => p - 1)}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  <span className="text-muted small">
+                    Página {currentPageCursos} de {totalPagesCursos}
+                  </span>
+
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageCursos === totalPagesCursos}
+                    onClick={() => setCurrentPageCursos((p) => p + 1)}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Próximas turmas */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="mb-3">Próximas turmas a começar</h5>
+        {/* TURMAS */}
+        <div className="col-lg-6">
+          <div className="card shadow-sm h-100">
+            <div className="card-body">
+              <h5 className="fw-bold mb-3">Próximas turmas a começar</h5>
 
-          {loading ? (
-            <div className="text-muted">A carregar turmas...</div>
-          ) : turmas.length === 0 ? (
-            <div className="text-muted">Não existem turmas disponíveis.</div>
-          ) : (
-            <ul className="list-group">
-              {turmas.map((t) => (
-                <li key={t.idTurma} className="list-group-item">
-                  {t.nomeTurma} - {t.dataInicio} a {t.dataFim}
-                </li>
-              ))}
-            </ul>
-          )}
+              {loading ? (
+                <div className="text-muted">A carregar turmas…</div>
+              ) : turmas.length === 0 ? (
+                <div className="text-muted">
+                  Não existem turmas para começar.
+                </div>
+              ) : (
+                <ul className="list-group list-group-flush">
+                  {turmasPaginadas.map((t) => (
+                    <li
+                      key={t.idTurma}
+                      className="list-group-item d-flex justify-content-between align-items-start py-3"
+                    >
+                      <div>
+                        <div className="fw-semibold">{t.nomeTurma}</div>
+                        <small className="text-muted">
+                          {t.dataInicio} → {t.dataFim}
+                        </small>
+                      </div>
+
+                      <span className="badge bg-success rounded-pill">
+                        Em breve
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {totalPagesTurmas > 1 && (
+                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageTurmas === 1}
+                    onClick={() => setCurrentPageTurmas((p) => p - 1)}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  <span className="text-muted small">
+                    Página {currentPageTurmas} de {totalPagesTurmas}
+                  </span>
+
+                  <button
+                    className="btn btn-outline-secondary"
+                    disabled={currentPageTurmas === totalPagesTurmas}
+                    onClick={() => setCurrentPageTurmas((p) => p + 1)}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -54,11 +54,10 @@ export interface SalaGetDTO {
 export async function getSalasDisponiveis(data: string, inicio: string, fim: string, idCursoModulo?: string){
   const res = await axios.get<SalaGetDTO[]>(`${API_BASE_URL}/salas/disponiveis`, 
     {
-    // É AQUI que enviamos os dados para o [FromQuery] do C#
     params: {
-      data: data,     // Backend espera "data"
-      inicio: inicio, // Backend espera "inicio"
-      fim: fim,        // Backend espera "fim"
+      data: data, 
+      inicio: inicio, 
+      fim: fim, 
       idCursoModulo: idCursoModulo
     }
   });

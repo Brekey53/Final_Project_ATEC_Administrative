@@ -5,6 +5,7 @@ import FotoPlaceholder from "../../img/avatar.png";
 import {
   updateFormador,
   getFormador,
+  getTiposMateria,
 } from "../../services/formador/FormadorService";
 
 export default function EditTeacher() {
@@ -30,15 +31,27 @@ export default function EditTeacher() {
   const [fotoPreview, setFotoPreview] = useState<string>(FotoPlaceholder);
   const [documentPreview, setDocumentPreview] = useState<string | null>(null);
 
+  const [tiposMateria, setTiposMateria] = useState<any[]>([]);
+  const [tiposSelecionados, setTiposSelecionados] = useState<number[]>([]);
+  const [tipoSelecionado, setTipoSelecionado] = useState<number | "">("");
+
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
       try {
-        const res = await getFormador(id);
-        const f = res.data;
+        const [resFormador, resTiposMateria] = await Promise.all([
+          getFormador(id),
+          getTiposMateria(),
+        ]);
 
-        console.log("Dados recebidos:", f); // Verifica aqui os nomes exatos das chaves
+        const f = resFormador.data;
+
+        setTiposMateria(resTiposMateria);
+
+        setTiposSelecionados(
+          (f.tiposMateria ?? []).map((t: any) => t.idTipoMateria),
+        );
 
         setFormData({
           email: f.email ?? "",
@@ -48,21 +61,16 @@ export default function EditTeacher() {
           dataNascimento: f.dataNascimento?.split("T")[0] ?? "",
           sexo: f.sexo ?? "Masculino",
           morada: f.morada ?? "",
-          iban: res.data.iban || "",
-          qualificacoes: res.data.qualificacoes || "",
+          iban: f.iban ?? "",
+          qualificacoes: f.qualificacoes ?? "",
           fotografia: null,
           documento: null,
         });
 
-        if (f.fotografia) {
-          setFotoPreview(f.fotografia);
-        }
-
-        if (f.anexoFicheiro) {
-          setDocumentPreview(f.anexoFicheiro);
-        }
-      } catch (err) {
-        toast.error("Erro ao carregar dados do formador.");
+        if (f.fotografia) setFotoPreview(f.fotografia);
+        if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro);
+      } catch {
+        toast.error("Erro ao carregar dados do formador.", { id: "errorAoCarregarDadosFormador" });
       } finally {
         setFetching(false);
       }
@@ -119,13 +127,17 @@ export default function EditTeacher() {
     if (formData.documento instanceof File) {
       data.append("Documento", formData.documento);
     }
-
+    tiposSelecionados.forEach((idTipo) => {
+      data.append("TiposMateria", idTipo.toString());
+    });
     try {
       await updateFormador(id, data);
-      toast.success("Perfil do formador atualizado!");
+      toast.success("Perfil do formador atualizado!", { id: "successFormadorAtualizado" });
       navigate("/gerir-formadores"); // Volta para a listagem
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar dados.");
+      toast.error(err.response?.data?.message || "Erro ao atualizar dados.", {
+        id: "erro-edit-teacher",
+      });
     } finally {
       setLoading(false);
     }
@@ -155,10 +167,17 @@ export default function EditTeacher() {
       // Abrir em nova aba
       window.open(fileURL, "_blank");
     } catch (error) {
-      toast.error("Não foi possível abrir o documento.");
-      console.error(error);
+      toast.error("Não foi possível abrir o documento.", { id: "errorOpenDocS" });
     }
   };
+
+  const tiposAssociados = tiposMateria.filter((t) =>
+    tiposSelecionados.includes(t.idTipoMateria),
+  );
+
+  const tiposDisponiveis = tiposMateria.filter(
+    (t) => !tiposSelecionados.includes(t.idTipoMateria),
+  );
 
   if (fetching)
     return (
@@ -380,6 +399,87 @@ export default function EditTeacher() {
                   onChange={handleChange}
                   placeholder="Ex: Licenciatura em Engenharia Informática, CCP..."
                 />
+              </div>
+            </div>
+
+            <div className="col-md-12 mb-4">
+              <label className="form-label">
+                Tipos de Matéria que o formador dá
+              </label>
+
+              <div className="row">
+                {/* ASSOCIADOS */}
+                <div className="col-md-6">
+                  <small className="text-muted">Associados</small>
+                  <ul className="list-group mb-3">
+                    {tiposAssociados.length === 0 && (
+                      <li className="list-group-item text-muted small">
+                        Nenhum tipo associado
+                      </li>
+                    )}
+
+                    {tiposAssociados.map((tm) => (
+                      <li
+                        key={tm.idTipoMateria}
+                        className="list-group-item d-flex justify-content-between align-items-center"
+                      >
+                        <span className="fw-semibold">{tm.tipo}</span>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() =>
+                            setTiposSelecionados((prev) =>
+                              prev.filter((id) => id !== tm.idTipoMateria),
+                            )
+                          }
+                        >
+                          Remover
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* DISPONÍVEIS */}
+                <div className="col-md-6">
+                  <small className="text-muted">Disponíveis</small>
+                  <div className="d-flex gap-2">
+                    <select
+                      className="form-select"
+                      value={tipoSelecionado}
+                      disabled={tiposDisponiveis.length === 0}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setTipoSelecionado(value ? Number(value) : "");
+                      }}
+                    >
+                      <option value="">Adicionar tipo de matéria</option>
+
+                      {tiposDisponiveis.map((tm) => (
+                        <option key={tm.idTipoMateria} value={tm.idTipoMateria}>
+                          {tm.tipo}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary"
+                      disabled={!tipoSelecionado}
+                      onClick={() => {
+                        setTiposSelecionados((prev) =>
+                          prev.includes(tipoSelecionado as number)
+                            ? prev
+                            : [...prev, tipoSelecionado as number],
+                        );
+                        setTipoSelecionado("");
+                      }}
+                    >
+                      Adicionar
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 

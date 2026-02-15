@@ -48,7 +48,7 @@ export default function AddNewStudent() {
         setTurmas(dadosTurmas);
         setEscolaridades(dadosEscolaridades);
       } catch (err) {
-        toast.error("Erro ao carregar listas de apoio.");
+        toast.error("Erro ao carregar listas de apoio.", { id: "erroCarregarListasApoio" });
       }
     }
     carregarDadosIniciais();
@@ -76,13 +76,12 @@ export default function AddNewStudent() {
 
   const handleVerificarEmail = async () => {
     if (!formData.email) {
-      toast.error("Insira o email institucional.");
+      toast.error("Insira o email institucional.", { id: "erroInsiraEmailInstusa" });
       return;
     }
 
     setVerificandoEmail(true);
     try {
-      // O seu serviço já retorna res.data, então 'res' aqui já é o objeto do utilizador
       const res = await checkEmail(formData.email);
 
       if (res.existe) {
@@ -97,13 +96,13 @@ export default function AddNewStudent() {
           morada: res.morada || "",
           password: "USER_ALREADY_EXISTS",
         }));
-        toast.success("Utilizador encontrado! Dados carregados.");
+        toast.success("Utilizador encontrado! Dados carregados.", { id: "successsdaas" });
       } else {
         setEmailStatus("new");
-        toast.success("Novo email detetado. Defina uma password.");
+        toast.success("Novo email detetado. Defina uma password.", { id: "success1230" });
       }
     } catch (err) {
-      toast.error("Erro ao validar o email.");
+      toast.error("Erro ao validar o email.", { id: "erroAoValidarmail" });
     } finally {
       setVerificandoEmail(false);
     }
@@ -146,12 +145,12 @@ export default function AddNewStudent() {
 
     try {
       await postNewFormandos(data);
-      toast.success("Formando criado e inscrito com sucesso!");
+      toast.success("Formando criado e inscrito com sucesso!", { id: "successFormandoCriado" });
       navigate("/gerir-formandos"); // Volta para a lista de formadores
     } catch (err: any) {
       const errorMsg =
         err.response?.data?.message || "Erro inesperado ao criar formando.";
-      toast.error(errorMsg);
+      toast.error(errorMsg, { id: "errorAoCriarFormando" });
     } finally {
       setLoading(false);
     }

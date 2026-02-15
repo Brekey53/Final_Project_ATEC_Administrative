@@ -19,6 +19,7 @@ export default function EditCourse() {
     nome: "",
     idArea: 0,
     modulos: [],
+    nomeArea: '',
   });
 
   const [modulosDisponiveis, setModulosDisponiveis] = useState<Modulo[]>([]);
@@ -35,7 +36,9 @@ export default function EditCourse() {
         setModulosDisponiveis(modulosRes);
       })
       .catch(() => {
-        toast.error("Erro ao carregar dados do curso.");
+        toast.error("Erro ao carregar dados do curso.",
+          {id: "error-modulos"}
+        );
         navigate("/gerir-cursos");
       })
       .finally(() => setFetching(false));
@@ -51,13 +54,21 @@ export default function EditCourse() {
     if (!modulo) return;
 
     if (curso.modulos.some((m) => m.idModulo === modulo.idModulo)) {
-      toast.error("Este módulo já está associado.");
+      toast.error("Este módulo já está associado.",
+        {id: "error-modulos-associado"}
+      );
       return;
     }
 
     setCurso((prev) => ({
       ...prev,
-      modulos: [...prev.modulos, modulo],
+      modulos: [
+        ...prev.modulos,
+        {
+          ...modulo,
+          prioridade: 3, // prioridade default
+        },
+      ],
     }));
 
     setModuloSelecionado("");
@@ -75,24 +86,27 @@ export default function EditCourse() {
     if (!id) return;
 
     if (!curso.nome.trim()) {
-      toast.error("O nome do curso é obrigatório.");
+      toast.error("O nome do curso é obrigatório.", {id: "errorNomeCurso"});
       return;
     }
 
     const payload = {
       nome: curso.nome,
       idArea: curso.idArea,
-      moduloIds: curso.modulos.map((m) => m.idModulo),
+      modulos: curso.modulos.map((m) => ({
+        idModulo: m.idModulo,
+        prioridade: m.prioridade,
+      })),
     };
 
     setLoading(true);
 
     try {
       await updateCurso(id, payload);
-      toast.success("Curso atualizado com sucesso!");
+      toast.success("Curso atualizado com sucesso!", {id: "sucessCursoAtualizado"});
       navigate("/gerir-cursos");
     } catch {
-      toast.error("Erro ao atualizar curso.");
+      toast.error("Erro ao atualizar curso.", {id: "error-curso4"});
     } finally {
       setLoading(false);
     }
@@ -115,7 +129,7 @@ export default function EditCourse() {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="row">
+      <form onSubmit={handleSubmit} className="row align-items-start">
         {/* COLUNA ESQUERDA  */}
         <div className="col-lg-4 d-none d-lg-block">
           <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light h-100">
@@ -126,7 +140,7 @@ export default function EditCourse() {
             </p>
 
             <hr />
-
+    
             <p className="small mb-1">
               <strong>ID Curso:</strong> {curso.idCurso}
             </p>
@@ -137,6 +151,7 @@ export default function EditCourse() {
         </div>
 
         {/* COLUNA DIREITA */}
+
         <div className="col-lg-8">
           <div className="card p-4 shadow-sm border-0 rounded-4">
             <h5 className="text-primary mb-4">Detalhes do Curso</h5>
@@ -166,9 +181,36 @@ export default function EditCourse() {
               {curso.modulos.map((m) => (
                 <li
                   key={m.idModulo}
-                  className="list-group-item d-flex justify-content-between align-items-center"
+                  className="list-group-item d-flex align-items-center justify-content-between gap-3"
                 >
-                  {m.nome}
+                  {/* Nome do módulo */}
+                  <div className="flex-grow-1 fw-semibold">{m.nome}</div>
+
+                  {/* Select Prioridade */}
+                  <div style={{ minWidth: "170px" }}>
+                    <select
+                      className="form-select form-select-sm"
+                      value={m.prioridade}
+                      onChange={(e) =>
+                        setCurso((prev) => ({
+                          ...prev,
+                          modulos: prev.modulos.map((mod) =>
+                            mod.idModulo === m.idModulo
+                              ? { ...mod, prioridade: Number(e.target.value) }
+                              : mod,
+                          ),
+                        }))
+                      }
+                    >
+                      <option value={1}>Prioridade 1</option>
+                      <option value={2}>Prioridade 2</option>
+                      <option value={3}>Prioridade 3</option>
+                      <option value={4}>Prioridade 4</option>
+                      <option value={5}>Prioridade 5</option>
+                    </select>
+                  </div>
+
+                  {/* Botão Remover */}
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-danger"

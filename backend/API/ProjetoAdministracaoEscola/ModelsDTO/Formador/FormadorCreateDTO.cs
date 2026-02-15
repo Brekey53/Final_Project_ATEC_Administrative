@@ -19,5 +19,7 @@
         // IFormFile permite receber os ficheiros do FormData
         public IFormFile? Fotografia { get; set; }
         public IFormFile? Documento { get; set; }
+
+        public List<int> TiposMateria { get; set; } = new();
     }
 }

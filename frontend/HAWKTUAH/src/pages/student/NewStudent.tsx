@@ -9,7 +9,7 @@ import {
 import "../../css/newStudent.css";
 import { toast } from "react-hot-toast";
 import { normalizarTexto } from "../../utils/stringUtils";
-import { Pencil, Trash, Download } from "lucide-react";
+import { Pencil, Trash, Download, Search } from "lucide-react";
 import { Tooltip } from "bootstrap";
 
 export default function NewStudent() {
@@ -18,10 +18,16 @@ export default function NewStudent() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [formandoSelecionado, setFormandoSelecionado] =
     useState<Formando | null>(null);
+  const [turmaFilter, setTurmaFilter] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
   const ITEMS_PER_PAGE = 10;
+
+  const turmasDisponiveis = Array.from(
+    new Set(formandos.map((f) => f.nomeTurma || "Sem Turma")),
+  ).sort();
 
   useEffect(() => {
     async function fetchFormandos() {
@@ -29,20 +35,29 @@ export default function NewStudent() {
         const data = await getFormandos();
         setFormandos(data);
       } catch {
-        toast.error("Erro ao carregar formandos");
+        toast.error("Erro ao carregar formandos", { id: "erroCarregarFormandoss" });
       } finally {
         setLoading(false);
       }
     }
     fetchFormandos();
-  }, []);
+  }, [formandos.length]);
 
-  const formandosFiltrados = formandos.filter(
-    (f) =>
-      normalizarTexto(f.nome).includes(normalizarTexto(searchTerm)) ||
-      normalizarTexto(f.email).includes(normalizarTexto(searchTerm)) ||
-      normalizarTexto(f.nif).includes(normalizarTexto(searchTerm)),
-  );
+  const formandosFiltrados = formandos.filter((f) => {
+    const termo = normalizarTexto(searchTerm);
+
+    const matchPesquisa =
+      normalizarTexto(f.nome).includes(termo) ||
+      normalizarTexto(f.email || "").includes(termo) ||
+      normalizarTexto(f.nif).includes(termo);
+
+    const matchTurma =
+      turmaFilter === "" ||
+      normalizarTexto(f.nomeTurma || "Sem Turma") ===
+        normalizarTexto(turmaFilter);
+
+    return matchPesquisa && matchTurma;
+  });
 
   const totalPages = Math.ceil(formandosFiltrados.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -51,17 +66,17 @@ export default function NewStudent() {
   const formandosPaginados = formandosFiltrados.slice(startIndex, endIndex);
 
   useEffect(() => {
-    // 1. Procurar os elementos
+    // Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // 2. Inicializar
+    // Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
 
-    // 3. Limpeza
+    // Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
@@ -79,9 +94,9 @@ export default function NewStudent() {
 
       setShowDeleteModal(false);
       setFormandoSelecionado(null);
-      toast.success("Formando eliminado com sucesso");
+      toast.success("Formando eliminado com sucesso", { id: "successDelFormando" });
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao eliminar formando");
+      toast.error(err.response?.data?.message || "Erro ao eliminar formando", { id: "erroDelFormando" });
     }
   }
 
@@ -89,6 +104,39 @@ export default function NewStudent() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
+
+  const getBadgeClass = (f: any) => {
+    if (!f.nomeTurma || f.nomeTurma === "Sem Turma") {
+      return "bg-secondary-subtle text-secondary-emphasis border border-secondary";
+    }
+
+    if (f.dataFim) {
+      // Converte "dd/mm/yyyy" para um objeto Date válido
+      const [dia, mes, ano] = f.dataFim.split("/");
+      const dataFimObjeto = new Date(ano, mes - 1, dia);
+      const hoje = new Date();
+
+      hoje.setHours(0, 0, 0, 0);
+
+      if (dataFimObjeto < hoje) {
+        return "bg-warning-subtle text-warning-emphasis border border-warning";
+      }
+    }
+
+    return "bg-info-subtle text-info-emphasis border border-info";
+  };
+
+  const getBadgeText = (f: any) => {
+    if (!f.nomeTurma || f.nomeTurma === "Sem Turma") {
+      return "Sem Turma";
+    }
+
+    if (f.dataFim && new Date(f.dataFim) < new Date()) {
+      return `${f.nomeTurma} (Expirada)`;
+    }
+
+    return f.nomeTurma;
+  };
 
   return (
     <div className="container-fluid container-lg py-4 py-lg-5">
@@ -110,13 +158,41 @@ export default function NewStudent() {
       {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4">
         <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg rounded-3"
-            placeholder="Pesquisar por nome ou NIF…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="row g-3 align-items-center">
+            {/* INPUT PESQUISA */}
+            <div className="col-md-8">
+              <div className="input-group input-group-lg">
+                <span className="input-group-text bg-white border-0">
+                  <Search size={20} className="text-muted" />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border-0 shadow-none"
+                  placeholder="Pesquisar por nome, email ou NIF..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* FILTRO TURMA */}
+            <div className="col-md-4">
+              <div className="input-group input-group-lg">
+                <select
+                  className="form-select border-0 shadow-none"
+                  value={turmaFilter}
+                  onChange={(e) => setTurmaFilter(e.target.value)}
+                >
+                  <option value="">Todas as Turmas</option>
+                  {turmasDisponiveis.map((turma) => (
+                    <option key={turma} value={turma}>
+                      {turma}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -151,15 +227,21 @@ export default function NewStudent() {
                 <div className="text-muted text-truncate">{f.email || "-"}</div>
 
                 <div>
-                  <span
-                    className={`badge badge-turma-fixa ${
-                      f.turma === "Sem Turma"
-                        ? "bg-light text-muted border"
-                        : "bg-info-subtle text-info-emphasis border border-info"
-                    }`}
-                  >
-                    {f.turma || "Sem Turma"}
-                  </span>
+                  <div>
+                    <span
+                      className={`badge badge-turma-fixa ${getBadgeClass(f)}`}
+                    >
+                      {/* Mostra o nome da turma e, se existir data, coloca-a entre parênteses numa linha pequena */}
+                      <div className="d-flex flex-column">
+                        <span>{getBadgeText(f)}</span>
+                        {f.dataFim && f.nomeTurma !== "Sem Turma" && (
+                          <small style={{ fontSize: "0.8em", opacity: 0.8 }}>
+                            Fim: {f.dataFim}
+                          </small>
+                        )}
+                      </div>
+                    </span>
+                  </div>
                 </div>
 
                 <div className="d-flex justify-content-end gap-3 align-items-center">

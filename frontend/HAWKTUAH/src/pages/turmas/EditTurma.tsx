@@ -6,6 +6,8 @@ import {
   updateTurma,
   type Turma,
   getCursos,
+  getMetodologias,
+  type Metodologia
 } from "../../services/turmas/TurmasService";
 import type { Curso } from "../../services/cursos/CursosService";
 import {
@@ -23,6 +25,7 @@ import {
 import { Trash, Lock } from "lucide-react";
 import { Tooltip } from "bootstrap";
 import "../../css/layoutTabelas.css";
+import { isDataFimValida } from "../../utils/dataUtils";
 
 export default function EditTurma() {
   const { id } = useParams();
@@ -35,7 +38,8 @@ export default function EditTurma() {
     dataInicio: "",
     dataFim: "",
     nomeCurso: "",
-    estado: "A decorrer",
+    estado: "Para começar",
+    idMetodologia: 0,
   });
 
   type Tabs = "dados" | "formadores";
@@ -61,8 +65,8 @@ export default function EditTurma() {
     null,
   );
   const [selectedFormador, setSelectedFormador] = useState<number | null>(null);
-
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [metodologias, setMetodologias] = useState<Metodologia[]>([]);
 
   const [alocacaoParaRemover, setAlocacaoParaRemover] = useState<{
     idFormador: number;
@@ -78,7 +82,7 @@ export default function EditTurma() {
       setModulosDisponiveis(data);
       setShowModal(true);
     } catch {
-      toast.error("Erro ao carregar módulos disponíveis.");
+      toast.error("Erro ao carregar módulos disponíveis.", { id: "erroCarregarModulosDisponiveissa" });
     }
   };
 
@@ -93,30 +97,27 @@ export default function EditTurma() {
   };
 
   useEffect(() => {
-    // 1. Procurar os elementos
     const tooltipTriggerList = document.querySelectorAll(
       '[data-bs-toggle="tooltip"]',
     );
 
-    // 2. Inicializar
     const tooltipList = Array.from(tooltipTriggerList).map(
       (el) => new Tooltip(el),
     );
-
-    // 3. Limpeza
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
-  }, [formadoresTurma]); // Re-executa quando a lista carrega
+  }, [formadoresTurma]);
 
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
       try {
-        const [turmaData, cursosRes] = await Promise.all([
+        const [turmaData, cursosRes, metodologiasRes] = await Promise.all([
           getTurma(id),
           getCursos(),
+          getMetodologias(),
         ]);
 
         setFormData({
@@ -128,8 +129,9 @@ export default function EditTurma() {
         });
 
         setCursos(cursosRes);
+        setMetodologias(metodologiasRes);
       } catch {
-        toast.error("Erro ao carregar dados da turma.");
+        toast.error("Erro ao carregar dados da turma.", { id: "erroCarregarDadosTurmaas" });
         navigate("/turmas");
       } finally {
         setFetching(false);
@@ -148,7 +150,7 @@ export default function EditTurma() {
         const data = await getFormadoresDaTurma(id);
         setFormadoresTurma(data);
       } catch {
-        toast.error("Erro ao carregar formadores da turma.");
+        toast.error("Erro ao carregar formadores da turma.", { id: "erroLifTeacherTurma" });
       } finally {
         setLoadingFormadores(false);
       }
@@ -162,11 +164,30 @@ export default function EditTurma() {
   ) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "idCurso" ? Number(value) : value,
-      nomeCurso: cursos.find((c) => c.idCurso === Number(value))?.nome || "",
-    }));
+    setFormData((prev) => {
+      if (name === "idCurso") {
+        const cursoSelecionado = cursos.find(
+          (c) => c.idCurso === Number(value),
+        );
+
+        return {
+          ...prev,
+          idCurso: Number(value),
+          nomeCurso: cursoSelecionado?.nome || "",
+        };
+      }
+
+      if (name === "idMetodologia") {
+        return {
+          ...prev,
+          idMetodologia: Number(value),
+        };
+      }
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,12 +195,21 @@ export default function EditTurma() {
     if (!id) return;
     setLoading(true);
 
+    if (formData.dataInicio && formData.dataFim && !isDataFimValida(formData.dataInicio, formData.dataFim)) {
+      toast.error("A data de fim deve ser igual ou posterior à data de início.", {
+        id: "erroDataFimTurma",
+      });
+      return;
+    }
+
     try {
       await updateTurma(id, formData);
-      toast.success("Turma atualizada com sucesso!");
+      toast.success("Turma atualizada com sucesso!", { id: "successTurmaUpdate" });
       navigate("/turmas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar turma.");
+      toast.error(err.response?.data?.message || "Erro ao atualizar turma.", {
+        id: "turma-error",
+      });
     } finally {
       setLoading(false);
     }
@@ -195,7 +225,7 @@ export default function EditTurma() {
         idFormador: selectedFormador,
       });
 
-      toast.success("Formador alocado com sucesso!");
+      toast.success("Formador alocado com sucesso!", { id: "successTeacherPut" });
 
       setShowModal(false);
       setSelectedModulo(null);
@@ -219,14 +249,14 @@ export default function EditTurma() {
         alocacaoParaRemover.idModulo,
       );
 
-      toast.success("Formador removido com sucesso.");
+      toast.success("Formador removido com sucesso.", { id: "successTeacherNoPut" });
 
       const data = await getFormadoresDaTurma(id);
       setFormadoresTurma(data);
     } catch (err: any) {
       const mensagem =
         err.response?.data?.message || "Não foi possível remover o formador.";
-      toast.error(mensagem);
+      toast.error(mensagem, { id: "errorTeacherNoPutTurma" });
     } finally {
       setShowRemoveModal(false);
       setAlocacaoParaRemover(null);
@@ -272,7 +302,7 @@ export default function EditTurma() {
         </button>
       </div>
 
-      <ul className="nav nav-tabs mb-4 flex-nowrap overflow-auto">
+      <ul className="nav nav-tabs mb-4 flex-nowrap">
         <li className="nav-item flex-shrink-0">
           <button
             className={`nav-link ${activeTab === "dados" ? "active" : ""}`}
@@ -349,6 +379,7 @@ export default function EditTurma() {
                     className="form-control"
                     value={formData.dataInicio}
                     onChange={handleChange}
+                    max={formData.dataFim || undefined}
                     required
                   />
                 </div>
@@ -361,8 +392,27 @@ export default function EditTurma() {
                     className="form-control"
                     value={formData.dataFim}
                     onChange={handleChange}
+                    min={formData.dataInicio || undefined}
                     required
                   />
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label className="form-label fw-semibold">Metodologia</label>
+                  <select
+                    name="idMetodologia"
+                    className="form-select"
+                    value={formData.idMetodologia}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Selecione metodologia...</option>
+                    {metodologias.map((m) => (
+                      <option key={m.idMetodologia} value={m.idMetodologia}>
+                        {m.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

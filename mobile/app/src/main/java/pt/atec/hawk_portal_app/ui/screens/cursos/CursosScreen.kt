@@ -56,7 +56,7 @@ fun CursosScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.professor_hawk),
+                    painter = painterResource(id = R.drawable.cursos),
                     contentDescription = "Logo Hawk Portal Professor",
                     modifier = Modifier
                         .size(64.dp)

@@ -77,11 +77,11 @@ export default function NewModule() {
 
       setShowDeleteModal(false);
       setModuloSelecionado(null);
-      toast.success("Modulo eliminado com sucesso");
+      toast.success("Modulo eliminado com sucesso", {id: "sucessDelModulo"});
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.message) {
-        toast.error(errorData.message || "Erro ao eliminar modulo");
+        toast.error(errorData.message || "Erro ao eliminar modulo", {id: "errorDelModulo"});
       }
     }
   }

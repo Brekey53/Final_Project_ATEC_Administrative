@@ -3,11 +3,13 @@ package pt.atec.hawk_portal_app.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.model.Verify2FARequest
+import pt.atec.hawk_portal_app.states.ApiError
 
 class TwoFactorViewModel(application: Application)
     : AndroidViewModel(application){
@@ -25,6 +27,7 @@ class TwoFactorViewModel(application: Application)
     private val api = RetrofitClient.create(application)
     fun verifyCode(email: String, code: String) {
         viewModelScope.launch {
+            val gson = Gson()
             _isLoading.value = true
             _error.value = null
 
@@ -40,8 +43,16 @@ class TwoFactorViewModel(application: Application)
                         _error.value = "Resposta inválida do servidor"
                     }
                 } else {
-                    _error.value = response.errorBody()?.string()
-                        ?: "Código inválido"
+
+                    val errorBody = response.errorBody()?.string()
+
+                    _error.value = try {
+                        gson.fromJson(errorBody, ApiError::class.java)?.message ?: "Código inválido"
+                    } catch (e: Exception) {
+                        "Código inválido"
+
+                    }
+
                 }
 
             } catch (e: Exception) {
@@ -51,7 +62,8 @@ class TwoFactorViewModel(application: Application)
             }
         }
     }
-    fun clearToken() {
-        _token.value = null
+
+    fun clearError() {
+        _error.value = null
     }
 }

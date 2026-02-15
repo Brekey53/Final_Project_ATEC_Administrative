@@ -26,6 +26,8 @@ import {
   UserRound,
   LayoutGrid,
   Calendar,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 
 import {
@@ -63,6 +65,10 @@ export default function AdminDashboard() {
   const [cursosPorArea, setCursosPorArea] = useState<CursosPorArea[]>([]);
   const [topFormadores, setTopFormadores] = useState<TopFormadorHoras[]>([]);
   const [nameUser, setNameUser] = useState("");
+  const [currentPageCursos, setCurrentPageCursos] = useState(1);
+  const [currentPageComecar, setCurrentPageComecar] = useState(1);
+
+  const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
     async function loadAll() {
@@ -105,20 +111,36 @@ export default function AdminDashboard() {
     formador: f.nome,
     horas: f.horas,
   }));
+
+  const totalPagesCursosADecorrer = Math.ceil(
+    cursosADecorrer.length / ITEMS_PER_PAGE,
+  );
+
+  const startIndex = (currentPageCursos - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  const cursosADecorrerPaginados = cursosADecorrer.slice(startIndex, endIndex);
+
+
+  const totalPagesTurmaPorComecar = Math.ceil(
+    turmasAIniciar.length / ITEMS_PER_PAGE,
+  );
+
+  const inicio = (currentPageComecar - 1) * ITEMS_PER_PAGE;
+  const fim = inicio + ITEMS_PER_PAGE;
+
+  const turmasAComecarPaginadas = turmasAIniciar.slice(inicio, fim);
+
   return (
     <>
       <div className="main-layout mt-2 mt-md-3">
         <div className="container">
           {/*  Titulo e Açoes rápidas*/}
-          <div className="title-dashboard d-flex flex-column flex-md-row justify-content-between w-100 gap-2">
-            <div className="title-dashboard-left ">
-              <h3 className="mb-1 fs-4 fs-md-3">
-                Bem-vindo(a), <strong>{nameUser}</strong>
-              </h3>
-              <span className="text-muted">
-                Informação Rápida sobre o Sistema
-              </span>
-            </div>
+          <div className="mb-5 mt-4">
+            <h2 className="fw-bold">
+              Bem-vindo(a), <span className="text-primary">{nameUser}</span>
+            </h2>
+            <p className="text-muted mb-0">Informação Rápida sobre o Sistema</p>
           </div>
           <div className="quick-access-menu mt-3 p-3 p-md-4 shadow-sm">
             <h3>Ações Rápidas</h3>
@@ -265,7 +287,7 @@ export default function AdminDashboard() {
                       Ver todos
                     </Link>
                   </div>
-                  {cursosADecorrer.length === 0 ? (
+                  {cursosADecorrerPaginados.length === 0 ? (
                     <div className="d-flex flex-column align-items-center justify-content-center my-auto py-5">
                       <p className="text-muted small">
                         Nenhuma turma a decorrer
@@ -273,7 +295,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <ul className="list-group list-group-flush">
-                      {cursosADecorrer.map((t) => (
+                      {cursosADecorrerPaginados.map((t) => (
                         <li
                           key={t.idTurma}
                           className="list-group-item d-flex justify-content-between align-items-center px-0"
@@ -290,6 +312,32 @@ export default function AdminDashboard() {
                           </span>
                         </li>
                       ))}
+                      {totalPagesCursosADecorrer > 1 && (
+                        <div className="d-flex justify-content-center align-items-center gap-2 pt-4">
+                          <button
+                            className="btn btn-outline-secondary"
+                            disabled={currentPageCursos === 1}
+                            onClick={() => setCurrentPageCursos((p) => p - 1)}
+                          >
+                            <ChevronLeft />
+                          </button>
+
+                          <span className="text-muted">
+                            Página {currentPageCursos} de{" "}
+                            {totalPagesCursosADecorrer}
+                          </span>
+
+                          <button
+                            className="btn btn-outline-secondary"
+                            disabled={
+                              currentPageCursos === totalPagesCursosADecorrer
+                            }
+                            onClick={() => setCurrentPageCursos((p) => p + 1)}
+                          >
+                            <ChevronRight />
+                          </button>
+                        </div>
+                      )}
                     </ul>
                   )}
                 </div>
@@ -310,7 +358,7 @@ export default function AdminDashboard() {
                       Ver todos
                     </Link>
                   </div>
-                  {turmasAIniciar.length === 0 ? (
+                  {turmasAComecarPaginadas.length === 0 ? (
                     <div className="text-center py-5">
                       <p className="text-muted small">
                         Nenhuma turma a iniciar nos próximos 60 dias
@@ -318,7 +366,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <ul className="list-group list-group-flush">
-                      {turmasAIniciar.map((t) => (
+                      {turmasAComecarPaginadas.map((t) => (
                         <li
                           key={t.idTurma}
                           className="list-group-item px-0 py-3 border-0"
@@ -343,6 +391,32 @@ export default function AdminDashboard() {
                         </li>
                       ))}
                     </ul>
+                  )}
+                  {totalPagesTurmaPorComecar > 1 && (
+                    <div className="d-flex justify-content-center align-items-center gap-2 pt-4">
+                      <button
+                        className="btn btn-outline-secondary"
+                        disabled={currentPageComecar === 1}
+                        onClick={() => setCurrentPageComecar((p) => p - 1)}
+                      >
+                        <ChevronLeft />
+                      </button>
+
+                      <span className="text-muted">
+                        Página {currentPageComecar} de{" "}
+                        {totalPagesTurmaPorComecar}
+                      </span>
+
+                      <button
+                        className="btn btn-outline-secondary"
+                        disabled={
+                          currentPageComecar === totalPagesTurmaPorComecar
+                        }
+                        onClick={() => setCurrentPageComecar((p) => p + 1)}
+                      >
+                        <ChevronRight />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

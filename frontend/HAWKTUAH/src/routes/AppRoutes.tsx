@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./PrivateRoutes";
 
 import MainLayout from "../layouts/MainLayout";
-
 import Dashboard from "../pages/LandingPage";
 import Cursos from "../pages/course/Cursos";
 import Formandos from "../pages/Formandos";
@@ -32,16 +31,16 @@ import EditRoom from "../pages/room/EditRoom";
 import CursoDetalhe from "../pages/course/CursoDetalhe";
 import AddNewUser from "../pages/users/AddNewUser";
 import EditUser from "../pages/users/EditUser";
-import Formadores from "../pages/Formadores"
-
-
-import Chatbot from "../pages/chatbot/Chatbot";
+import Formadores from "../pages/Formadores";
 
 import Turmas from "../pages/turmas/ManageTurmas";
 import EditTurma from "../pages/turmas/EditTurma";
 import AddNewTurma from "../pages/turmas/AddNewTurma";
 import EditAvaliacoesFormador from "../pages/turmas/EditAvaliacoesFormador";
 import AddNewAvailability from "../pages/teacher/AddNewAvailability";
+
+import RoleRoute from "./RoleRoute";
+import NotFound from "../pages/NotFound";
 
 function AppRoutes() {
   return (
@@ -67,79 +66,94 @@ function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-
-          {/* Utilizadores - Admin*/}
-          <Route path="/gerir-utilizadores" element={<ManageUsers />} />
-          <Route path="/gerir-utilizadores/adicionar-utilizador" element={<AddNewUser />} />
-          <Route
-            path="gerir-utilizadores/edit-utilizador/:id"
-            element={<EditUser />}
-          />
-
-          {/* PERFIL - Público*/}
           <Route path="/perfil" element={<Perfil />} />
-
-          {/* Formandos - Privado(?) */}
-          <Route path="/formandos" element={<Formandos />} />
-
-          {/* Formandos - Admin*/}
-          <Route path="/adicionar-formandos" element={<AddNewStudent />} />
-          <Route path="/gerir-formandos" element={<NewStudent />} />
-          <Route
-            path="/gerir-formandos/edit-formando/:id"
-            element={<EditStudent />}
-          />
-
-          {/* Formadores */}
-          <Route path="/formadores" element={<Formadores />} />
-          <Route path="/adicionar-disponibilidade" element={<AddNewAvailability />} />
-          <Route path="/gerir-formadores" element={<NewTeacher />} />
-          <Route path="/adicionar-formadores" element={<AddNewTeacher />} />
-          <Route
-            path="/gerir-formadores/edit-formador/:id"
-            element={<EditTeacher />}
-          />
-
-          {/* Modulos */}
-          <Route path="/gerir-modulos" element={<NewModule />} />
-          <Route path="/adicionar-modulos" element={<AddNewModule />} />
-          <Route
-            path="/gerir-modulos/edit-modulo/:id"
-            element={<EditModule />}
-          />
-
-          {/* Cursos - Público */}
           <Route path="/cursos" element={<Cursos />} />
           <Route path="cursos/:idCurso" element={<CursoDetalhe />} />
 
-          {/* Cursos - Admin */}
-          <Route path="/gerir-cursos" element={<NewCourse />} />
-          <Route path="/adicionar-cursos" element={<AddNewCourse />} />
-          <Route path="/gerir-cursos/edit-curso/:id" element={<EditCourse />} />
-          
+          {/** ADMIN e ADMINISTRATIVO */}
+          <Route element={<RoleRoute permitido={[1, 4, 6]} />}>
+            {/* Utilizadores - Admin, Administrativo*/}
+            <Route path="/gerir-utilizadores" element={<ManageUsers />} />
+            <Route
+              path="/gerir-utilizadores/adicionar-utilizador"
+              element={<AddNewUser />}
+            />
+            <Route
+              path="/gerir-utilizadores/edit-utilizador/:id"
+              element={<EditUser />}
+            />
 
-          {/* Salas - Admin*/}
-          <Route path="/gerir-salas" element={<NewRoom />} />
-          <Route path="/adicionar-salas" element={<AddNewRoom />} />
-          <Route path="/gerir-salas/edit-sala/:id" element={<EditRoom />} />
-          
-          {/* Horarios - Admin */}
-          <Route path="/gerir-horarios" element={<NewSchedule />} />
+            {/* Formandos - Admin, Administrativo*/}
+            <Route path="/adicionar-formandos" element={<AddNewStudent />} />
+            <Route path="/gerir-formandos" element={<NewStudent />} />
+            <Route
+              path="/gerir-formandos/edit-formando/:id"
+              element={<EditStudent />}
+            />
+            {/* Formadores - Admin, Administrativo*/}
+            <Route path="/gerir-formadores" element={<NewTeacher />} />
+            <Route path="/adicionar-formadores" element={<AddNewTeacher />} />
+            <Route
+              path="/gerir-formadores/edit-formador/:id"
+              element={<EditTeacher />}
+            />
 
-          {/* CHATBOT */}
-          <Route path="/chatbot" element={<Chatbot />} />
+            {/* Cursos - Admin, Administrativo*/}
+            <Route path="/gerir-cursos" element={<NewCourse />} />
+            <Route path="/adicionar-cursos" element={<AddNewCourse />} />
+            <Route
+              path="/gerir-cursos/edit-curso/:id"
+              element={<EditCourse />}
+            />
 
+            {/* Salas - Admin, Administrativo*/}
+            <Route path="/gerir-salas" element={<NewRoom />} />
+            <Route path="/adicionar-salas" element={<AddNewRoom />} />
+            <Route path="/gerir-salas/edit-sala/:id" element={<EditRoom />} />
 
-          {/*TURMAS - publico ??*/}
+            {/* Horarios - Admin, Administrativo */}
+            <Route path="/gerir-horarios" element={<NewSchedule />} />
+
+            {/* Modulos Admin, Administrativo */}
+            <Route path="/gerir-modulos" element={<NewModule />} />
+            <Route path="/adicionar-modulos" element={<AddNewModule />} />
+            <Route
+              path="/gerir-modulos/edit-modulo/:id"
+              element={<EditModule />}
+            />
+
+            <Route path="/formadores" element={<Formadores />} />
+
+            {/*TURMAS - Admin, Administrativo*/}
+            <Route path="/turmas/adicionar-turma" element={<AddNewTurma />} />
+            <Route path="/turmas/edit-turma/:id" element={<EditTurma />} />
+          </Route>
+
+          {/* Admin, Administrativo e Formadores */}
+          <Route element={<RoleRoute permitido={[1, 2, 4, 6]} />}>
+            {/* Formandos*/}
+            <Route path="/formandos" element={<Formandos />} />
+          </Route>
+
+          {/*TURMAS - Públic*/}
           <Route path="/turmas" element={<Turmas />} />
-          
-          {/*TURMAS - Formador*/}
-          <Route path="/avaliar/:turmaId/:moduloId" element={<EditAvaliacoesFormador />} />
 
-          {/*TURMAS - admin*/}
-          <Route path="/turmas/adicionar-turma" element={<AddNewTurma />} />
-          <Route path="/turmas/edit-turma/:id" element={<EditTurma />} />
+          {/*Formador*/}
 
+          <Route element={<RoleRoute permitido={[2]} />}>
+            {/*Avaliaações*/}
+            <Route
+              path="/avaliar/:turmaId/:moduloId"
+              element={<EditAvaliacoesFormador />}
+            />
+            {/*Disponibilidade*/}
+            <Route
+              path="/adicionar-disponibilidade"
+              element={<AddNewAvailability />}
+            />
+          </Route>
+          {/* 404 GLOBAL */}
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
     </Routes>

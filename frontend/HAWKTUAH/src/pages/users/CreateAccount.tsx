@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Register } from "../../auth/ResgisterService";
+import { CreateAccountNewUser } from "../../services/users/CreateAccountNewUser";
 import toast from "react-hot-toast";
+import { get1900ISO, getHojeISO } from "../../utils/dataUtils";
 
 export default function CreateAccount() {
   const navigate = useNavigate();
 
-  // Estados alinhados com o DTO
-  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [nif, setNif] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [sexo, setSexo] = useState("Masculino");
+  const [morada, setMorada] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -27,36 +29,47 @@ export default function CreateAccount() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error("As passwords não coincidem");
+      toast.error("As passwords não coincidem", { id: "erro-passwords" });
       return;
     }
 
     if (!isPasswordStrong(password)) {
       toast.error(
         "A password deve ter pelo menos 6 caracteres, incluindo uma letra e um número.",
+        { id: "erro-password-inválida" },
       );
+      return;
+    }
+
+    if (birthDate < get1900ISO() || birthDate > getHojeISO()) {
+      toast.error("Introduza uma data de nascimento válida.", {
+        id: "erro-data-nascimento",
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      // Objeto formatado para o C# (as chaves devem bater com o DTO ou o JSON da API)
       const registerData = {
         Email: email,
         Password: password,
         Nome: name,
         Nif: nif,
         DataNascimento: birthDate,
+        Telefone: telefone,
+        Sexo: sexo,
+        Morada: morada,
       };
-
-      await Register(registerData);
+      await CreateAccountNewUser(registerData);
       toast.success(
         "Registado com sucesso! Verifique o seu email para ativar a conta.",
       );
       navigate("/Login", { replace: true });
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao criar conta.");
+      toast.error(err.response?.data?.message || "Erro ao criar conta.", {
+        id: "erro-criar-contacerto",
+      });
     } finally {
       setLoading(false);
     }
@@ -115,9 +128,57 @@ export default function CreateAccount() {
                 className="form-control"
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
+                min={1900}
+                max={getHojeISO()}
                 required
               />
             </div>
+          </div>
+
+          <div className="row">
+            {/* Telefone */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label">
+                Telefone <span className="required-star">*</span>
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                value={telefone}
+                onChange={(e) => setTelefone(e.target.value)}
+                maxLength={9}
+                required
+              />
+            </div>
+
+            {/* SEXO */}
+            <div className="col-md-6 mb-3">
+              <label className="form-label">
+                Sexo <span className="required-star">*</span>
+              </label>
+              <select
+                className="form-label form-select"
+                value={sexo}
+                onChange={(e) => setSexo(e.target.value)}
+              >
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Morada */}
+          <div className="mb-3">
+            <label className="form-label">
+              Morada <span className="required-star">*</span>
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              value={morada}
+              onChange={(e) => setMorada(e.target.value)}
+              required
+            />
           </div>
 
           {/* Email */}

@@ -14,4 +14,10 @@ public partial class UtilizadorRegisterDTO
     public string Nif { get; set; } = null!;
 
     public DateOnly DataNascimento { get; set; }
+
+    public string Telefone { get; set; }
+
+    public string Sexo { get; set; }
+
+    public string Morada { get; set; }
 }

@@ -113,6 +113,31 @@ secrets.json
 # Secrets
 appsettings.Development.json
 
+#Mobile
+# Android / Gradle
+.gradle/
+build/
+**/build/
+
+# Local config
+local.properties
+config.properties
+
+# Gradle caches
+**/.gradle/**
+**/*.lock
+**/*.bin
+
+# Android Studio
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
 *.iml
 .gradle
 /local.properties

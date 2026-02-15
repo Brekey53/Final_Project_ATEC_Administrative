@@ -6,15 +6,22 @@ import {
   updateHorario,
   getHorariosById,
   postHorario,
+  autoGenerateSchedule,
+  deleteHorario,
   type Horario,
 } from "../../services/shedules/HorariosService";
-import { getTurmasFormadorHorario } from "../../services/turmas/TurmasService";
+import {
+  getTurmasFormadorHorario,
+  getTurmas,
+} from "../../services/turmas/TurmasService";
 import { getSalasDisponiveis } from "../../services/rooms/SalasService";
 import { getFormadores } from "../../services/formador/FormadorService";
 import "../../css/newSchedule.css";
-import { Search, ChevronLeft, ChevronRight, XCircle } from "lucide-react";
+import { Search, XCircle, Trash, Pencil } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
-import toast  from "react-hot-toast";
+import toast from "react-hot-toast";
+import FormadorDisponibilidadePreview from "../../components/FormadorDisponibilidadePreview";
+import { Tooltip } from "bootstrap";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -24,7 +31,12 @@ export default function NewSchedule() {
   const [dataSelecionada, setDataSelecionada] = useState<Value>(new Date());
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingGenerator, setLoadingGenerator] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [autoGenData, setAutoGenData] = useState({
+    idTurma: "",
+    dataInicio: "",
+  });
 
   // --- Estados para filtro e paginação
   const [startDate, setStartDate] = useState("");
@@ -33,8 +45,10 @@ export default function NewSchedule() {
   const ITEMS_PER_PAGE = 10;
 
   // --- Estados dos modal ---
-  const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAutoGenerateModal, setShowAutoGenerateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedHorario, setSelectedHorario] = useState<Horario | null>(null);
 
   // --- Estado do Novo Horario ---
@@ -50,9 +64,10 @@ export default function NewSchedule() {
   });
 
   // --- Estados das listas ---
-  const [turmasRaw, setTurmasRaw] = useState<any[]>([]); // Lista crua da API
+  const [turmasRaw, setTurmasRaw] = useState<any[]>([]);
   const [formadores, setFormadores] = useState<any[]>([]);
   const [salasDisponiveis, setSalasDisponiveis] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<any[]>([]);
 
   // --- HELPER ---
   const formatarData = (data: any) => {
@@ -71,7 +86,9 @@ export default function NewSchedule() {
       const data = await getHorariosTotal();
       setHorarios(data);
     } catch (err) {
-      console.log(err);
+      toast.error("Erro ao carregar horários.", {
+        id: "erro-getHorarios",
+      });
     } finally {
       setLoading(false);
     }
@@ -84,14 +101,31 @@ export default function NewSchedule() {
         const res = await getFormadores();
         setFormadores(res);
       } catch (err) {
-        console.error(err);
-        toast.error("Erro ao carregar formadores.");
+        toast.error("Erro ao carregar formadores.", {
+          id: "erro-getFormadores",
+        });
       }
     };
     loadFormadores();
   }, []);
 
-  // Resetar paginação quando filtros mudam
+  useEffect(() => {
+    // Procurar os elementos
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]',
+    );
+
+    // Inicializar
+    const tooltipList = Array.from(tooltipTriggerList).map(
+      (el) => new Tooltip(el),
+    );
+
+    // Limpeza
+    return () => {
+      tooltipList.forEach((t) => t.dispose());
+    };
+  }, [horarios, loading]); // Re-executa quando a lista carrega
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, startDate, endDate, dataSelecionada]);
@@ -138,8 +172,7 @@ export default function NewSchedule() {
       const res = await getTurmasFormadorHorario(Number(idFormador));
       setTurmasRaw(res);
     } catch (err) {
-      console.error(err);
-      toast.error("Erro ao carregar turmas.");
+      toast.error("Erro ao carregar turmas.", { id: "erro-getTurmasFormador" });
     }
   };
 
@@ -149,6 +182,22 @@ export default function NewSchedule() {
       idTurma: e.target.value,
       idModulo: "", // Resetar módulo ao trocar turma
       idCursoModulo: "",
+    });
+  };
+
+  const handleTurmaAutoGenerateChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const idTurma = e.target.value;
+    const turmaSelecionada = turmas.find(
+      (t) => t.idTurma.toString() === idTurma,
+    );
+
+    setAutoGenData({
+      idTurma: idTurma,
+      dataInicio: turmaSelecionada?.dataInicio
+        ? turmaSelecionada.dataInicio.split("T")[0]
+        : "",
     });
   };
 
@@ -189,8 +238,10 @@ export default function NewSchedule() {
         idCursoModulo,
       );
       setSalasDisponiveis(dados);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Erro ao carregar salas.", {
+        id: "erro-getSalas",
+      });
     }
   };
 
@@ -203,6 +254,7 @@ export default function NewSchedule() {
     newHorario.idCursoModulo,
   ]);
 
+  /** Verifica se o formador ou turma estão já ocupados no mesmo slot horário (sobreposição) */
   const verificarConflitos = () => {
     const { data, horaInicio, horaFim, idFormador, idTurma } = newHorario;
     if (!data || !horaInicio || !horaFim)
@@ -253,11 +305,11 @@ export default function NewSchedule() {
 
   const handleOpenModal = (horario: Horario) => {
     setSelectedHorario({ ...horario });
-    setShowModal(true);
+    setShowEditModal(true);
   };
 
   const handleCloseModal = () => {
-    setShowModal(false);
+    setShowEditModal(false);
     setSelectedHorario(null);
   };
 
@@ -283,6 +335,74 @@ export default function NewSchedule() {
     }
   };
 
+  const handleAutoGenerateModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAutoGenData({ idTurma: "", dataInicio: "" }); // Reset inicial
+    setShowAutoGenerateModal(true);
+
+    try {
+      const res = await getTurmas();
+      setTurmas(res);
+    } catch (err) {
+      toast.error("Erro ao carregar turmas.", { id: "getTurmas" });
+    }
+  };
+
+  const handleAutoGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!autoGenData.idTurma) {
+      toast.error("Selecione uma turma válida.", { id: "erro-Autogenerate" });
+      return;
+    }
+
+    setShowAutoGenerateModal(false);
+    setLoadingGenerator(true);
+
+    try {
+      await autoGenerateSchedule(Number(autoGenData.idTurma));
+
+      // Mesmo que a API responda em 100ms, o spinner fica mais tempo
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast.success("Horário gerado com sucesso!", {
+        id: "successHorarioGerado",
+      });
+      await fetchHorarios();
+    } catch (err) {
+      toast.error("Erro ao gerar horário.", { id: "fetchHorarios" });
+    } finally {
+      setLoadingGenerator(false);
+    }
+  };
+
+  const handleOpenDeleteModal = (horario: Horario) => {
+    setSelectedHorario({ ...horario });
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setSelectedHorario(null);
+  };
+
+  const handleDeleteHorario = async () => {
+    if (!selectedHorario) return;
+
+    try {
+      await deleteHorario(Number(selectedHorario.idHorario));
+      toast.success("Horário deletado com sucesso!", {
+        id: "successHorarioDeletado",
+      });
+      await fetchHorarios();
+      handleCloseDeleteModal();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao apagar.", {
+        id: "erro-fetch",
+      });
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedHorario) return;
@@ -302,19 +422,24 @@ export default function NewSchedule() {
       );
 
       await updateHorario(selectedHorario.idHorario.toString(), data);
-      toast.success("Atualizado com sucesso!");
+      toast.success("Atualizado com sucesso!", {
+        id: "successHorarioAtualizado2",
+      });
       await fetchHorarios();
       handleCloseModal();
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Erro ao atualizar.";
-      toast.error(msg);
+      toast.error(err.response?.data?.message || "Erro ao atualizar.", {
+        id: "erro-fetch",
+      });
     }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newHorario.idCursoModulo) {
-      toast.error("Selecione um módulo válido.");
+      toast.error("Selecione um módulo válido.", {
+        id: "erroSelecionarModulo",
+      });
       return;
     }
 
@@ -329,12 +454,13 @@ export default function NewSchedule() {
 
     try {
       await postHorario(data);
-      toast.success("Horário criado!");
+      toast.success("Horário criado!", { id: "successHorarioCriado" });
       await fetchHorarios();
       setShowCreateModal(false);
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Erro ao criar horário.";
-      toast.error(msg);
+      toast.error(err.response?.data?.message || "Erro ao criar horário.", {
+        id: "erro-criar horario",
+      });
     }
   };
 
@@ -435,12 +561,23 @@ export default function NewSchedule() {
             Inserir, alterar, eliminar e consultar horários.
           </p>
         </div>
-        <div
-          className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
-          onClick={handleOpenCreateModal}
-          style={{ cursor: "pointer" }}
-        >
-          + Novo Horário
+
+        <div className="d-flex gap-2">
+          <div
+            className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
+            onClick={handleAutoGenerateModal}
+            style={{ cursor: "pointer" }}
+          >
+            Gerar Horário Automático para Turma
+          </div>
+
+          <div
+            className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
+            onClick={handleOpenCreateModal}
+            style={{ cursor: "pointer" }}
+          >
+            + Novo Horário
+          </div>
         </div>
       </div>
 
@@ -474,7 +611,12 @@ export default function NewSchedule() {
                     className="form-control shadow-none"
                     style={{ maxWidth: "160px" }}
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(e) => {
+                      const newStart = e.target.value;
+                      setStartDate(newStart);
+                      if (endDate && newStart > endDate) setEndDate("");
+                    }}
+                    max={endDate || undefined}
                   />
                 </div>
                 <div className="d-flex align-items-center gap-2">
@@ -605,10 +747,22 @@ export default function NewSchedule() {
                             </small>
                           </div>
                           <button
-                            className="btn btn-success px-4 py-2 rounded-pill shadow-sm"
+                            className="btn btn-success px-4 py-2 rounded-pill shadow-sm border border-success m-2"
+                            title="Editar informações Horário"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
                             onClick={() => handleOpenModal(h)}
                           >
-                            Editar
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            className="btn btn-danger px-4 py-2 rounded-pill shadow-sm border border-danger "
+                            title="Excluir Horário"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            onClick={() => handleOpenDeleteModal(h)}
+                          >
+                            <Trash size={18} />
                           </button>
                         </div>
                       </div>
@@ -617,27 +771,25 @@ export default function NewSchedule() {
 
                   {/* PAGINAÇÃO */}
                   {totalPages > 1 && (
-                    <div className="d-flex justify-content-center align-items-center gap-3 mt-4 pt-3 border-top">
+                    <div className="d-flex justify-content-center align-items-center gap-3 py-4 border-top">
                       <button
-                        className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                        className="btn btn-outline-secondary"
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage((p) => p - 1)}
-                        style={{ width: "40px", height: "40px" }}
                       >
-                        <ChevronLeft size={20} />
+                        Anterior
                       </button>
 
-                      <span className="fw-semibold text-muted">
+                      <span className="text-muted">
                         Página {currentPage} de {totalPages}
                       </span>
 
                       <button
-                        className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                        className="btn btn-outline-secondary"
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage((p) => p + 1)}
-                        style={{ width: "40px", height: "40px" }}
                       >
-                        <ChevronRight size={20} />
+                        Seguinte
                       </button>
                     </div>
                   )}
@@ -662,7 +814,7 @@ export default function NewSchedule() {
       </div>
 
       {/* --- MODAL EDITAR (UPDATE) --- */}
-      {showModal && selectedHorario && (
+      {showEditModal && selectedHorario && (
         <div
           className="modal fade show d-block"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
@@ -945,6 +1097,23 @@ export default function NewSchedule() {
                       </select>
                     </div>
                   </div>
+
+                  <div className="col-md-12 mt-4">
+                    <h6 className="fw-bold text-success mb-2">
+                      Disponibilidade na semana
+                    </h6>
+                    {newHorario.idFormador && newHorario.data ? (
+                      <FormadorDisponibilidadePreview
+                        data={newHorario.data}
+                        idFormador={newHorario.idFormador}
+                      />
+                    ) : (
+                      <div className="text-muted small mt-4">
+                        Selecione um formador e uma data para ver
+                        disponibilidade
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="modal-footer border-0">
                   <button
@@ -967,6 +1136,176 @@ export default function NewSchedule() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Loading Page ---*/}
+      {loadingGenerator && (
+        <div
+          className="modal fade show d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.6)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 2000, // Garante que fica acima de qualquer outro modal
+          }}
+        >
+          <div className="text-center bg-white p-5 rounded-4 shadow-lg">
+            <div
+              className="spinner-border text-success mb-3"
+              style={{ width: "3rem", height: "3rem" }}
+              role="status"
+            ></div>
+            <h5 className="fw-bold">A Gerar Horário...</h5>
+            <p className="text-muted mb-0">
+              Isto pode demorar alguns segundos.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* --- Modal Gerador Automatico --- */}
+      {showAutoGenerateModal && (
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content rounded-4 border-0 shadow">
+              <div className="modal-header border-0 pb-0">
+                <h4 className="fw-bold text-primary">
+                  Gerar Horário Para Turma
+                </h4>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowAutoGenerateModal(false)}
+                ></button>
+              </div>
+              <form onSubmit={handleAutoGenerate}>
+                <div className="modal-body p-4">
+                  <div className="row g-3">
+                    {/* TURMA */}
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold">Turma</label>
+                      <select
+                        className={`form-select shadow-none`}
+                        value={autoGenData.idTurma}
+                        onChange={handleTurmaAutoGenerateChange}
+                        required
+                      >
+                        <option value="">{"Selecionar Turma..."}</option>
+                        {turmas.map((t: any) => (
+                          <option key={t.idTurma} value={t.idTurma}>
+                            {t.nomeTurma}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* DATA */}
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold">
+                        Data de início de curso
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control shadow-none"
+                        value={autoGenData.dataInicio}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer border-0">
+                  <button
+                    type="button"
+                    className="btn btn-light rounded-pill px-4"
+                    onClick={() => setShowAutoGenerateModal(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary rounded-pill px-4 text-white"
+                    disabled={loadingGenerator}
+                  >
+                    {loadingGenerator ? "A gerar..." : "Criar"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && selectedHorario && (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          onClick={() => setShowDeleteModal(false)}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content rounded-4 shadow">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirmar Eliminação</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                />
+              </div>
+
+              <div className="modal-body">
+                <p>
+                  Tem a certeza que pretende eliminar o horário da aplicação?
+                  <br />
+                  <br />
+                  Data: <strong>{selectedHorario.data}</strong>
+                  <br />
+                  Hora:{" "}
+                  <strong>
+                    {selectedHorario.horaInicio}
+                    {" / "}
+                    {selectedHorario.horaFim}
+                    <br />
+                  </strong>
+                  Formando: <strong>{selectedHorario.nomeFormador}</strong>
+                  <br />
+                  Turma: <strong>{selectedHorario.nomeTurma}</strong>
+                  <br />
+                  Modulo: <strong>{selectedHorario.nomeModulo}</strong>
+                  <br />
+                </p>
+                <p className="text-muted mb-0">
+                  Esta ação não pode ser revertida.
+                </p>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  className="btn btn-light"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="btn btn-danger"
+                  onClick={handleDeleteHorario}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
         </div>

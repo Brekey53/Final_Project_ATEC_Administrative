@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import FotoPlaceholder from "../../img/avatar.png";
 import {
   updateFormando,
@@ -23,9 +23,18 @@ export default function EditFormando() {
     morada: "",
     idTurma: "",
     idEscolaridade: "",
+    estado: "",
     fotografia: null as File | null,
     anexoFicheiro: null as File | null,
   });
+
+  const ESTADOS_INSCRICAO = [
+    { value: "Ativo", label: "Ativo" },
+    { value: "Concluido", label: "Concluido" },
+    { value: "Desistente", label: "Desistente" },
+    { value: "Congelado", label: "Congelado" },
+    { value: "Suspenso", label: "Suspenso" },
+  ] as const;
 
   const [turmas, setTurmas] = useState<any[]>([]);
   const [escolaridades, setEscolaridades] = useState<any[]>([]);
@@ -58,7 +67,8 @@ export default function EditFormando() {
           dataNascimento: f.dataNascimento?.split("T")[0] ?? "",
           sexo: f.sexo ?? "Masculino",
           morada: f.morada ?? "",
-          idTurma: f.idTurma ?? "",
+          idTurma: f.idTurma ? String(f.idTurma) : "",
+          estado: f.estado ?? "",
           idEscolaridade: f.idEscolaridade ?? "",
           fotografia: null,
           anexoFicheiro: null,
@@ -67,7 +77,9 @@ export default function EditFormando() {
         if (f.fotografia) setFotoPreview(f.fotografia);
         if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro);
       } catch (err) {
-        toast.error("Erro ao carregar dados do formando.");
+        toast.error("Erro ao carregar dados do formando.", {
+          id: "erro-formando",
+        });
       } finally {
         setFetching(false);
       }
@@ -110,9 +122,11 @@ export default function EditFormando() {
     data.append("DataNascimento", formData.dataNascimento);
     data.append("Sexo", formData.sexo);
     data.append("Morada", formData.morada);
+    data.append("Estado", formData.estado);
 
     // Dados específicos de formando
     data.append("IdEscolaridade", formData.idEscolaridade);
+    
     if (formData.idTurma) {
       data.append("IdTurma", formData.idTurma);
     }
@@ -127,11 +141,12 @@ export default function EditFormando() {
 
     try {
       await updateFormando(id, data);
-      toast.success("Perfil atualizado com sucesso!");
+      toast.success("Perfil atualizado com sucesso!", { id: "successPerfilAtualizado" });
       navigate("/gerir-formandos");
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Erro ao atualizar dados.";
-      toast.error(msg);
+      toast.error(err.response?.data?.message || "Erro ao atualizar dados.", {
+        id: "err-atualizar",
+      });
     } finally {
       setLoading(false);
     }
@@ -161,8 +176,7 @@ export default function EditFormando() {
       // Abrir em nova aba
       window.open(fileURL, "_blank");
     } catch (error) {
-      toast.error("Não foi possível abrir o documento.");
-      console.error(error);
+      toast.error("Não foi possível abrir o documento.", { id: "erroAoAbrirDoc" });
     }
   };
 
@@ -177,7 +191,6 @@ export default function EditFormando() {
         {/* COLUNA ESQUERDA: FOTO E DOCUMENTO */}
         <div className="col-lg-4 d-none d-lg-block text-center">
           <div className="card p-3 shadow-sm mb-4">
-            {/*TODO: Tirar style inline */}
             <img
               src={fotoPreview}
               alt="Preview"
@@ -371,8 +384,26 @@ export default function EditFormando() {
                 >
                   <option value="">Sem Turma Ativa</option>
                   {turmas.map((t) => (
-                    <option key={t.idTurma} value={t.idTurma}>
+                    <option key={t.idTurma} value={String(t.idTurma)}>
                       {t.nomeTurma}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Estado da Inscrição</label>
+                <select
+                  name="estado"
+                  className="form-select"
+                  value={formData.estado}
+                  onChange={handleChange}
+                >
+                  <option value="">Selecionar estado...</option>
+
+                  {ESTADOS_INSCRICAO.map((e) => (
+                    <option key={e.value} value={e.value}>
+                      {e.label}
                     </option>
                   ))}
                 </select>

@@ -5,7 +5,7 @@ import {
   postTurmaAvaliacao,
 } from "../../services/turmas/TurmasService";
 import { toast } from "react-hot-toast";
-import "../../css/EditAvaliacoesFormador.css";
+import "../../css/editAvaliacoesFormador.css";
 import "../../css/layoutTabelas.css";
 import { Search } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function EditAvaliacoesFormador() {
         const data = await getTurmaAvaliacao(Number(turmaId), Number(moduloId));
         setAlunos(data);
       } catch {
-        toast.error("Erro ao carregar alunos");
+        toast.error("Erro ao carregar alunos", { id: "erroCarreAluns" });
       } finally {
         setLoading(false);
       }

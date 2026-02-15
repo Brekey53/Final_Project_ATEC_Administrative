@@ -4,18 +4,20 @@ import toast from "react-hot-toast";
 import {
   getModulo,
   updateModulo,
-  type Modulos,
+  type ModulosEdit,
 } from "../../services/modules/ModuleService";
 
 export default function EditModule() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<Modulos>({
+  const [formData, setFormData] = useState<ModulosEdit>({
     idModulo: 0,
     codigoIdentificacao: "",
     nome: "",
     horasTotais: 0,
     creditos: 0,
+    idTipoMateria: 0,
+    nomeTipoMateria: "",
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -29,7 +31,9 @@ export default function EditModule() {
 
         setFormData(res);
       } catch (err) {
-        toast.error("Erro ao carregar dados do módulo.");
+        toast.error("Erro ao carregar dados do módulo.", {
+          id: "erro-modulos",
+        });
         navigate("/gerir-modulos");
       } finally {
         setFetching(false);
@@ -60,10 +64,12 @@ export default function EditModule() {
 
     try {
       await updateModulo(id, formData);
-      toast.success("Módulo atualizado com sucesso!");
+      toast.success("Módulo atualizado com sucesso!", {id: "sucessAtualizarModulos"});
       navigate("/gerir-modulos");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar módulo.");
+      toast.error(err.response?.data?.message || "Erro ao atualizar módulo.", {
+        id: "erro-gerir-modulos",
+      });
     } finally {
       setLoading(false);
     }
@@ -166,6 +172,21 @@ export default function EditModule() {
                   min="0"
                   required
                 />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-8 mb-3">
+                <label className="form-label fw-bold">
+                  Tipo de Matéria
+                </label>
+                <input
+                  type="text"
+                  name="nomeTipoMateria"
+                  className="form-control text-muted bg-light"
+                  value={formData.nomeTipoMateria}
+                  disabled
+                />
+                <small className="text-muted">Não é possível alterar para não comprometer módulos de turmas atuais</small>
               </div>
             </div>
 

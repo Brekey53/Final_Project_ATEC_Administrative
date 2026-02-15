@@ -17,8 +17,18 @@ export type Curso = {
   nomeArea: string;
 };
 
+export type AreaCurso = {
+  idArea: number;
+  nome: string;
+};
+
 export async function getCursos(): Promise<Curso[]> {
   const res = await axios.get(`${API_BASE_URL}/cursos`);
+  return res.data;
+}
+
+export async function getAreaCursos(): Promise<AreaCurso[]> {
+  const res = await axios.get("/Cursos/areaCursos");
   return res.data;
 }
 
@@ -46,7 +56,10 @@ export async function updateCurso(
   data: {
     nome: string;
     idArea: number;
-    moduloIds: number[];
+    modulos: {
+      idModulo: number;
+      prioridade: number;
+    }[];
   },
 ) {
   const res = await axios.put(`${API_BASE_URL}/cursos/${idCurso}`, data);

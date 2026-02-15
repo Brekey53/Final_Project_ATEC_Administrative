@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
@@ -6,6 +6,7 @@ using ProjetoAdministracaoEscola.ModelsDTO.Sala;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TipoSalasController : ControllerBase
@@ -17,7 +18,18 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de todos os tipos de sala.
+        /// </summary>
+        /// <remarks>
+        /// Os tipos de sala são devolvidos ordenados alfabeticamente pelo nome.
+        /// </remarks>
+        /// <returns>
+        /// Lista de <see cref="TipoSalaDTO"/>.
+        /// </returns>
+        /// <response code="200">Lista de tipos de sala devolvida com sucesso.</response>
         // GET: api/tipo-salas
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TipoSalaDTO>>> GetTipoSalas()
         {

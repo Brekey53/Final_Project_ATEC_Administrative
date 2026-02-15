@@ -9,6 +9,16 @@ export interface Modulos {
   creditos: number;
 }
 
+export interface ModulosEdit {
+  idModulo: number;
+  codigoIdentificacao: string;
+  nome: string;
+  horasTotais: number;
+  creditos: number;
+  idTipoMateria: number;
+  nomeTipoMateria: string;
+}
+
 export async function getModulos(): Promise<Modulos[]> {
   const res = await axios.get(`${API_BASE_URL}/modulos`);
 
@@ -29,7 +39,12 @@ export async function postNewModulo(data: any) {
   return axios.post(`${API_BASE_URL}/modulos`, data);
 }
 
-export async function updateModulo(idModulo: string, data: any){
+export async function updateModulo(idModulo: string, data: any) {
   const res = await axios.put(`${API_BASE_URL}/modulos/${idModulo}`, data);
+  return res.data;
+}
+
+export async function getTiposMateria() {
+  const res = await axios.get(`${API_BASE_URL}/modulos/tiposmateria`);
   return res.data;
 }

@@ -1,18 +1,15 @@
-﻿using Humanizer;
-using iText.Commons.Actions.Contexts;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.DisponibilidadeFormador;
 using ProjetoAdministracaoEscola.ModelsDTO.DisponibilidadeFormador.Request;
-using ProjetoAdministracaoEscola.ModelsDTO.Horario;
 using System.Security.Claims;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class DisponibilidadeFormadorController : ControllerBase
@@ -24,12 +21,26 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém a lista de disponibilidades do formador.
+        /// </summary>
+        /// <remarks>
+        /// O utilizador autenticado é identificado através do claim NameIdentifier.
+        /// Apenas são devolvidas as disponibilidades associadas ao formador correspondente.
+        /// </remarks>
+        /// <returns>
+        /// 200 OK com a lista de disponibilidades;
+        /// 401 Unauthorized se o utilizador não estiver autenticado;
+        /// 400 BadRequest se o formador ainda não tiver disponibilidades registadas.
+        /// </returns>
         // GET: api/disponibilidadeformador
+        [Authorize(Policy = "FormadorOuAdminOuAdministrativo")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DisponibilidadeFormadorDTO>>> GetDisponibilidadeFormador()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) return Unauthorized();
+            if (userIdClaim == null) 
+                return Unauthorized(new {messsage = "Utilizador não autorizado"});
 
             int userId = int.Parse(userIdClaim);
 
@@ -48,11 +59,17 @@ namespace ProjetoAdministracaoEscola.Controllers
                     Data = df.DataDisponivel,
                     HoraInicio = df.HoraInicio,
                     HoraFim = df.HoraFim,
-                }
-                )
+                    EstaMarcado = _context.Horarios.Any(h =>
+                        h.IdFormador == df.IdFormador &&
+                        h.Data == df.DataDisponivel &&
+                        h.HoraInicio == df.HoraInicio &&
+                        h.HoraFim == df.HoraFim
+                    )
+                })
                 .ToListAsync();
 
-            if(disponibilidadeFormador == null)
+
+            if (disponibilidadeFormador == null)
             {
                 return BadRequest(new {message = "Ainda não marcou nenhuma disponibilidade"});
             }
@@ -60,11 +77,31 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(disponibilidadeFormador);
         }
 
+        /// <summary>
+        /// Adiciona uma nova disponibilidade para o formador autenticado.
+        /// </summary>
+        /// <param name="dto">
+        /// Dados da disponibilidade incluindo data, hora de início e hora de fim.
+        /// </param>
+        /// <remarks>
+        /// Valida:
+        /// - Duração mínima de 1 hora;
+        /// - Conflitos com disponibilidades já existentes.
+        /// </remarks>
+        /// <returns>
+        /// 200 OK com a disponibilidade criada;
+        /// 400 BadRequest se existir conflito de horários ou dados inválidos;
+        /// 401 Unauthorized se o utilizador não estiver autenticado
+        /// ou não estiver associado a um formador.
+        /// </returns>
+        [Authorize(Policy = "Formador")]
         [HttpPost]
-        public async Task<ActionResult<DisponibilidadeFormador>> AtualizarDisponibilidadeFormador([FromBody] AdicionarDisponibilidadeFormadorDTO dto)
+        public async Task<ActionResult<DisponibilidadeFormador>> AtualizarDisponibilidadeFormador(
+            [FromBody] AdicionarDisponibilidadeFormadorDTO dto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) return Unauthorized();
+            if (userIdClaim == null) 
+                return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
 
@@ -73,6 +110,11 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .Where(f => f.IdUtilizador == userId)
                 .Select(f => f.IdFormador)
                 .FirstOrDefaultAsync();
+
+            if(formadorId == 0)
+            {
+                return Unauthorized( new { message = "Utilizador não é formador"});
+            }
 
             DateOnly data = DateOnly.Parse(dto.Data);
 
@@ -110,11 +152,38 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Erro ao gravar na BD: " + ex.Message });
+                return BadRequest(new { message = "Erro ao gravar na BD" });
             }
             return Ok(novaDisponibilidade);
         }
 
+        /// <summary>
+        /// Adiciona disponibilidades para o formador autenticado
+        /// num intervalo de datas e horário definido.
+        /// </summary>
+        /// <param name="dto">
+        /// Objeto com a data de início, data de fim,
+        /// hora de início e hora de fim da disponibilidade.
+        /// </param>
+        /// <remarks>
+        /// Este endpoint:
+        /// - Identifica o formador através do utilizador autenticado;
+        /// - Valida se o utilizador está associado a um formador;
+        /// - Valida o formato das datas e horas;
+        /// - Garante que a data de fim é posterior à data de início;
+        /// - Garante que a hora de fim é posterior à hora de início;
+        /// - Impõe duração mínima de 1 hora;
+        /// - Restringe o horário entre as 08h e as 23h;
+        /// - Não marca fins de semana;
+        /// - Impede conflitos com disponibilidades já existentes;
+        /// - Cria múltiplos registos, um por cada dia útil no intervalo.
+        /// </remarks>
+        /// <returns>
+        /// 200 OK com mensagem de sucesso e total de disponibilidades criadas;
+        /// 400 BadRequest se existirem dados inválidos, conflitos ou ausência de dias úteis;
+        /// 401 Unauthorized se o utilizador não estiver autenticado;
+        /// </returns>
+        [Authorize(Policy = "Formador")]
         [HttpPost("inputs")]
         public async Task<IActionResult> AdicionarDisponibilidadeFormador([FromBody] AdicionarDisponibilidadeFormadorInputsDTO dto)
         {
@@ -131,7 +200,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (formadorId == 0)
             {
-                return BadRequest(new { message = "Formador não encontrado." });
+                return BadRequest(new { message = "Utilizador não é formador" });
             }
 
             DateOnly dataInicio, dataFim;
@@ -205,7 +274,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                 });
             }
 
-
             if (!disponibilidades.Any())
             {
                 return BadRequest(new
@@ -223,10 +291,29 @@ namespace ProjetoAdministracaoEscola.Controllers
                 message = "Disponibilidade adicionada com sucesso.",
                 total = disponibilidades.Count
             });
-
         }
 
-
+        /// <summary>
+        /// Remove uma disponibilidade específica do formador.
+        /// </summary>
+        /// <param name="id">
+        /// Identificador da disponibilidade a eliminar.
+        /// </param>
+        /// <remarks>
+        /// Este endpoint:
+        /// - Verifica se a disponibilidade existe;
+        /// - Impede a eliminação caso a data da disponibilidade esteja
+        ///   dentro de um período inferior a um mês a partir da data atual;
+        /// - Impede a eliminação caso já exista um horário associado
+        ///   que colida com a disponibilidade definida;
+        /// - Remove o registo da base de dados caso todas as validações sejam cumpridas.
+        /// </remarks>
+        /// <returns>
+        /// 204 NoContent se a eliminação for bem-sucedida;
+        /// 400 BadRequest se não for permitido eliminar a disponibilidade;
+        /// 404 NotFound se a disponibilidade não existir.
+        /// </returns>
+        [Authorize(Policy = "Formador")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> ApagarDisponibilidadeFormador(int id)
         {

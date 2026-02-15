@@ -7,13 +7,13 @@ public partial class Sala
 {
     public int IdSala { get; set; }
 
-    public int IdTipoSala { get; set; }
-
     public string Descricao { get; set; } = null!;
 
     public int NumMaxAlunos { get; set; }
 
-    public TipoSala IdTipoSalaNavigation { get; set; } = null!;
+    public int IdTipoSala { get; set; }
 
     public virtual ICollection<Horario> Horarios { get; set; } = new List<Horario>();
+
+    public virtual TipoSala IdTipoSalaNavigation { get; set; } = null!;
 }

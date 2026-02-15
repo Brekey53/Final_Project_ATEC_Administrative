@@ -1,6 +1,5 @@
 using iText.IO.Image;
 using iText.Kernel.Colors;
-using iText.Kernel.Events;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
@@ -9,19 +8,19 @@ using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Formador;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
+using ProjetoAdministracaoEscola.ModelsDTO.TipoMateria;
 using ProjetoAdministracaoEscola.ModelsDTO.MobileDTO;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class FormadoresController : ControllerBase
@@ -34,12 +33,17 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém a lista de todos os formadores registados,
+        /// Obtém a lista de todos os formadores registados no sistema.
         /// </summary>
+        /// <remarks>
+        /// Devolve informação resumida em formato DTO,
+        /// incluindo dados pessoais básicos e qualificações.
+        /// </remarks>
         /// <returns>
-        /// Lista de formadores em formato DTO.
+        /// 200 OK com a lista de formadores.
         /// </returns>
         // GET: api/Formadores
+        [Authorize(Policy = "FormadorOuAdminOuAdministrativo")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FormadorDTO>>> GetFormadores()
         {
@@ -61,16 +65,25 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém os dados completos de um formador específico,
-        /// incluindo informação pessoal, qualificações e ficheiros associados.
+        /// Obtém os dados completos de um formador específico.
         /// </summary>
-        /// <param name="id">Id do formador.</param>
+        /// <param name="id">Identificador do formador.</param>
+        /// <remarks>
+        /// Inclui:
+        /// - Dados pessoais;
+        /// - Qualificações;
+        /// - Fotografia (em Base64);
+        /// - Documento PDF (em Base64);
+        /// - Tipos de matéria associados.
+        /// </remarks>
         /// <returns>
-        /// Dados do formador ou NotFound se não existir.
+        /// 200 OK com os dados do formador;
+        /// 404 NotFound se o formador não existir.
         /// </returns>
         // GET: api/Formadores/5
+        //TODO: FALTA  CONFIRMAR AUTHROIZE NESTE
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetFormador(int id) 
+        public async Task<ActionResult<FormadorCompletoDTO>> GetFormador(int id)
         {
             var formador = await _context.Formadores
                 .Include(f => f.IdUtilizadorNavigation)
@@ -78,9 +91,10 @@ namespace ProjetoAdministracaoEscola.Controllers
                     .ThenInclude(ft => ft.TipoMateria)
                 .FirstOrDefaultAsync(f => f.IdFormador == id);
 
-            if (formador == null) return NotFound(new { message = "Formador não encontrado." });
+            if (formador == null)
+                return NotFound(new { message = "Formador não encontrado." });
 
-            var resposta = new
+            var resposta = new FormadorCompletoDTO
             {
                 IdFormador = formador.IdFormador,
                 IdUtilizador = formador.IdUtilizador,
@@ -98,24 +112,29 @@ namespace ProjetoAdministracaoEscola.Controllers
                     ? $"data:image/jpeg;base64,{Convert.ToBase64String(formador.Fotografia)}"
                     : null,
 
-                            AnexoFicheiro = formador.AnexoFicheiro != null
+                AnexoFicheiro = formador.AnexoFicheiro != null
                     ? $"data:application/pdf;base64,{Convert.ToBase64String(formador.AnexoFicheiro)}"
                     : null,
 
-                       
+
                 TiposMateria = formador.FormadoresTipoMaterias
-                    .Select(tm => new
+                    .Select(tm => new TipoMateriaDTO
                     {
-                        tm.IdTipoMateria,
-                        tm.TipoMateria.Tipo
+                        IdTipoMateria = tm.IdTipoMateria,
+                        Tipo = tm.TipoMateria.Tipo
                     })
                     .ToList()
             };
-
-
             return Ok(resposta);
         }
 
+        /// <summary>
+        /// Obtém todos os tipos de matéria disponíveis no sistema.
+        /// </summary>
+        /// <returns>
+        /// 200 OK com a lista de tipos de matéria.
+        /// </returns>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("tiposmateria")]
         public async Task<IActionResult> GetTiposMateria()
         {
@@ -124,7 +143,23 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(tiposMateria);
         }
 
+        /// <summary>
+        /// Gera e descarrega a ficha de registo do formador em formato PDF.
+        /// </summary>
+        /// <param name="id">Id do formador.</param>
+        /// <remarks>
+        /// O documento PDF inclui:
+        /// - Informação pessoal do formador;
+        /// - Fotografia (se existente);
+        /// - Histórico de módulos lecionados agrupados por curso e turma;
+        /// - Numeração de páginas.
+        /// </remarks>
+        /// <returns>
+        /// Ficheiro PDF gerado dinamicamente;
+        /// 404 NotFound se o formador não existir.
+        /// </returns>
         // GET: api/Formadores/5{id}/download-ficha
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}/download-ficha")]
         public async Task<IActionResult> DownloadFicha(int id)
         {
@@ -247,7 +282,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 {
                     // Adicionar uma linha de sub-cabeçalho para o CURSO (ocupa as 2 colunas)
                     Cell cursoHeader = new Cell(1, 2)
-                        .Add(new Paragraph($"CURSO: {grupo.Key.NomeCurso} | TURMA: {grupo.Key.NomeTurma}" ).SetBold())
+                        .Add(new Paragraph($"CURSO: {grupo.Key.NomeCurso} | TURMA: {grupo.Key.NomeTurma}").SetBold())
                         .SetBackgroundColor(new DeviceRgb(240, 240, 240)) // Cinza claro para destaque
                         .SetPaddingLeft(10)
                         .SetPaddingTop(5)
@@ -269,7 +304,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                 document.Add(table);
 
                 int totalPaginas = pdf.GetNumberOfPages();
-                
+
                 for (int i = 1; i <= totalPaginas; i++)
                 {
                     PdfPage page = pdf.GetPage(i);
@@ -282,7 +317,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                         .SetTextAlignment(TextAlignment.CENTER))
                     .Close();
                 }
-
 
                 document.Close();
 
@@ -304,10 +338,11 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// Resultado da operação de criação.
         /// </returns>
         // POST: api/Formadores
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPost]
         public async Task<IActionResult> CreateFormador([FromForm] FormadorCreateDTO dto)
         {
-            
+
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -406,15 +441,25 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Atualiza os dados de um formador existente,
-        /// incluindo informação pessoal, qualificações e ficheiros opcionais.
+        /// Atualiza os dados de um formador existente.
         /// </summary>
         /// <param name="id">Id do formador.</param>
         /// <param name="dto">Dados atualizados do formador.</param>
+        /// <remarks>
+        /// - Atualiza dados pessoais;
+        /// - Atualiza qualificações e IBAN;
+        /// - Permite substituir fotografia e documento;
+        /// - Atualiza associações aos tipos de matéria;
+        /// - Executa dentro de transação.
+        /// </remarks>
         /// <returns>
-        /// Resultado da operação de atualização.
+        /// 200 OK se atualizado com sucesso;
+        /// 404 NotFound se o formador não existir;
+        /// 409 Conflict se o NIF estiver em uso por outro utilizador;
+        /// 400 BadRequest em caso de erro.
         /// </returns>
         // PUT: api/Formadores/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutFormador(int id, [FromForm] FormadorCreateDTO dto)
         {
@@ -467,14 +512,14 @@ namespace ProjetoAdministracaoEscola.Controllers
                 );
 
                 // inserir as novas
-                //foreach (var idTipo in dto)
-                //{
-                //    _context.FormadoresTipoMaterias.Add(new FormadorTipoMateria
-                //    {
-                //        IdFormador = id,
-                //        IdTipoMateria = idTipo
-                //    });
-                //}
+                foreach (var idTipo in dto.TiposMateria.Distinct())
+                {
+                    _context.FormadoresTipoMaterias.Add(new FormadorTipoMateria
+                    {
+                        IdFormador = id,
+                        IdTipoMateria = idTipo
+                    });
+                }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -490,12 +535,18 @@ namespace ProjetoAdministracaoEscola.Controllers
 
 
         /// <summary>
-        /// Remove um formador do sistema.
-        /// A operação falha caso existam dados associados que impeçam a remoção.
+        /// Desativa um formador no sistema (soft delete).
         /// </summary>
-        /// <param name="id">Id do formador a eliminar.</param>
+        /// <param name="id">Identificador do formador.</param>
+        /// <remarks>
+        /// - Impede eliminação caso existam aulas futuras agendadas;
+        /// - Marca o formador e o utilizador associado como inativos;
+        /// - Regista data de desativação.
+        /// </remarks>
         /// <returns>
-        /// NoContent se for removido com sucesso.
+        /// 204 NoContent se desativado com sucesso;
+        /// 400 BadRequest se existirem aulas futuras;
+        /// 404 NotFound se o formador não existir.
         /// </returns>
         // DELETE: api/Formadores/5
         [Authorize(Policy = "AdminOrAdministrativo")]
@@ -503,10 +554,11 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> DeleteFormador(int id)
         {
             var formador = await _context.Formadores
-                .Include(f => f.IdUtilizadorNavigation)
-                .FirstOrDefaultAsync(f => f.IdFormador == id);
+                     .Include(f => f.IdUtilizadorNavigation)
+                     .FirstOrDefaultAsync(f => f.IdFormador == id);
 
-            if (formador == null) return NotFound(new {message = "Formador não encontrado."});
+            if (formador == null)
+                return NotFound(new { message = "Formador não encontrado." });
 
             //Aulas futuras marcadas
             var aulasFuturasMarcadas = await _context.Horarios
@@ -514,9 +566,11 @@ namespace ProjetoAdministracaoEscola.Controllers
                 h.Data > DateOnly.FromDateTime(DateTime.Now));
 
             if (aulasFuturasMarcadas)
-            {
-                return BadRequest(new { message = "Não é possível eliminar o formador pois ele está tem aulas agendadas para o futuro." });
-            }
+                return BadRequest(new
+                {
+                    message = "Não é possível eliminar o formador pois ele está tem aulas " +
+                    "agendadas para o futuro."
+                });
 
             formador.Ativo = false;
             formador.DataDesativacao = DateTime.Now;
@@ -534,12 +588,17 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
         /// <summary>
-        /// Obtém o total de horas lecionadas pelo formador
+        /// Obtém o total de horas lecionadas pelo formador autenticado
         /// durante o mês atual.
         /// </summary>
+        /// <remarks>
+        /// Considera apenas horários anteriores ao dia atual.
+        /// </remarks>
         /// <returns>
-        /// Total de horas lecionadas no mês atual.
+        /// 200 OK com o total de horas;
+        /// 401 Unauthorized se o utilizador não estiver autenticado.
         /// </returns>
+        [Authorize(Policy = "Formador")]
         [HttpGet("mesatual")]
         public async Task<ActionResult<HorasFormadorDTO>> GetHorasMesAtual()
         {
@@ -564,15 +623,16 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new HorasFormadorDTO { TotalHoras = totalHoras });
         }
 
-
         /// <summary>
-        /// Obtém o total de horas lecionadas pelo formador
+        /// Obtém o total de horas lecionadas pelo formador autenticado
         /// durante o mês anterior.
         /// </summary>
         /// <returns>
-        /// Total de horas lecionadas no mês anterior.
+        /// 200 OK com o total de horas;
+        /// 401 Unauthorized se o utilizador não estiver autenticado.
         /// </returns>
         // GET: api/formadores/mesanterior
+        [Authorize(Policy = "Formador")]
         [HttpGet("mesanterior")]
         public async Task<ActionResult<HorasFormadorDTO>> GetHorasMesAnterior()
         {
@@ -597,6 +657,15 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new HorasFormadorDTO { TotalHoras = totalHoras });
         }
 
+        /// <summary>
+        /// Obtém o número total de turmas distintas
+        /// associadas ao formador autenticado.
+        /// </summary>
+        /// <returns>
+        /// Número de turmas distintas;
+        /// 401 Unauthorized se o utilizador não estiver autenticado.
+        /// </returns>
+        [Authorize(Policy = "Formador")]
         [HttpGet("numTurmas")]
         public async Task<int> GetNumTurmasFormador()
         {
@@ -605,9 +674,8 @@ namespace ProjetoAdministracaoEscola.Controllers
             return await _context.TurmaAlocacoes.Where(ta => ta.IdFormador == formadorId).GroupBy(ta => ta.IdTurma).CountAsync();
         }
 
-
         /// <summary>
-        /// Obtém o id do formador com base no token JWT
+        /// Obtém o identificador do formador com base no token JWT
         /// do utilizador autenticado.
         /// </summary>
         /// <returns>
@@ -616,7 +684,8 @@ namespace ProjetoAdministracaoEscola.Controllers
         private async Task<int?> GetFormadorIdFromToken()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) return null;
+            if (userIdClaim == null)
+                return null;
 
             int userId = int.Parse(userIdClaim);
 
@@ -626,6 +695,13 @@ namespace ProjetoAdministracaoEscola.Controllers
                 .FirstOrDefaultAsync();
         }
 
+        /// <summary>
+        /// Retorna um alista de formadores com foto (caso exista),
+        /// para visualização na aplicação mobile
+        /// </summary>
+        /// <returns>
+        /// Retorna lista de formadores
+        /// </returns>
         [HttpGet("com-foto")]
         public async Task<ActionResult<IEnumerable<FormadoresFotosDTO>>> GetFormadoresComFoto()
         {
@@ -648,6 +724,14 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(formadores);
         }
 
+        /// <summary>
+        /// Metodo para retornar a fotografia do formador
+        /// pesquisando pelo id do mesmo
+        /// </summary>
+        /// <param name="id">Id do Formador.</param>
+        /// <returns>
+        /// Retorna foto do formador
+        /// </returns>
         [HttpGet("{id}/foto")]
         public async Task<IActionResult> GetFotoFormador(int id)
         {

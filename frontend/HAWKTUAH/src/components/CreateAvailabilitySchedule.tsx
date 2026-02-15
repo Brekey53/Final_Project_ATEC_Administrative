@@ -26,17 +26,33 @@ export default function CreateAvailabilitySchedule({
     const startISO = `${ev.data}T${ev.horaInicio}`;
     const endISO = `${ev.data}T${ev.horaFim}`;
     const dataEvento = new Date(startISO);
-    const hoje = new Date();
-    hoje.setDate(hoje.getDate() + 1);
-    const dataMarcada = dataEvento < hoje;
 
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const eventoPassado = dataEvento < hoje;
+    const eventoMarcado = ev.estaMarcado;
+
+    let title = "";
+    let color = "";
+
+    if (eventoPassado) {
+      title = "Realizado";
+      color = "#dd4c4c";
+    } else if (eventoMarcado) {
+      title = "Ocupado";
+      color = "#dd4c4c";
+    } else {
+      title = "Disponível";
+      color = "#4caf50";
+    }
     return {
       id: String(ev.id),
       start: startISO,
       end: endISO,
-      title: dataMarcada ? "Realizado" : "Disponível",
-      backgroundColor: dataMarcada ? "#dd4c4c" : "#4caf50",
-      borderColor: dataMarcada ? "#dd4c4c" : "#4caf50",
+      title,
+      backgroundColor: color,
+      borderColor: color,
       display: "block",
     };
   });
@@ -67,6 +83,7 @@ export default function CreateAvailabilitySchedule({
   const dataMarcacaoMinima = new Date();
   dataMarcacaoMinima.setMonth(hoje.getMonth() + 1);
 
+  // Período desativado: da origem até daqui a 1 mês (não permitido marcar)
   const diasPassados = {
     start: "2000-01-01",
     end: dataMarcacaoMinima.toISOString().split("T")[0],
@@ -123,14 +140,14 @@ export default function CreateAvailabilitySchedule({
           const hoje = new Date();
           const dataLimite = new Date();
           dataLimite.setMonth(hoje.getMonth() + 1);
-          if (start < dataLimite) return false;
+          if (start < dataLimite) return false; // Não permitir antes de daqui a 1 mês
 
           const diff = end.getTime() - start.getTime();
           const duracaoMinimaHoras = 1;
           const milissegundosPorHora = 3600000;
-          
+
           if (diff < duracaoMinimaHoras * milissegundosPorHora) {
-            return false;
+            return false; // Mínimo 1 hora
           }
 
           const almocoInicio = new Date(start);

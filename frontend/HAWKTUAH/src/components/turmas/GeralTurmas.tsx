@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import "../../css/layoutTabelas.css";
 import { toast } from "react-hot-toast";
-import { getTurmas, type Turma } from "../../services/turmas/TurmasService";
+import {
+  getTurmasGeralDashboard,
+  type Turma,
+} from "../../services/turmas/TurmasService";
+import { Search } from "lucide-react";
 
 export default function GeralTurmas() {
   const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -13,11 +17,13 @@ export default function GeralTurmas() {
   useEffect(() => {
     async function fetchTurmas() {
       try {
-        const data = await getTurmas();
+        const data = await getTurmasGeralDashboard();
         if (!data) return;
         setTurmas(data);
       } catch (err: any) {
-        toast.error(err || "Erro ao carregar turmas.");
+        toast.error(err || "Erro ao carregar turmas.", {
+          id: "erroGeralTurmas",
+        });
       }
     }
 
@@ -45,23 +51,29 @@ export default function GeralTurmas() {
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
           <h2 className="fw-bold mb-1">Verificar Turmas</h2>
-          <p className="text-muted mb-0">
-            {/* TODO:  ALTERAR O GET PARA MOSTRAR APENAS TURMAS PARA COMEÇAR???*/}
-            Verificar turmas para começar
-          </p>
+          <p className="text-muted mb-0">Verificar turmas para começar</p>
         </div>
       </div>
 
       {/* PESQUISA */}
-      <div className="card shadow-sm border-0 rounded-4 mb-4">
-        <div className="card-body">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Pesquisar turmas (nome, curso)…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          {" "}
+          {/* Pesquisa Input*/}
+          <div className="col-md-12">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -98,24 +110,14 @@ export default function GeralTurmas() {
                 <div className="text-muted">{t.dataFim || "-"}</div>
 
                 {/* Estado */}
-                <div className="text-muted">
-                  <span
-                    className={`badge ${
-                      t.estado === "Para começar"
-                        ? "bg-secondary"
-                        : t.estado === "A decorrer"
-                          ? "bg-primary"
-                          : "bg-success"
-                    }`}
-                  >
-                    {t.estado}
-                  </span>
-                </div>
+                <span className="badge bg-secondary rounded-pill py-1">
+                  Em Breve
+                </span>
               </div>
             ))
           ) : (
             <div className="p-5 text-center text-muted">
-              Nenhuma turma encontrada
+              De momento não existe turmas por começar, volte mais tarde.
             </div>
           )}
         </div>

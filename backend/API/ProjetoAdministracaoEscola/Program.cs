@@ -1,7 +1,4 @@
 using dotenv.net;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Facebook;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Services;
@@ -34,9 +31,18 @@ builder.Services.AddSwaggerGen();
 // Add Authoritazation services
 builder.Services.AddAuthorization(options =>
 {
-    // Define "AdminOrAdministrativo" that we use in controller
     options.AddPolicy("AdminOrAdministrativo", policy =>
-        policy.RequireClaim("tipoUtilizador", "1", "4")); // 1 = Admin, 4 = Administrativo
+        policy.RequireClaim("tipoUtilizador", "1", "4", "6")); // 1 = Admin, 4 = Administrativo, 6 = SuperAdmin
+
+    options.AddPolicy("Formador", policy =>
+        policy.RequireClaim("tipoUtilizador", "2")); // Formadores
+
+    options.AddPolicy("Formando", policy =>
+        policy.RequireClaim("tipoUtilizador", "3")); // Formandos
+
+    options.AddPolicy("FormadorOuAdminOuAdministrativo", policy =>
+        policy.RequireClaim("tipoUtilizador", "1", "2", "4", "6")); 
+        // 1 = Admin 2 = Formador 4 = Administrativo 6 = Superadmin 
 });
 
 // Add Authentication services
@@ -84,6 +90,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<JWTService>();
 
 builder.Services.AddMemoryCache();
+
+builder.Services.AddScoped<HorarioGeradorService>();
 
 var app = builder.Build();
 

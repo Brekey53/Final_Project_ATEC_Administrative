@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import { isDataFimValida } from "../../utils/dataUtils";
 import {
   postNewTurma,
   type Turma,
+  type CreateTurmaDTO,
   getCursos,
+  getMetodologias,
 } from "../../services/turmas/TurmasService";
 import type { Curso } from "../../services/cursos/CursosService";
 
 export default function AddNewTurma() {
   const navigate = useNavigate();
   const [cursos, setCursos] = useState<Curso[]>([]);
+  const [metedologia, setMetedologia] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
@@ -22,15 +26,21 @@ export default function AddNewTurma() {
     dataFim: "",
     nomeCurso: "",
     estado: "A decorrer", // Valor ficticio pois é trarado no backend
+    idMetodologia: 0,
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const cursosRes = await getCursos();
+        const [cursosRes, metedologiaRes] = await Promise.all([
+          getCursos(),
+          getMetodologias(),
+        ]);
+
         setCursos(cursosRes);
+        setMetedologia(metedologiaRes);
       } catch (err) {
-        toast.error("Erro ao carregar dados da turma.");
+        toast.error("Erro ao carregar dados da turma.", { id: "errLiftTurma" });
         navigate("/turmas");
       } finally {
         setFetching(false);
@@ -45,6 +55,7 @@ export default function AddNewTurma() {
   ) => {
     const { name, value } = e.target;
 
+    // Preencher nomeCurso para o backend (não editável pelo utilizador)
     if (name == "idCurso") {
       const cursoId = Number(value);
       const cursoSelecionado = cursos.find((c) => c.idCurso === cursoId);
@@ -66,26 +77,34 @@ export default function AddNewTurma() {
     e.preventDefault();
 
     if (!formData.idCurso || !formData.nomeTurma) {
-      toast.error("Preencha todos os campos obrigatórios.");
+      toast.error("Preencha todos os campos obrigatórios.", { id: "erroFillTudo" });
+      return;
+    }
+
+    if (formData.dataInicio && formData.dataFim && !isDataFimValida(formData.dataInicio, formData.dataFim)) {
+      toast.error("A data de fim deve ser igual ou posterior à data de início.", {
+        id: "erroDataFim",
+      });
       return;
     }
 
     setLoading(true);
 
-    const data = new FormData();
-    data.append("NomeTurma", formData.nomeTurma);
-    data.append("IdCurso", formData.idCurso.toString());
-    data.append("DataInicio", formData.dataInicio);
-    data.append("DataFim", formData.dataFim);
-    data.append("NomeCurso", formData.nomeCurso || "");
-    data.append("Estado", formData.estado || "A decorrer");
+    const data: CreateTurmaDTO = {
+      nomeTurma: formData.nomeTurma,
+      idCurso: formData.idCurso,
+      dataInicio: formData.dataInicio,
+      dataFim: formData.dataFim,
+      nomeCurso: formData.nomeCurso,
+      idMetodologia: formData.idMetodologia,
+    } 
 
     try {
       await postNewTurma(data);
-      toast.success("Turma criada com sucesso!");
+      toast.success("Turma criada com sucesso!", { id: "successTurmaCriada" });
       navigate("/turmas");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao criar turma.");
+      toast.error(err.response?.data?.message || "Erro ao criar turma.", { id: "erroInspCriarTurma" });
     } finally {
       setLoading(false);
     }
@@ -186,7 +205,7 @@ export default function AddNewTurma() {
               </div>
 
               {/* Datas */}
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label fw-semibold">Data de Início</label>
                 <input
                   type="date"
@@ -194,11 +213,12 @@ export default function AddNewTurma() {
                   className="form-control"
                   value={formData.dataInicio}
                   onChange={handleChange}
+                  max={formData.dataFim || undefined}
                   required
                 />
               </div>
 
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label fw-semibold">Data de Fim</label>
                 <input
                   type="date"
@@ -206,8 +226,29 @@ export default function AddNewTurma() {
                   className="form-control"
                   value={formData.dataFim}
                   onChange={handleChange}
+                  min={formData.dataInicio || undefined}
                   required
                 />
+              </div>
+
+              <div className="col-md-4 mb-3">
+                <label className="form-label fw-semibold">
+                  Metodologia turma
+                </label>
+                <select
+                  name="idMetodologia"
+                  className="form-control form-select-sg"
+                  value={formData.idMetodologia}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Selecione uma metodologia...</option>
+                  {metedologia.map((m) => (
+                    <option key={m.idMetodologia} value={m.idMetodologia}>
+                      {m.nome}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

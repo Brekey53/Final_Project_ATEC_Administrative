@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import FotoPlaceholder from "../../img/avatar.png";
 
 import {
   getUtilizador,
   updateUtilizador,
+  type EditUtilizador,
 } from "../../services/users/UserService";
+import { authService } from "../../auth/AuthService";
 
 export default function EditUser() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const user = authService.decodeToken();
+  const isSuperAdmin = Number(user?.tipoUtilizador) === 6;
+  const isAdmin = Number(user?.tipoUtilizador) === 1;
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<EditUtilizador>({
     email: "",
     nome: "",
     nif: "",
@@ -21,22 +25,19 @@ export default function EditUser() {
     dataNascimento: "",
     sexo: "Masculino",
     morada: "",
-    fotografia: null as File | null,
-    documento: null as File | null,
+    ativo: true,
   });
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [fotoPreview, setFotoPreview] = useState<string>(FotoPlaceholder);
-  const [documentPreview, setDocumentPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
       try {
-        const res = await getUtilizador(id);
-        const u = res;
+        const u = await getUtilizador(id);
+
         setFormData({
           email: u.email ?? "",
           nome: u.nome ?? "",
@@ -44,23 +45,15 @@ export default function EditUser() {
           telefone: u.telefone ?? "",
           IdTipoUtilizador: Number(u.idTipoUtilizador),
           dataNascimento: u.dataNascimento?.split("T")[0] ?? "",
-          sexo: u.sexo,
+          sexo: u.sexo ?? "Masculino",
           morada: u.morada ?? "",
-          fotografia: null,
-          documento: null,
+          ativo: u.ativo,
         });
-
-        if (u.fotografia) {
-          setFotoPreview(u.fotografia);
-        }
-
-        if (u.anexoFicheiro) {
-          setDocumentPreview(u.anexoFicheiro);
-        }
       } catch (err: any) {
         toast.error(
           err.response?.data?.message ||
             "Erro ao carregar dados do utilizador.",
+          { id: "erro-dados-utilizador" },
         );
       } finally {
         setFetching(false);
@@ -75,25 +68,10 @@ export default function EditUser() {
   ) => {
     const { name, value } = e.target;
 
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: name === "IdTipoUtilizador" ? Number(value) : value,
-    });
-  };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    if (!files || !files[0]) return;
-
-    const file = files[0];
-    setFormData({ ...formData, [name]: file });
-
-    const previewUrl = URL.createObjectURL(file);
-
-    if (name === "fotografia") {
-      setFotoPreview(previewUrl);
-    } else if (name === "documento") {
-      setDocumentPreview(previewUrl);
-    }
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,52 +88,16 @@ export default function EditUser() {
     data.append("DataNascimento", formData.dataNascimento);
     data.append("Sexo", formData.sexo);
     data.append("Morada", formData.morada);
-
-    // Ficheiros: Só anexar se forem novos (instância de File)
-    if (formData.fotografia instanceof File) {
-      data.append("Fotografia", formData.fotografia);
-    }
-    if (formData.documento instanceof File) {
-      data.append("Documento", formData.documento);
-    }
+    data.append("Ativo", formData.ativo ? "true" : "false");
 
     try {
       await updateUtilizador(id, data);
-      toast.success("Perfil do Utilizador atualizado!");
+      toast.success("Perfil do Utilizador atualizado!", { id: "successPerfilAtualizado" });
       navigate(-1); // Volta para a listagem
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar dados.");
+      toast.error(err.response?.data?.message || "Erro ao atualizar dados.", { id: "erro-atualizar-dados" });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleOpenDocument = () => {
-    if (!documentPreview) return;
-
-    try {
-      // Extrair apenas os dados base64 (removendo o prefixo data:application/pdf;base64,)
-      const base64Parts = documentPreview.split(",");
-      const base64Data =
-        base64Parts.length > 1 ? base64Parts[1] : base64Parts[0];
-
-      // Converter base64 para binário
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-
-      // Criar o Blob e o URL temporário
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      const fileURL = URL.createObjectURL(blob);
-
-      // Abrir em nova aba
-      window.open(fileURL, "_blank");
-    } catch (error) {
-      toast.error("Não foi possível abrir o documento.");
-      console.error(error);
     }
   };
 
@@ -241,7 +183,7 @@ export default function EditUser() {
                 />
               </div>
 
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label">Telefone</label>
                 <input
                   type="text"
@@ -252,7 +194,7 @@ export default function EditUser() {
                 />
               </div>
 
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label">Tipo Utilizador</label>
                 <select
                   name="IdTipoUtilizador"
@@ -260,12 +202,32 @@ export default function EditUser() {
                   value={formData.IdTipoUtilizador}
                   onChange={handleChange}
                   required
-                >
-                  <option value={1}>Admin</option>
+                >isSuperAdmin
+                  {isSuperAdmin && <option value={1}>Admin</option>}
+
                   <option value={2}>Formador</option>
                   <option value={3}>Formando</option>
-                  <option value={4}>Administrativo</option>
+                  {isAdmin &&<option value={4}>Administrativo</option> }
                   <option value={5}>Geral</option>
+                  {isSuperAdmin && <option value={6}>SuperAdmin</option>}
+                </select>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <label className="form-label">Status Ativação de Conta</label>
+                <select
+                  name="ativo"
+                  className="form-select"
+                  value={formData.ativo.toString()}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      ativo: e.target.value === "true",
+                    }))
+                  }
+                >
+                  <option value="false">Desativada</option>
+                  <option value="true">Ativa</option>
                 </select>
               </div>
 

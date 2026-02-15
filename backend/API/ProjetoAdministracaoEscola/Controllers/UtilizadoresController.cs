@@ -1,20 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UtilizadoresController : ControllerBase
@@ -26,47 +19,104 @@ namespace ProjetoAdministracaoEscola.Controllers
             _context = context;
         }
 
-        // GET: api/Utilizadores
+        /// <summary>
+        /// Obtém a lista de todos os utilizadores registados no sistema.
+        /// </summary>
+        /// <remarks>
+        /// Para cada utilizador são devolvidos:
+        /// - Dados pessoais básicos
+        /// - Tipo de utilizador (Admin, Formador, Formando, Administrativo, Geral)
+        /// - Estado de ativação
+        /// 
+        /// A lista é devolvida ordenada alfabeticamente pelo nome.
+        /// </remarks>
+        /// <returns>
+        /// Lista de <see cref="UtilizadorDTO"/>.
+        /// </returns>
+        /// <response code="200">Lista devolvida com sucesso.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetUtilizadores()
+        public async Task<ActionResult<IEnumerable<UtilizadorDTO>>> GetUtilizadores()
         {
             return await _context.Utilizadores
                 .Include(u => u.IdTipoUtilizadorNavigation)
-                .Select(u => new
+                .Select(u => new UtilizadorDTO
                 {
-                    idUtilizador = u.IdUtilizador,
-                    nome = u.Nome,
-                    email = u.Email,
-                    telefone = u.Telefone,
-                    nif = u.Nif,
-                    tipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador // Admin, Formador, Formando, Administrativo, Geral
+                    IdUtilizador = u.IdUtilizador,
+                    Nome = u.Nome,
+                    Email = u.Email,
+                    Telefone = u.Telefone,
+                    Nif = u.Nif,
+                    TipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador, // Admin, Formador, Formando, Administrativo, Geral,
+                    Ativo = u.Ativo
                 })
-                .OrderBy(u => u.nome)
+                .OrderBy(u => u.Nome)
                 .ToListAsync();
         }
 
-
-
-        // GET: api/Utilizadores/5
+        /// <summary>
+        /// Obtém os dados de um utilizador específico através do seu identificador.
+        /// </summary>
+        /// <param name="id">Identificador do utilizador.</param>
+        /// <returns>
+        /// Entidade <see cref="UtilizadorEditDTO"/> correspondente.
+        /// </returns>
+        /// <response code="200">Utilizador encontrado.</response>
+        /// <response code="404">Utilizador não encontrado.</response>
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Utilizador>> GetUtilizador(int id)
+        public async Task<ActionResult<UtilizadorEditDTO>> GetUtilizador(int id)
         {
-            var utilizador = await _context.Utilizadores.FindAsync(id);
+            var dto = await _context.Utilizadores
+                .AsNoTracking()
+                .Where(u => u.IdUtilizador == id)
+                .Select(u => new UtilizadorEditDTO
+                {
+                    IdUtilizador = u.IdUtilizador,
+                    Email = u.Email,
+                    NomeCompleto = u.Nome,
+                    NIF = u.Nif,
+                    Sexo = u.Sexo,
+                    DataNascimento = u.DataNascimento,
+                    Telefone = u.Telefone,
+                    TipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador,
+                    Ativo = u.Ativo,
+                    Morada = u.Morada
+                })
+                .FirstOrDefaultAsync();
 
-            if (utilizador == null)
-            {
+            if (dto == null)
                 return NotFound();
-            }
 
-            return utilizador;
+            return Ok(dto);
         }
 
+
+        /// <summary>
+        /// Obtém o perfil completo do utilizador autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Inclui:
+        /// - Dados base do utilizador
+        /// - Informação adicional consoante o tipo:
+        ///     • Formando: IdFormando e Escolaridade
+        ///     • Formador: IdFormador, IBAN e Qualificações
+        /// 
+        /// O formato da resposta varia consoante o tipo de utilizador.
+        /// </remarks>
+        /// <returns>
+        /// Objeto com informação de perfil.
+        /// </returns>
+        /// <response code="200">Perfil devolvido com sucesso.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        /// <response code="404">Utilizador não encontrado.</response>
         ///api/utilizadores/perfil
+        [Authorize]
         [HttpGet("perfil")]
         public async Task<IActionResult> GetMyProfile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) 
+            if (userIdClaim == null)
                 return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
@@ -95,34 +145,53 @@ namespace ProjetoAdministracaoEscola.Controllers
                 user.StatusAtivacao
             };
 
-            // Adicionar dados espec?ficos se for Formando (Tipo 3) ou Formador (Tipo 2)
+            // Adicionar dados especificos se for Formando (Tipo 3) ou Formador (Tipo 2)
             if (user.IdTipoUtilizador == 3 && user.Formandos.Any())
             {
                 var f = user.Formandos.First();
-                return Ok(new { 
-                    baseInfo = perfilBase, 
-                    extra = new { 
-                        f.IdFormando, 
-                        Escolaridade = f.IdEscolaridadeNavigation.Nivel 
-                    } 
+                return Ok(new
+                {
+                    baseInfo = perfilBase,
+                    extra = new
+                    {
+                        f.IdFormando,
+                        Escolaridade = f.IdEscolaridadeNavigation.Nivel
+                    }
                 });
             }
 
             if (user.IdTipoUtilizador == 2 && user.Formadores.Any())
             {
                 var f = user.Formadores.First();
-                return Ok(new { 
-                    baseInfo = perfilBase, 
-                    extra = new { 
-                        f.IdFormador, 
-                        f.Iban, 
-                        f.Qualificacoes 
-                    } });
+                return Ok(new
+                {
+                    baseInfo = perfilBase,
+                    extra = new
+                    {
+                        f.IdFormador,
+                        f.Iban,
+                        f.Qualificacoes
+                    }
+                });
             }
 
             return Ok(perfilBase);
         }
 
+        /// <summary>
+        /// Obtém a fotografia de perfil do utilizador autenticado.
+        /// </summary>
+        /// <remarks>
+        /// A fotografia pode estar associada à entidade Formando ou Formador.
+        /// Se não existir fotografia, é devolvido código 204 (NoContent).
+        /// </remarks>
+        /// <returns>
+        /// Ficheiro binário no formato image/jpeg.
+        /// </returns>
+        /// <response code="200">Fotografia devolvida com sucesso.</response>
+        /// <response code="204">Utilizador sem fotografia associada.</response>
+        /// <response code="401">Utilizador não autenticado.</response>
+        [Authorize]
         [HttpGet("perfil/foto")]
         public async Task<IActionResult> GetFotoPerfil()
         {
@@ -149,39 +218,154 @@ namespace ProjetoAdministracaoEscola.Controllers
             return File(foto, "image/jpeg");
         }
 
-
-
-
-
+        /// <summary>
+        /// Atualiza os dados de um utilizador existente.
+        /// </summary>
+        /// <param name="id">Identificador do utilizador.</param>
+        /// <param name="dto">Objeto com os novos dados.</param>
+        /// <remarks>
+        /// Regras aplicadas:
+        /// - Apenas administradores podem atribuir perfil de Administrador.
+        /// - Se o estado "Ativo" for alterado, é sincronizado com Formador/Formando.
+        /// - Se o tipo de utilizador for alterado:
+        ///     • Desativa perfis anteriores
+        ///     • Ativa ou cria perfil correspondente ao novo tipo
+        /// 
+        /// Consome multipart/form-data.
+        /// </remarks>
+        /// <returns>
+        /// Resultado da operação.
+        /// </returns>
+        /// <response code="204">Atualização realizada com sucesso.</response>
+        /// <response code="403">Sem permissões suficientes.</response>
+        /// <response code="404">Utilizador não encontrado.</response>
         // PUT: api/Utilizadores/5
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto)
-        {
-            var user = await _context.Utilizadores.FindAsync(id);
-            if (user == null) return NotFound();
+        public async Task<IActionResult> PutUtilizador(int id, [FromForm] UtilizadorUpdateDTO dto) { 
+  
+            var utilizador = await _context.Utilizadores.FindAsync(id);
+            if (utilizador == null)
+                return NotFound();
 
-            user.Nome = dto.Nome;
-            user.Telefone = dto.Telefone;
-            user.Morada = dto.Morada;
-            user.Sexo = dto.Sexo;
-            user.DataNascimento = dto.DataNascimento;
-            user.IdTipoUtilizador = dto.IdTipoUtilizador;
+            // Tipo do utilizador que envia pedido
+            var tipoClaim = User.Claims
+                .FirstOrDefault(c => c.Type == "tipoUtilizador")
+                ?.Value;
+
+            if (!int.TryParse(tipoClaim, out int tipoLogado))
+                return Forbid("Token inválido.");
+
+            // Proibir administrativos de mudar para admin
+            if (dto.IdTipoUtilizador == 1 && tipoLogado != 1)
+                return Forbid("Não tem permissões para atribuir perfil de Administrador.");
+
+            // Guardar estado anterior
+            var tipoAntigo = utilizador.IdTipoUtilizador;
+            var ativoAntigo = utilizador.Ativo;
+
+            // Atualizar utilizador
+            utilizador.Nome = dto.Nome;
+            utilizador.Nif = dto.Nif;
+            utilizador.Telefone = dto.Telefone;
+            utilizador.Morada = dto.Morada;
+            utilizador.Sexo = dto.Sexo;
+            utilizador.DataNascimento = dto.DataNascimento;
+            utilizador.IdTipoUtilizador = dto.IdTipoUtilizador;
+            utilizador.Ativo = dto.Ativo;
+
+            // Se mudou o ATIVO
+            if (ativoAntigo != dto.Ativo)
+            {
+                // Atualizar na tabela formandos
+                var formando = await _context.Formandos
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formando != null)
+                    formando.Ativo = dto.Ativo;
+
+                // // Atualizar na tabela Formador
+                var formador = await _context.Formadores
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formador != null)
+                    formador.Ativo = dto.Ativo;
+            }
+
+            // Se mudou o TIPO DE UTILIZADOR
+            if (tipoAntigo != dto.IdTipoUtilizador)
+            {
+                // Desativar em ambas
+                var formando = await _context.Formandos
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formando != null)
+                    formando.Ativo = false;
+
+                var formador = await _context.Formadores
+                    .FirstOrDefaultAsync(f => f.IdUtilizadorNavigation.IdUtilizador == id);
+                if (formador != null)
+                    formador.Ativo = false;
+
+                // Ativar na tabela correspondente
+                if (dto.IdTipoUtilizador == 3) // Formando
+                {
+                    if (formando != null)
+                        formando.Ativo = true;
+                    else
+                        _context.Formandos.Add(new Formando
+                        {
+                            IdUtilizador = id,
+                            Ativo = true
+                        });
+                }
+
+                if (dto.IdTipoUtilizador == 2) // Formador
+                {
+                    if (formador != null)
+                        formador.Ativo = true;
+                    else
+                        _context.Formadores.Add(new Formador
+                        {
+                            IdUtilizador = id,
+                            Ativo = true
+                        });
+                }
+            }
 
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
+        /// <summary>
+        /// Cria um novo utilizador através de criação administrativa.
+        /// </summary>
+        /// <param name="dto">Dados do utilizador a criar.</param>
+        /// <remarks>
+        /// Valida:
+        /// - Email único
+        /// - NIF único
+        /// 
+        /// A password é armazenada com hash BCrypt.
+        /// O utilizador é criado com estado de ativação ativo.
+        /// </remarks>
+        /// <returns>
+        /// Identificação do novo utilizador.
+        /// </returns>
+        /// <response code="201">Utilizador criado com sucesso.</response>
+        /// <response code="409">Email ou NIF já registado.</response>
         // POST: api/Utilizadores/new-user
-        [HttpPost ("new-user")]
+        [Authorize(Policy = "AdminOrAdministrativo")]
+        [HttpPost("new-user")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
         {
-            // Verificar se email j? existe
-            var emailExists = await _context.Utilizadores
-                .AnyAsync(u => u.Email == dto.Email);
+            // Verificar se email já existe
+            if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
+                return Conflict(new { message = "Email já registado" });
 
-            if (emailExists)
-                return BadRequest(new { message = "Email j? registado." });
+            // Verificar se o NIF já se encontra na BD
+            if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
+            {
+                return Conflict(new { message = "NIF já em uso" });
+            }
 
             // Criar utilizador
             var user = new Utilizador
@@ -209,14 +393,33 @@ namespace ProjetoAdministracaoEscola.Controllers
         }
 
 
-
+        /// <summary>
+        /// Regista um novo utilizador através de auto-registo público.
+        /// </summary>
+        /// <param name="dto">Dados de registo.</param>
+        /// <remarks>
+        /// Regras:
+        /// - Email e NIF devem ser únicos.
+        /// - O utilizador é criado com tipo "Geral".
+        /// - A conta é criada com ativação pendente.
+        /// - A password é armazenada com hash BCrypt.
+        /// </remarks>
+        /// <returns>
+        /// Resultado do registo.
+        /// </returns>
+        /// <response code="200">Utilizador registado com sucesso.</response>
+        /// <response code="409">Email ou NIF já existente.</response>
         // POST: api/Utilizadores
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult> PostUtilizador(UtilizadorRegisterDTO dto)
         {
             if (await _context.Utilizadores.AnyAsync(u => u.Email == dto.Email))
-                return Conflict("Email j? registado");
+                return Conflict(new { message = "Email já registado" });
+            
+            if (await _context.Utilizadores.AnyAsync(u => u.Nif == dto.Nif))
+            {
+                return Conflict(new { message = "NIF já em uso" });
+            }
 
             var newUser = new Utilizador
             {
@@ -226,6 +429,9 @@ namespace ProjetoAdministracaoEscola.Controllers
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 IdTipoUtilizador = 5, // criar como geral
                 Email = dto.Email,
+                Morada = dto.Morada,
+                Telefone = dto.Telefone,
+                Sexo = dto.Sexo,
                 StatusAtivacao = false
             };
 
@@ -235,17 +441,50 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new { message = "Utilizador registado com sucesso", userId = newUser.IdUtilizador });
         }
 
+        /// <summary>
+        /// Desativa (soft delete) um utilizador do sistema.
+        /// </summary>
+        /// <param name="id">Id do utilizador a desativar.</param>
+        /// <remarks>
+        /// Regras aplicadas:
+        /// - O utilizador autenticado não pode eliminar a própria conta.
+        /// - Apenas utilizadores com política "AdminOrAdministrativo" podem executar esta operação.
+        /// 
+        /// Caso o utilizador seja:
+        ///Formador:
+        ///     - Não pode ter aulas futuras agendadas.
+        ///     - Caso não existam impedimentos, o perfil de formador é desativado.
+        /// 
+        ///Formando:
+        ///     - Não pode estar inscrito em turmas com aulas futuras agendadas.
+        ///     - Caso não existam impedimentos, o perfil de formando é desativado.
+        /// 
+        /// A operação é um soft delete:
+        /// - A propriedade <c>Ativo</c> é definida como false.
+        /// - A propriedade <c>DataDesativacao</c> é preenchida com a data atual.
+        /// 
+        /// Nenhum registo é fisicamente removido da base de dados.
+        /// </remarks>
+        /// <returns>
+        /// Resultado da operação.
+        /// </returns>
+        /// <response code="204">Utilizador desativado com sucesso.</response>
+        /// <response code="400">
+        /// Violação de regra de negócio (ex: aulas futuras ou tentativa de autoeliminação).
+        /// </response>
+        /// <response code="404">Utilizador não encontrado.</response>
+        /// <response code="403">Acesso negado.</response>
         // DELETE: api/Utilizadores/5
         [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUtilizador(int id)
         {
             // Impedir que o admin se apague a si pr?prio
-            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (currentUserId != null && currentUserId == id.ToString())
             {
-                return BadRequest(new { message = "N?o pode eliminar a sua pr?pria conta." });
+                return BadRequest(new { message = "Não pode eliminar a sua própria conta." });
             }
 
 
@@ -255,13 +494,9 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (utilizador == null)
             {
-                return NotFound(new { message = "Utilizador n?o encontrado." });
+                return NotFound(new { message = "Utilizador não encontrado." });
             }
 
-
-            // Soft Delete
-            utilizador.Ativo = false;
-            utilizador.DataDesativacao = DateTime.Now;
 
             // Caso seja formador desativa
             var formador = await _context.Formadores
@@ -275,7 +510,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
                 if (aulasFuturasMarcadas)
                 {
-                    return BadRequest(new { message = "N?o ? poss?vel eliminar o formador pois ele est? tem aulas agendadas para o futuro." });
+                    return BadRequest(new { message = "Não é possível eliminar o formador pois ele tem aulas agendadas para o futuro." });
                 }
 
                 formador.Ativo = false;
@@ -288,7 +523,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (formando != null)
             {
-                // Verificar se existe alguma insci??o associada
+                // Verificar se existe alguma inscrição associada
                 bool temAulasFuturas = await _context.Inscricoes
                     .Where(i => i.IdFormando == id)
                     .AnyAsync(i => _context.Horarios.Any(h =>
@@ -298,7 +533,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
                 if (temAulasFuturas)
                 {
-                    return BadRequest(new { message = "N?o ? poss?vel eliminar o formando pois ele est? inscrito numa turma com aulas agendadas para o futuro." });
+                    return BadRequest(new { message = "Não é possível eliminar o formando pois ele está inscrito numa turma com aulas agendadas para o futuro." });
                 }
 
 
@@ -307,11 +542,25 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
 
 
+            // Soft Delete
+            utilizador.Ativo = false;
+            utilizador.DataDesativacao = DateTime.Now;
+
+
+
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
+        /// <summary>
+        /// Verifica se um email já se encontra registado no sistema.
+        /// </summary>
+        /// <param name="email">Endereço de email a validar.</param>
+        /// <returns>
+        /// Objeto com booleano.
+        /// </returns>
+        /// <response code="200">Resultado devolvido com sucesso.</response>
         [HttpGet("check-email")]
         public async Task<IActionResult> CheckEmail([FromQuery] string email)
         {
@@ -323,12 +572,23 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(new { existe });
         }
 
-
+        /// <summary>
+        /// Obtém os dados de um utilizador através do email.
+        /// </summary>
+        /// <param name="email">Email do utilizador.</param>
+        /// <remarks>
+        /// Se o utilizador não existir, é devolvido objeto com propriedade "Existe" a false.
+        /// </remarks>
+        /// <returns>
+        /// Dados básicos do utilizador.
+        /// </returns>
+        /// <response code="200">Resultado devolvido com sucesso.</response>
         [HttpGet("details-by-email")]
         public async Task<IActionResult> GetUserDetails(string email)
         {
             var user = await _context.Utilizadores
-                .Select(u => new {
+                .Select(u => new
+                {
                     u.Email,
                     u.Nome,
                     u.Nif,
@@ -345,11 +605,20 @@ namespace ProjetoAdministracaoEscola.Controllers
             return Ok(user);
         }
 
+        /// <summary>
+        /// Obtém o nome de um utilizador através do email.
+        /// </summary>
+        /// <param name="email">Email do utilizador.</param>
+        /// <returns>
+        /// Objeto com email e nome.
+        /// </returns>
+        /// <response code="200">Resultado devolvido com sucesso.</response>
         [HttpGet("name-by-email")]
         public async Task<IActionResult> GetUserName(string email)
         {
             var user = await _context.Utilizadores
-                .Select(u => new {
+                .Select(u => new
+                {
                     u.Email,
                     u.Nome,
                 })
@@ -359,11 +628,5 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(user);
         }
-
-        private bool UtilizadorExists(int id)
-        {
-            return _context.Utilizadores.Any(e => e.IdUtilizador == id);
-        }
-
     }
 }
