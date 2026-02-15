@@ -200,12 +200,12 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             if (moduloDto.HorasTotais <= 0)
             {
-                return BadRequest(new { message = "A carga horária deve ser superior a 0 horas." });
+                return BadRequest(new { message = "A carga horária deve ser no mínimo 1 hora" });
             }
 
-            if (moduloDto.Creditos < 0)
+            if (moduloDto.Creditos <= 0)
             {
-                return BadRequest(new { message = "Os créditos não podem ser valores negativos." });
+                return BadRequest(new { message = "Os créditos têm de ser no mínimo 1" });
             }
 
             var exist = await _context.Modulos.AnyAsync(m => m.CodigoIdentificacao == moduloDto.CodigoIdentificacao);

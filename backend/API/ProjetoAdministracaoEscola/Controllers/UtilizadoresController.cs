@@ -75,11 +75,12 @@ namespace ProjetoAdministracaoEscola.Controllers
                 {
                     IdUtilizador = u.IdUtilizador,
                     Email = u.Email,
-                    NomeCompleto = u.Nome,
+                    Nome = u.Nome,
                     NIF = u.Nif,
                     Sexo = u.Sexo,
                     DataNascimento = u.DataNascimento,
                     Telefone = u.Telefone,
+                    IdTipoUtilizador = u.IdTipoUtilizadorNavigation.IdTipoUtilizador,
                     TipoUtilizador = u.IdTipoUtilizadorNavigation.TipoUtilizador,
                     Ativo = u.Ativo,
                     Morada = u.Morada
