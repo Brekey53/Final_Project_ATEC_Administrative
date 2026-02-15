@@ -1,18 +1,26 @@
 package pt.atec.hawk_portal_app.api
 
+import android.content.Context
+import okhttp3.OkHttpClient
+import pt.atec.hawk_portal_app.dataStore.TokenInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-
 object RetrofitClient {
-    // 10.0.2.2 is localhost for Android Emulator
+
     private const val BASE_URL = "http://10.0.2.2:5056/api/"
 
-    val api: ApiService by lazy {
-        val retrofit = Retrofit.Builder()
+    fun create(context: Context): ApiService {
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor(TokenInterceptor(context))
+            .build()
+
+        return Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        retrofit.create(ApiService::class.java)
+            .create(ApiService::class.java)
     }
 }

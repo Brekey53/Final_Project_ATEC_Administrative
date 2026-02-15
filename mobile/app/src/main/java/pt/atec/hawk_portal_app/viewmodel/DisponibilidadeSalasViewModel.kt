@@ -1,15 +1,18 @@
 package pt.atec.hawk_portal_app.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import pt.atec.hawk_portal_app.api.RetrofitClient.api
+import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.states.DisponibilidadeSalasUiState
 
 
-class DisponibilidadeSalasViewModel : ViewModel() {
+class DisponibilidadeSalasViewModel(application: Application)
+: AndroidViewModel(application)  {
 
     private val _uiState =
         MutableStateFlow<DisponibilidadeSalasUiState>(
@@ -17,6 +20,8 @@ class DisponibilidadeSalasViewModel : ViewModel() {
         )
 
     val uiState = _uiState.asStateFlow()
+
+    private val api = RetrofitClient.create(application)
 
 
     /**

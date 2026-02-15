@@ -1,11 +1,14 @@
 package pt.atec.hawk_portal_app.api
 
+import pt.atec.hawk_portal_app.model.AvaliacaoFormando
 import pt.atec.hawk_portal_app.model.Cursos
 import pt.atec.hawk_portal_app.model.DisponibilidadeSalas
 import pt.atec.hawk_portal_app.model.Formador
 import pt.atec.hawk_portal_app.model.Formando
 import pt.atec.hawk_portal_app.model.LoginRequest
 import pt.atec.hawk_portal_app.model.LoginResponse
+import pt.atec.hawk_portal_app.model.TurmaFormador
+import pt.atec.hawk_portal_app.model.TurmasFormando
 import pt.atec.hawk_portal_app.model.Verify2FARequest
 import pt.atec.hawk_portal_app.model.Verify2FAResponse
 import retrofit2.Response
@@ -52,6 +55,31 @@ interface ApiService {
      */
     @GET("cursos")
     suspend fun getCursos(): Response<List<Cursos>>
+
+    /**
+     * Obtém a lista de avaliacoes de um formando
+     *
+     * @return Response com a lista de avaliacoes
+     */
+    @GET("avaliacoes/formando")
+    suspend fun getAvaliacoes(): Response<List<AvaliacaoFormando>>
+
+    /**
+     * Obtém a lista de turmas com modulos de um formador
+     *
+     * @return Response com lista de turmas e modulos daquele formador
+     */
+    @GET("turmaalocaco/turmas/formador")
+    suspend fun getTurmasFormador(): Response<List<TurmaFormador>>
+
+    /**
+     * Obtém a lista de colegas, professores e modulos de um formando
+     *
+     * @return Response com lista
+     */
+    @GET("turmas/minha-turma")
+    suspend fun getMinhaTurma(): Response<TurmasFormando>
+
 
     /**
      * Autentica um utilizador e devolve os dados de sessão.

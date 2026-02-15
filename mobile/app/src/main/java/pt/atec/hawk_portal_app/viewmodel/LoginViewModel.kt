@@ -1,6 +1,7 @@
 package pt.atec.hawk_portal_app.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,17 +11,20 @@ import pt.atec.hawk_portal_app.model.LoginRequest
 import pt.atec.hawk_portal_app.states.LoginUiState
 
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application)
+    : AndroidViewModel(application){
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
+    private val api = RetrofitClient.create(application)
+
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, message = "")
 
             try {
-                val response = RetrofitClient.api.login(
+                val response = api.login(
                     LoginRequest(email, password)
                 )
 
