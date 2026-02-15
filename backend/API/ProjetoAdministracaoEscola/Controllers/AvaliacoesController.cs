@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
-using ProjetoAdministracaoEscola.ModelsDTO.Avaliacao;
+using ProjetoAdministracaoEscola.ModelsDTO.Avaliacao.Responses;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers

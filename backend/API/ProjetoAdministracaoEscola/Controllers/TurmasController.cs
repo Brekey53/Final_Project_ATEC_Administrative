@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Formador;
-using ProjetoAdministracaoEscola.ModelsDTO.GetMinhaTurma;
-using ProjetoAdministracaoEscola.ModelsDTO.Turma;
+using ProjetoAdministracaoEscola.ModelsDTO.Formador.Responses;
+using ProjetoAdministracaoEscola.ModelsDTO.GetMinhaTurma.Requests;
+using ProjetoAdministracaoEscola.ModelsDTO.Turma.Requests;
+using ProjetoAdministracaoEscola.ModelsDTO.Turma.Responses;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers

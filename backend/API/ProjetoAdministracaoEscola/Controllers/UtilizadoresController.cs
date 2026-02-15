@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO.Users;
+using ProjetoAdministracaoEscola.ModelsDTO.Users.Requests;
+using ProjetoAdministracaoEscola.ModelsDTO.Users.Responses;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers

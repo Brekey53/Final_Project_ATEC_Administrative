@@ -4,14 +4,14 @@ using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
-using iText.Layout.Properties; 
+using iText.Layout.Properties;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO.Formando;
-using ProjetoAdministracaoEscola.ModelsDTO.MobileDTO;
+using ProjetoAdministracaoEscola.ModelsDTO.Formando.Requests;
+using ProjetoAdministracaoEscola.ModelsDTO.MobileDTO.Responses;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {

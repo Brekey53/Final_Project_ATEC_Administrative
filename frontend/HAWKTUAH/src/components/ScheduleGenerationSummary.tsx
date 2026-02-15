@@ -81,7 +81,7 @@ export default function ScheduleGenerationSummary({
                             className={`badge ${
                               item.concluidoComSucesso
                                 ? "bg-success-subtle text-success border border-success"
-                                : "bg-warning-subtle text-warning border border-warning"
+                                : "bg-warning-subtle text-black border border-warning"
                             } rounded-pill`}
                           >
                             {item.horasAgendadas} / {item.horasTotais} h
