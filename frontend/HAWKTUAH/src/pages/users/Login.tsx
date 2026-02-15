@@ -153,6 +153,7 @@ async function handleSubmit(e: React.FormEvent) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="form-control"
+                    required
                   />
                 </div>
                 <div className="mb-1">
@@ -162,6 +163,7 @@ async function handleSubmit(e: React.FormEvent) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="form-control"
+                    required
                   />
                 </div>
                 <div className="mb-3 form-check">
@@ -188,7 +190,7 @@ async function handleSubmit(e: React.FormEvent) {
                 </Link>
                 {error && <p className="text-danger text-center">{error}</p>}
 
-                <button className="btn btn-primary" disabled={loading}>
+                <button className="btn btn-primary" disabled={loading && email.length == 0 && password.length == 0}>
                   {loading ? "Bem vindo, a entrar..." : "Entrar"}
                 </button>
               </form>

@@ -97,6 +97,7 @@ export default function CreateAccount() {
               type="text"
               className="form-control"
               value={name}
+              minLength={8}
               onChange={(e) => setName(e.target.value)}
               required
             />
@@ -113,6 +114,7 @@ export default function CreateAccount() {
                 className="form-control"
                 value={nif}
                 onChange={(e) => setNif(e.target.value)}
+                minLength={9}
                 maxLength={9}
                 required
               />
@@ -128,7 +130,6 @@ export default function CreateAccount() {
                 className="form-control"
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                min={1900}
                 max={getHojeISO()}
                 required
               />
@@ -146,6 +147,7 @@ export default function CreateAccount() {
                 className="form-control"
                 value={telefone}
                 onChange={(e) => setTelefone(e.target.value)}
+                minLength={9}
                 maxLength={9}
                 required
               />
