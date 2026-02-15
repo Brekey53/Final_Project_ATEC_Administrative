@@ -7,31 +7,33 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
-import pt.atec.hawk_portal_app.states.CursosUiState
+import pt.atec.hawk_portal_app.states.TurmasFormadorUiState
 
-class CursosViewModel(application: Application)
-    : AndroidViewModel(application){
-    private val _uiState = MutableStateFlow(CursosUiState())
-    val uiState: StateFlow<CursosUiState> = _uiState
+class TurmasFormadorViewModel(application: Application)
+    : AndroidViewModel(application) {
+
+    private val _uiState = MutableStateFlow(TurmasFormadorUiState())
+    val uiState: StateFlow<TurmasFormadorUiState> = _uiState
 
     private val api = RetrofitClient.create(application)
 
-
-    fun getCursos() {
+    fun getTurmasFormador() {
         viewModelScope.launch {
+
             _uiState.value = _uiState.value.copy(
                 loading = true,
                 message = null
             )
 
             try {
-                val response = api.getCursos()
+
+                val response = api.getTurmasFormador()
 
                 if (response.isSuccessful) {
                     _uiState.value = _uiState.value.copy(
                         loading = false,
                         success = true,
-                        cursos = response.body() ?: emptyList()
+                        turmas = response.body() ?: emptyList()
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(

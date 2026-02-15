@@ -1,36 +1,52 @@
 package pt.atec.hawk_portal_app
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import pt.atec.hawk_portal_app.dataStore.TokenDataStore
 import pt.atec.hawk_portal_app.model.AuthSession
+import pt.atec.hawk_portal_app.ui.screens.avaliacoes.AvaliacoesScreen
 import pt.atec.hawk_portal_app.ui.screens.cursos.CursosScreen
+import pt.atec.hawk_portal_app.ui.screens.dashboard.DashboardFormadoresScreen
+import pt.atec.hawk_portal_app.ui.screens.dashboard.DashboardFormandosScreen
 import pt.atec.hawk_portal_app.ui.screens.dashboard.DashboardScreen
 import pt.atec.hawk_portal_app.ui.screens.disponibilidadeSalas.DisponibilidadeSalasScreen
 import pt.atec.hawk_portal_app.ui.screens.formadores.FormadoresScreen
 import pt.atec.hawk_portal_app.ui.screens.formando.FormandoScreen
 import pt.atec.hawk_portal_app.ui.screens.login.LoginScreen
+import pt.atec.hawk_portal_app.ui.screens.turmas.TurmasFormadorScreen
+import pt.atec.hawk_portal_app.ui.screens.turmas.TurmasFormandosScreen
 import pt.atec.hawk_portal_app.ui.screens.twoFactorAuth.TwoFactorAuthScreen
+import pt.atec.hawk_portal_app.utils.JwtUtils
 
 object Routes {
     const val LOGIN = "login"
     const val TWO_FACTOR = "2fa"
-    const val DASHBOARD = "dashboard"
+    const val DASHBOARDFORMANDOS = "dashboard-formandos"
+    const val DASHBOARDFORMADORES = "dashboard-formadores"
+    const val DASHBOARDADMINS = "dashboard-admins"
     const val CURSOS = "cursos"
     const val FORMADORES = "formadores"
     const val FORMANDOS = "formandos"
     const val DISPONIBILIDADE_SALAS = "disponibilidade-salas"
+    const val AVALIACOES = "avaliacoes"
+    const val TURMASFORMANDO = "turmas-formando"
+    const val TURMASFORMADOR = "turmas-formador"
 }
 
 class MainActivity : FragmentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -44,9 +60,40 @@ class MainActivity : FragmentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
+
     val navController = rememberNavController()
+    val context = LocalContext.current
+
+    var tipo by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(Unit) {
+        val token = TokenDataStore.getTokenOnce(context)
+        tipo = token?.let { JwtUtils.getTipoUtilizador(it) }
+    }
+
+    val isAdmin = tipo in listOf(1, 4, 6)
+    val isFormador = tipo == 2
+    val isFormando = tipo == 3
+
+    // Permissões
+    fun podeVerCursos() = isAdmin || isFormador || isFormando
+    fun podeVerFormandos() = isAdmin
+    fun podeVerFormadores() = isAdmin
+    fun podeVerSalas() = isAdmin || isFormador
+    fun podeVerTurmas() = isFormador || isFormando
+    fun podeVerAvaliacoes() = isFormando
+
+    fun dashboardRoute(): String {
+        return when {
+            isAdmin -> Routes.DASHBOARDADMINS
+            isFormador -> Routes.DASHBOARDFORMADORES
+            isFormando -> Routes.DASHBOARDFORMANDOS
+            else -> Routes.LOGIN
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -62,48 +109,179 @@ fun AppNavigation() {
             )
         }
 
-        composable(Routes.FORMANDOS) {
-            FormandoScreen()
-        }
-
         composable(Routes.TWO_FACTOR) {
             TwoFactorAuthScreen(
-                onVerifySuccess = {
-                    navController.navigate(Routes.DASHBOARD) {
+                onVerifySuccess = { tipoRecebido ->
+
+                    tipo = tipoRecebido
+
+                    navController.navigate(
+                        when (tipoRecebido) {
+                            1, 4, 6 -> Routes.DASHBOARDADMINS
+                            2 -> Routes.DASHBOARDFORMADORES
+                            3 -> Routes.DASHBOARDFORMANDOS
+                            else -> Routes.LOGIN
+                        }
+                    ) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
+                        launchSingleTop = true
                     }
                 },
-                onBackToLogin = {
-                    navController.popBackStack()
-                }
+                onBackToLogin = { navController.popBackStack() }
             )
         }
 
-        composable(Routes.DASHBOARD) {
+
+        composable(Routes.DASHBOARDADMINS) {
             DashboardScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
                 onCursos = { navController.navigate(Routes.CURSOS) },
                 onFormandos = { navController.navigate(Routes.FORMANDOS) },
                 onFormadores = { navController.navigate(Routes.FORMADORES) },
                 onSalas = { navController.navigate(Routes.DISPONIBILIDADE_SALAS) },
                 onLogout = {
                     AuthSession.email = null
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.DASHBOARD) { inclusive = true }
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
+        }
+
+        composable(Routes.DASHBOARDFORMADORES) {
+            DashboardFormadoresScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onTurmas = { navController.navigate(Routes.TURMASFORMADOR) },
+                onSalas = { navController.navigate(Routes.DISPONIBILIDADE_SALAS) },
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
+        }
+
+        composable(Routes.DASHBOARDFORMANDOS) {
+            DashboardFormandosScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onAvaliacoes = { navController.navigate(Routes.AVALIACOES) },
+                onTurmas = { navController.navigate(Routes.TURMASFORMANDO) },
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
+        }
+
+        composable(Routes.CURSOS) {
+            CursosScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onFormandos = if (podeVerFormandos()) { { navController.navigate(Routes.FORMANDOS) } } else null,
+                onFormadores = if (podeVerFormadores()) { { navController.navigate(Routes.FORMADORES) } } else null,
+                onAvaliacoes = if (podeVerAvaliacoes()) { { navController.navigate(Routes.AVALIACOES) } } else null,
+                onSalas = if (podeVerSalas()) { { navController.navigate(Routes.DISPONIBILIDADE_SALAS) } } else null,
+                onTurmas = if (podeVerTurmas()) {
+                    {
+                        if (isFormador)
+                            navController.navigate(Routes.TURMASFORMADOR)
+                        else if (isFormando)
+                            navController.navigate(Routes.TURMASFORMANDO)
                     }
+                } else null,
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
+        }
+
+        composable(Routes.DISPONIBILIDADE_SALAS) {
+            DisponibilidadeSalasScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = if (podeVerCursos()) { { navController.navigate(Routes.CURSOS) } } else null,
+                onFormandos = if (podeVerFormandos()) { { navController.navigate(Routes.FORMANDOS) } } else null,
+                onFormadores = if (podeVerFormadores()) { { navController.navigate(Routes.FORMADORES) } } else null,
+                onSalas = if (podeVerSalas()) { { navController.navigate(Routes.DISPONIBILIDADE_SALAS) } } else null,
+                onTurmas = if (podeVerTurmas()) {
+                    {
+                        if (isFormador)
+                            navController.navigate(Routes.TURMASFORMADOR)
+                        else if (isFormando)
+                            navController.navigate(Routes.TURMASFORMANDO)
+                    }
+                } else null,
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
+        }
+
+        composable(Routes.TURMASFORMADOR) {
+            TurmasFormadorScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onTurmas = { navController.navigate(Routes.TURMASFORMADOR) },
+                onSalas = if (podeVerSalas()) { { navController.navigate(Routes.DISPONIBILIDADE_SALAS) } } else null,
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
+        }
+
+        composable(Routes.TURMASFORMANDO) {
+            TurmasFormandosScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onAvaliacoes = if (podeVerAvaliacoes()) { { navController.navigate(Routes.AVALIACOES) } } else null,
+                onTurmas = { navController.navigate(Routes.TURMASFORMANDO) },
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
+        }
+
+        composable(Routes.AVALIACOES) {
+            AvaliacoesScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onAvaliacoes = { navController.navigate(Routes.AVALIACOES) },
+                onTurmas = { navController.navigate(Routes.TURMASFORMANDO) },
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
                 }
             )
         }
 
         composable(Routes.FORMADORES) {
-            FormadoresScreen()
+            FormadoresScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onFormandos = { navController.navigate(Routes.FORMANDOS) },
+                onFormadores = { navController.navigate(Routes.FORMADORES) },
+                onSalas = { navController.navigate(Routes.DISPONIBILIDADE_SALAS) },
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
         }
 
-        composable(Routes.DISPONIBILIDADE_SALAS) {
-            DisponibilidadeSalasScreen()
-        }
-
-        composable(Routes.CURSOS) {
-            CursosScreen()
+        composable(Routes.FORMANDOS) {
+            FormandoScreen(
+                onDashboard = { navController.navigate(dashboardRoute()) },
+                onCursos = { navController.navigate(Routes.CURSOS) },
+                onFormandos = { navController.navigate(Routes.FORMANDOS) },
+                onFormadores = { navController.navigate(Routes.FORMADORES) },
+                onSalas = { navController.navigate(Routes.DISPONIBILIDADE_SALAS) },
+                onLogout = {
+                    AuthSession.email = null
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                }
+            )
         }
     }
 }

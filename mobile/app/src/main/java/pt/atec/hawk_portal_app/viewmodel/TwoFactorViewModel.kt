@@ -1,6 +1,7 @@
 package pt.atec.hawk_portal_app.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,7 +11,8 @@ import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.model.Verify2FARequest
 import pt.atec.hawk_portal_app.states.ApiError
 
-class TwoFactorViewModel : ViewModel() {
+class TwoFactorViewModel(application: Application)
+    : AndroidViewModel(application){
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -21,6 +23,8 @@ class TwoFactorViewModel : ViewModel() {
     private val _token = MutableStateFlow<String?>(null)
     val token: StateFlow<String?> = _token
 
+
+    private val api = RetrofitClient.create(application)
     fun verifyCode(email: String, code: String) {
         viewModelScope.launch {
             val gson = Gson()
@@ -28,12 +32,13 @@ class TwoFactorViewModel : ViewModel() {
             _error.value = null
 
             try {
-                val response = RetrofitClient.api.verify2FA(
+                val response = api.verify2FA(
                     Verify2FARequest(email, code)
                 )
 
                 if (response.isSuccessful) {
                     _token.value = response.body()?.token
+
                     if (_token.value == null) {
                         _error.value = "Resposta inválida do servidor"
                     }
@@ -60,5 +65,9 @@ class TwoFactorViewModel : ViewModel() {
 
     fun clearError() {
         _error.value = null
+    }
+
+    fun clearToken() {
+        _token.value = null
     }
 }

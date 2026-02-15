@@ -1,18 +1,22 @@
 package pt.atec.hawk_portal_app.viewmodel
 
+import android.app.Application
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.model.Formando
 
-class FormandosViewModel : ViewModel() {
+class FormandosViewModel(application: Application)
+    : AndroidViewModel(application){
     var formandos = mutableStateOf<List<Formando>>(emptyList())
         private set
 
     var isLoading = mutableStateOf(true)
         private set
+
+    private val api = RetrofitClient.create(application)
 
     init {
         carregarFormandos()
@@ -21,7 +25,7 @@ class FormandosViewModel : ViewModel() {
     private fun carregarFormandos() {
         viewModelScope.launch {
             try {
-                val response = RetrofitClient.api.getFormandos()
+                val response = api.getFormandos()
                 if (response.isSuccessful) {
                     formandos.value = response.body() ?: emptyList()
                 }

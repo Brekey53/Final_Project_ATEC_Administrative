@@ -1,11 +1,16 @@
 package pt.atec.hawk_portal_app.api
 
+import pt.atec.hawk_portal_app.model.AvaliacoesFormando
 import pt.atec.hawk_portal_app.model.Cursos
 import pt.atec.hawk_portal_app.model.DisponibilidadeSalas
 import pt.atec.hawk_portal_app.model.Formador
 import pt.atec.hawk_portal_app.model.Formando
+import pt.atec.hawk_portal_app.model.HorarioFormador
+import pt.atec.hawk_portal_app.model.HorarioFormando
 import pt.atec.hawk_portal_app.model.LoginRequest
 import pt.atec.hawk_portal_app.model.LoginResponse
+import pt.atec.hawk_portal_app.model.TurmaFormador
+import pt.atec.hawk_portal_app.model.TurmasFormando
 import pt.atec.hawk_portal_app.model.Verify2FARequest
 import pt.atec.hawk_portal_app.model.Verify2FAResponse
 import retrofit2.Response
@@ -54,12 +59,54 @@ interface ApiService {
     suspend fun getCursos(): Response<List<Cursos>>
 
     /**
+     * Obtém a lista de turmas com modulos de um formador
+     *
+     * @return Response com lista de turmas e modulos daquele formador
+     */
+    @GET("TurmaAlocacao/turmas/formador")
+    suspend fun getTurmasFormador(): Response<List<TurmaFormador>>
+
+    /**
+     * Obtém a lista de colegas, professores e modulos de um formando
+     *
+     * @return Response com lista
+     */
+    @GET("turmas/minha-turma")
+    suspend fun getMinhaTurma(): Response<TurmasFormando>
+
+    /**
+     * Obtém o horário da semana do formando
+     *
+     * @return Lista de HorarioFormando
+     */
+    @GET("horarios/formando/semana")
+    suspend fun getHorarioFormando(): Response<List<HorarioFormando>>
+
+
+    /**
+     * Obtém o horário da semana do formador
+     *
+     * @return Lista de HorarioFormador
+     */
+    @GET("horarios/formador/semana")
+    suspend fun getHorarioFormadorSemana(): Response<List<HorarioFormador>>
+
+    /**
+     * Obtém as avaliações do formando
+     *
+     * @return Lista de avaliacçoes
+     */
+    @GET("avaliacoes/formando")
+    suspend fun getAvaliacoesFormando():
+            Response<List<AvaliacoesFormando>>
+
+    /**
      * Autentica um utilizador e devolve os dados de sessão.
      *
      * @param request Dados de login (email e password)
      * @return Response com o LoginResponse ou erro HTTP
      */
-    @POST("auth/login")
+    @POST("auth/login/mobile")
     suspend fun login(
         @Body request: LoginRequest
     ): Response<LoginResponse>

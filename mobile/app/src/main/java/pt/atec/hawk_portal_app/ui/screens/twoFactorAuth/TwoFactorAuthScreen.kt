@@ -32,19 +32,25 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.atec.hawk_portal_app.dataStore.TokenDataStore
 import pt.atec.hawk_portal_app.model.AuthSession
+import pt.atec.hawk_portal_app.utils.JwtUtils
 import pt.atec.hawk_portal_app.viewmodel.TwoFactorViewModel
 
 @Composable
 fun TwoFactorAuthScreen(
-    onVerifySuccess: () -> Unit,
+    onVerifySuccess: (Int) -> Unit,
     onBackToLogin: () -> Unit,
     viewModel: TwoFactorViewModel = viewModel()
 ) {
+
     val email = AuthSession.email
-    if (email == null) {
-        onBackToLogin()
-        return
+
+    LaunchedEffect(email) {
+        if (email == null) {
+            onBackToLogin()
+        }
     }
+
+    if (email == null) return
 
     var code by remember { mutableStateOf("") }
 
@@ -55,12 +61,22 @@ fun TwoFactorAuthScreen(
     val context = LocalContext.current
 
     LaunchedEffect(token) {
-        token?.let {
-            TokenDataStore.saveToken(context, it)
-            AuthSession.email = null
-            onVerifySuccess()
+
+        val currentToken = token
+
+        if (!currentToken.isNullOrBlank()) {
+
+            TokenDataStore.saveToken(context, currentToken)
+
+            val tipo = JwtUtils.getTipoUtilizador(currentToken)
+
+            if (tipo != null) {
+                viewModel.clearToken()
+                onVerifySuccess(tipo)
+            }
         }
     }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -138,7 +154,7 @@ fun TwoFactorAuthScreen(
             if (error != null) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Surface(
-                    color = Color.Red.copy(alpha = 0.1f), // Subtle red background
+                    color = Color.Red.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {

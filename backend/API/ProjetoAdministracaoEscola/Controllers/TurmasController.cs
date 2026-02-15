@@ -435,8 +435,6 @@ namespace ProjetoAdministracaoEscola.Controllers
             };
 
             return Ok(dto);
-
-
         }
 
         /// <summary>

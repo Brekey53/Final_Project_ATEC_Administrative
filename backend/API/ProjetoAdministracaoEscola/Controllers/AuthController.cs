@@ -68,7 +68,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     "administrativos para ativar a conta" });
             }
 
-            // Verificar a senha
+            // Verificar a palavra passe
             bool isValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, utilizador.PasswordHash);
 
             if (!isValid)
@@ -435,6 +435,64 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             return Ok(new { token });
         }
+
+        [HttpPost("login/mobile")]
+        public async Task<IActionResult> LoginMobile([FromBody] UtilizadorLoginDTO loginDto)
+        {
+            var utilizador = await _context.Utilizadores
+                .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+
+            if (utilizador == null)
+            {
+                return Unauthorized(new { message = "Utilizador não registado." });
+            }
+
+            if (utilizador.StatusAtivacao != true)
+            {
+                return BadRequest(new { message = "Necessita de ativar a conta via email antes do login." });
+            }
+
+            if (utilizador.Ativo != true)
+            {
+                return BadRequest(new
+                {
+                    message = "A sua conta encontra-se desativada. Contacte os serviços administrativos."
+                });
+            }
+
+            bool isValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, utilizador.PasswordHash);
+
+            if (!isValid)
+            {
+                return Unauthorized(new { message = "Credenciais inválidas." });
+            }
+            
+            // Utilizador geral ou superadmin não pode fazer login pela app
+            if (utilizador.IdTipoUtilizador == 5 || utilizador.IdTipoUtilizador == 6)
+            {
+                return Unauthorized(new
+                {
+                    message = "Não tem acesso à aplicação mobile. Contacte os serviços administrativos"
+                });
+            }
+
+            //Random rnd = new Random();
+
+            //string codigo2FA = rnd.Next(000000, 999999).ToString("D6"); // gerar codigo 2FA
+
+            //_cache.Set($"2FA_{utilizador.Email}", codigo2FA, TimeSpan.FromMinutes(5));
+            _cache.Set($"2FA_{utilizador.Email}", "000000", TimeSpan.FromMinutes(5));
+
+            //await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é:<h2><b> {codigo2FA}</b></h2>");
+
+            return Ok(new
+            {
+                requires2FA = true,
+                message = "Código enviado para o e-mail.",
+                email = utilizador.Email
+            });
+        }
+
 
     }
 }
