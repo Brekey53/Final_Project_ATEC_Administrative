@@ -28,7 +28,7 @@ export default function LoginBanner() {
               <div className="col-6">
                 <div className="card-login card-1">
                   <FontAwesomeIcon icon={faGraduationCap} className="icon" />
-                  <p>Gestão de Alunos</p>
+                  <p className="text-nowrap">Gestão de Alunos</p>
                 </div>
               </div>
               <div className="col-6">
@@ -42,7 +42,7 @@ export default function LoginBanner() {
               <div className="col-6">
                 <div className="card-login card-3">
                   <FontAwesomeIcon icon={faSchool} className="icon" />
-                  <p>Cursos e Módulos</p>
+                  <p className="text-nowrap">Cursos e Módulos</p>
                 </div>
               </div>
               <div className="col-6">
