@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
   postNewModulo,
+  getModulos,
   getTiposMateria,
 } from "../../services/modules/ModuleService";
 import { useNavigate } from "react-router-dom";
+import { normalizarTexto } from "../../utils/stringUtils";
 
 export default function AddNewModule() {
   const navigate = useNavigate();
@@ -55,10 +57,32 @@ export default function AddNewModule() {
     e.preventDefault();
     setLoading(true);
 
+    if (formData.horasTotais < 25) {
+      toast.error("O módulo deve ter no mínimo 25 horas.", {
+        id: "erroMinHoras",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
+      // Validar duplicados
+      const todosModulos = await getModulos();
+      const existe = todosModulos.some(
+        (m) => normalizarTexto(m.nome) === normalizarTexto(formData.nome),
+      );
+
+      if (existe) {
+        toast.error("Já existe um módulo com esse nome.", {
+          id: "erroNomeDuplicado",
+        });
+        setLoading(false);
+        return;
+      }
+
       await postNewModulo(formData);
-      toast.success("Módulo criado com sucesso!", {id: "sucessModuloCriado"});
-      navigate(-1); // Volta para a listagem
+      toast.success("Módulo criado com sucesso!", { id: "sucessModuloCriado" });
+      navigate("/gerir-modulos"); // Volta para a listagem
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.errors) {
@@ -66,7 +90,9 @@ export default function AddNewModule() {
           .flat()
           .forEach((msg: any) => toast.error(msg));
       } else {
-        toast.error(errorData?.message || "Erro ao criar módulo.", {id: "errorAoCriarModulo"});
+        toast.error(errorData?.message || "Erro ao criar módulo.", {
+          id: "errorAoCriarModulo",
+        });
       }
     } finally {
       setLoading(false);
@@ -142,7 +168,8 @@ export default function AddNewModule() {
                   type="number"
                   name="horasTotais"
                   className="form-control"
-                  min="1"
+                  min="25"
+                  placeholder="Ex: 50"
                   value={formData.horasTotais}
                   onChange={handleChange}
                   required
@@ -154,7 +181,7 @@ export default function AddNewModule() {
                 <label className="form-label fw-bold">Créditos</label>
                 <input
                   type="number"
-                  step="1"
+                  step="0.5"
                   name="creditos"
                   className="form-control"
                   min="1"
