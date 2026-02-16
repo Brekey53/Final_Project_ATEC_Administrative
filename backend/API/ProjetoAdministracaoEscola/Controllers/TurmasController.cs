@@ -572,7 +572,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             // Ir buscar apenas tipo de user 3 (formandos) e 5 (geral)
             var candidatos = await _context.Utilizadores
-                .Where(u => (u.IdTipoUtilizador == 3 || u.IdTipoUtilizador == 5) && u.StatusAtivacao == true) // Active users only
+                .Where(u => (u.IdTipoUtilizador == 3 || u.IdTipoUtilizador == 5) && u.Ativo == true) // Active users only
                 .Where(u => !usuariosComTurmaAtivaIds.Contains(u.IdUtilizador))
                 .Select(u => new
                 {
@@ -610,7 +610,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             // Check if user exists
             var user = await _context.Utilizadores.FindAsync(idUtilizador);
-            if (user == null) return NotFound("Utilizador não encontrado.");
+            if (user == null) return NotFound(new { message = "Utilizador não encontrado." });
 
             // Check if Turma exists
             var turma = await _context.Turmas.FindAsync(id);
@@ -620,7 +620,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             bool jaInscrito = await _context.Inscricoes
                 .AnyAsync(i => i.IdFormandoNavigation.IdUtilizador == idUtilizador && i.Estado == "Ativo");
 
-            if (jaInscrito) return BadRequest("Utilizador já se encontra inscrito numa turma ativa.");
+            if (jaInscrito) return BadRequest(new { message = "Utilizador já se encontra inscrito numa turma ativa." });
 
             // Ensure user is Formando (Type 3). If Type 5, convert.
             Formando? formando = null;
@@ -644,7 +644,7 @@ namespace ProjetoAdministracaoEscola.Controllers
             }
             else
             {
-                return BadRequest("Apenas utilizadores Geral ou Formando podem ser inscritos.");
+                return BadRequest(new { message = "Apenas utilizadores Geral ou Formando podem ser inscritos." });
             }
 
             // Create Inscricao
@@ -683,12 +683,12 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<IActionResult> RemoverAlunoTurma(int id, int idUtilizador)
         {
             var formando = await _context.Formandos.FirstOrDefaultAsync(f => f.IdUtilizador == idUtilizador);
-            if (formando == null) return NotFound("Formando não encontrado.");
+            if (formando == null) return NotFound(new { message = "Formando não encontrado." });
 
             var inscricao = await _context.Inscricoes
                 .FirstOrDefaultAsync(i => i.IdTurma == id && i.IdFormando == formando.IdFormando && i.Estado == "Ativo");
 
-            if (inscricao == null) return NotFound("Inscrição não encontrada nesta turma.");
+            if (inscricao == null) return NotFound(new { message = "Inscrição não encontrada nesta turma." });
 
             try
             {

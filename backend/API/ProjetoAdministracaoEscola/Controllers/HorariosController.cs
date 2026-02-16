@@ -684,8 +684,8 @@ namespace ProjetoAdministracaoEscola.Controllers
                     return BadRequest(new { message = "Não existem salas disponíveis." });
                 }
 
-                // Definir data de corte para "Hoje" (ou inicio da turma se não tiver começado ainda)
-                // O gerador vai agendar de "Hoje" para a frente.
+                // Definir data de corte para "Hoje+14dias" (ou inicio da turma se não tiver começado ainda)
+                // O gerador vai agendar de "Hoje+14dias" para a frente.
                 // O que está para trás é considerado "Já dado" e não se mexe.
                 DateOnly dataCorte = DateOnly.FromDateTime(DateTime.Now).AddDays(14);
                 if (dataCorte < turma.DataInicio) dataCorte = turma.DataInicio;

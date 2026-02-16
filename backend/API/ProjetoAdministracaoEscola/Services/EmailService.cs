@@ -8,10 +8,18 @@ namespace ProjetoAdministracaoEscola.Services
 {
     public class EmailService
     {
+
+        private readonly IConfiguration _configuration;
+
+        public EmailService (IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         public async Task<bool> SendActivationEmail(string toEmail, string UserName, string token)
         {
             var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("hawkportalmanager@gmail.com"));
+            email.From.Add(MailboxAddress.Parse(_configuration["EMAIL_USER"]));
             email.To.Add(MailboxAddress.Parse(toEmail));
             email.Subject = "Ativação de Conta - Hawk Portal";
 
@@ -31,8 +39,8 @@ namespace ProjetoAdministracaoEscola.Services
             try
             {
                 using var smtp = new SmtpClient();
-                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync("hawkportalmanager@gmail.com", "gnuu souv keim zakv");
+                await smtp.ConnectAsync(_configuration["EMAIL_HOST"], int.Parse(_configuration["EMAIL_PORT"]), SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_configuration["EMAIL_USER"], _configuration["EMAIL_PASSWORD"]);
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
 
@@ -48,7 +56,7 @@ namespace ProjetoAdministracaoEscola.Services
         public async Task<bool> SendEmailAsync(string toEmail, string subject, string htmlContent)
         {
             var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("hawkportalmanager@gmail.com"));
+            email.From.Add(MailboxAddress.Parse(_configuration["EMAIL_USER"]));
             email.To.Add(MailboxAddress.Parse(toEmail));
             email.Subject = subject;
 
@@ -60,8 +68,8 @@ namespace ProjetoAdministracaoEscola.Services
             try
             {
                 using var smtp = new SmtpClient();
-                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync("hawkportalmanager@gmail.com", "gnuu souv keim zakv");
+                await smtp.ConnectAsync(_configuration["EMAIL_HOST"], int.Parse(_configuration["EMAIL_PORT"]), SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_configuration["EMAIL_USER"], _configuration["EMAIL_PASSWORD"]);
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
 
@@ -77,7 +85,7 @@ namespace ProjetoAdministracaoEscola.Services
         public async Task<bool> SendResetEmail(string toEmail, string link)
         {
             var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("hawkportalmanager@gmail.com"));
+            email.From.Add(MailboxAddress.Parse(_configuration["EMAIL_USER"]));
             email.To.Add(MailboxAddress.Parse(toEmail));
             email.Subject = "Recuperar password";
 
@@ -95,8 +103,8 @@ namespace ProjetoAdministracaoEscola.Services
             try
             {
                 using var smtp = new SmtpClient();
-                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync("hawkportalmanager@gmail.com", "gnuu souv keim zakv");
+                await smtp.ConnectAsync(_configuration["EMAIL_HOST"], int.Parse(_configuration["EMAIL_PORT"]), SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_configuration["EMAIL_USER"], _configuration["EMAIL_PASSWORD"]);
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
 

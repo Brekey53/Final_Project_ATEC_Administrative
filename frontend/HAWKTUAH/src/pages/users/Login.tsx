@@ -251,7 +251,7 @@ export default function Login() {
               </button>
               <button
                 type="button"
-                className="btn btn-light border"
+                className="btn btn-link mt-2 text-muted"
                 onClick={() => setShow2FA(false)}
               >
                 Voltar para Login
