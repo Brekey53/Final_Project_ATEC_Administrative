@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.atec.hawk_portal_app.R
@@ -219,7 +220,6 @@ private fun FiltrosSalas(
     var showTimePickerFor by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
-
     if (showTimePickerFor != null) {
 
         TimePickerModal(
@@ -305,7 +305,14 @@ private fun FiltrosSalas(
             ) {
                 Text("Limpar pesquisa")
             }
-
+            if (state.erroValidacao != null) {
+                Text(
+                    text = state.erroValidacao,
+                    color = Color(0xFFFEB2B1),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            }
         }
     }
 }

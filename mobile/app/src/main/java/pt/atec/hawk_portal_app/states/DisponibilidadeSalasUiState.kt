@@ -31,7 +31,8 @@ sealed class DisponibilidadeSalasUiState {
         val horaInicioTexto: String = "",
         val horaFimTexto: String = "",
         val loadingSalas: Boolean = false,
-        val pesquisaFeita: Boolean = false
+        val pesquisaFeita: Boolean = false,
+        val erroValidacao: String? = null
     ) : DisponibilidadeSalasUiState()
 
     /**

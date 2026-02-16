@@ -48,6 +48,13 @@ class LoginViewModel(application: Application)
      */
     fun login(email: String, password: String) {
         viewModelScope.launch {
+            if (email.isBlank() || password.isBlank()) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    message = "Preencha todos os campos"
+                )
+                return@launch
+            }
             _uiState.value = _uiState.value.copy(isLoading = true, message = "")
 
             try {
