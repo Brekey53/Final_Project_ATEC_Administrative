@@ -4,6 +4,8 @@ services:
     container_name: Projeto_Final
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sistema_gestao_hawk_portal
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
       - "3306:3306"
     volumes:

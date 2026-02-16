@@ -40,7 +40,9 @@ namespace ProjetoAdministracaoEscola.Controllers
         {
             var stats = new
             {
-                CursosDecorrer = await _context.Turmas.CountAsync(t => t.DataFim > DateOnly.FromDateTime(DateTime.Now)),
+                CursosDecorrer = await _context.Turmas.CountAsync(t => t.DataFim > DateOnly.FromDateTime(DateTime.Now) &&
+                DateOnly.FromDateTime(DateTime.Now) <= t.DataInicio
+                ),
                 TurmasConcluidas = await GetTurmasConcluidas(),
                 FormandosAtivos = await _context.Formandos.CountAsync(),
                 Formadores = await _context.Formadores.CountAsync(),
