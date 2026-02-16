@@ -572,7 +572,7 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             // Ir buscar apenas tipo de user 3 (formandos) e 5 (geral)
             var candidatos = await _context.Utilizadores
-                .Where(u => (u.IdTipoUtilizador == 3 || u.IdTipoUtilizador == 5) && u.StatusAtivacao == true) // Active users only
+                .Where(u => (u.IdTipoUtilizador == 3 || u.IdTipoUtilizador == 5) && u.Ativo == true) // Active users only
                 .Where(u => !usuariosComTurmaAtivaIds.Contains(u.IdUtilizador))
                 .Select(u => new
                 {
