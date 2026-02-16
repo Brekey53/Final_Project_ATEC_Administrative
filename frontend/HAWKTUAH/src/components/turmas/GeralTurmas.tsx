@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "../../css/layoutTabelas.css";
+import "../../css/turmas.css";
 import { toast } from "react-hot-toast";
 import {
   getTurmasGeralDashboard,
@@ -33,7 +33,7 @@ export default function GeralTurmas() {
   const turmasFiltradas = turmas.filter((t) =>
     `${t.nomeTurma} ${t.nomeCurso}`
       .toLowerCase()
-      .includes(searchTerm.toLowerCase()),
+      .includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(turmasFiltradas.length / ITEMS_PER_PAGE);
@@ -58,8 +58,6 @@ export default function GeralTurmas() {
       {/* PESQUISA */}
       <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
         <div className="row g-2 align-items-center p-2">
-          {" "}
-          {/* Pesquisa Input*/}
           <div className="col-md-12">
             <div className="input-group bg-white rounded-3 border px-2">
               <span className="input-group-text bg-white border-0">
@@ -80,7 +78,8 @@ export default function GeralTurmas() {
       {/* TABELA */}
       <div className="card shadow-sm border-0 rounded-4">
         <div className="card-body p-0">
-          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turmas">
+          {/* HEADER DESKTOP */}
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turmas-header">
             <div>Turma</div>
             <div>Curso</div>
             <div>Data Início</div>
@@ -92,27 +91,45 @@ export default function GeralTurmas() {
             turmasPaginadas.map((t) => (
               <div
                 key={t.idTurma}
-                className="px-4 py-3 border-bottom tabela-turmas align-items-center"
+                className="px-4 py-3 border-bottom tabela-turmas-row"
               >
-                {/* Turma */}
-                <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
-                    {t.nomeTurma.charAt(0)}
+                <div className="coluna">
+                  <span className="label-mobile">Turma</span>
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                      {t.nomeTurma.charAt(0)}
+                    </div>
+                    <span className="fw-medium">{t.nomeTurma}</span>
                   </div>
-                  <span className="fw-medium">{t.nomeTurma}</span>
                 </div>
 
-                {/* Curso */}
-                <div className="text-muted">{t.nomeCurso || "-"}</div>
+                <div className="coluna">
+                  <span className="label-mobile">Curso</span>
+                  <span className="text-muted">
+                    {t.nomeCurso || "-"}
+                  </span>
+                </div>
 
-                {/* Datas */}
-                <div className="text-muted">{t.dataInicio || "-"}</div>
-                <div className="text-muted">{t.dataFim || "-"}</div>
+                <div className="coluna">
+                  <span className="label-mobile">Data Início</span>
+                  <span className="text-muted">
+                    {t.dataInicio || "-"}
+                  </span>
+                </div>
 
-                {/* Estado */}
-                <span className="badge bg-secondary rounded-pill py-1">
-                  Em Breve
-                </span>
+                <div className="coluna">
+                  <span className="label-mobile">Data Fim</span>
+                  <span className="text-muted">
+                    {t.dataFim || "-"}
+                  </span>
+                </div>
+
+                <div className="coluna">
+                  <span className="label-mobile">Estado</span>
+                  <span className="badge bg-secondary rounded-pill py-1">
+                    Em Breve
+                  </span>
+                </div>
               </div>
             ))
           ) : (
