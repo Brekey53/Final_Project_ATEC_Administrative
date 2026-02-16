@@ -174,17 +174,18 @@ class DisponibilidadeSalasViewModel(application: Application)
 
                 val salas = response.body() ?: emptyList()
 
-                _uiState.value = estado.copy(
+                _uiState.value = (_uiState.value as DisponibilidadeSalasUiState.Ready).copy(
                     salas = salas,
-                    loadingSalas = false
+                    loadingSalas = false,
+                    pesquisaFeita = true
                 )
 
             } catch (e: Exception) {
-
                 _uiState.value = DisponibilidadeSalasUiState.Error(
                     e.message ?: "Erro"
                 )
             }
+
         }
     }
 
@@ -254,8 +255,10 @@ class DisponibilidadeSalasViewModel(application: Application)
         if (estadoAtual !is DisponibilidadeSalasUiState.Ready)
             return
 
-        if (!estadoAtual.filtrosValidos())
+        if (!estadoAtual.filtrosValidos()) {
+            println("Filtros inválidos")
             return
+        }
 
         carregarSalas()
     }

@@ -31,6 +31,7 @@ class DatePickerFragment(
      * @return Instância configurada de DatePickerDialog.
      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        // Use the current date as the default date in the picker.
         val c = Calendar.getInstance()
         val year = c.get(Calendar.YEAR)
         val month = c.get(Calendar.MONTH)
@@ -52,6 +53,7 @@ class DatePickerFragment(
      * @param day Dia selecionado.
      */
     override fun onDateSet(view: DatePicker, year: Int, month: Int, day: Int) {
+        // Do something with the date the user picks.
         onDateSelected(year, month, day)
     }
 }

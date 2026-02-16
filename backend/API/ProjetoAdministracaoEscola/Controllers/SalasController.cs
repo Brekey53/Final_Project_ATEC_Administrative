@@ -73,7 +73,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// <response code="200">Lista de salas disponíveis devolvida com sucesso.</response>
         /// <response code="400">Parâmetros inválidos (data ou horas incorretas).</response>
         // GET: api/salas/disponiveis?data=2024-01-30&inicio=09:00&fim=13:00
-        [Authorize(Policy = "AdminOrAdministrativo")]
+        [Authorize(Policy = "FormadorOuAdminOuAdministrativo")]
         [HttpGet("disponiveis")]
         public async Task<ActionResult<IEnumerable<SalaGetDTO>>> GetSalasDisponiveis(
             [FromQuery] string data,

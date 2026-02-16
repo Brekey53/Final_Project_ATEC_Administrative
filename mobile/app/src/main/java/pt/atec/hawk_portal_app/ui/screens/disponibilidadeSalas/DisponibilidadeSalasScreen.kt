@@ -231,8 +231,8 @@ private fun FiltrosSalas(
                 }
             },
             onDismiss = {
+                showTimePickerFor = null
             }
-
         )
     }
 
