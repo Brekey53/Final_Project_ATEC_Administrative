@@ -4,6 +4,10 @@ import ptLocale from "@fullcalendar/core/locales/pt";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
+/**
+ * Componente que exibe o calendário de horários usando FullCalendar.
+ * @param props.events - Lista de eventos a exibir no calendário.
+ */
 export default function CalendarSchedule({ events }: { events: any[] }) {
   const isMobile = window.innerWidth < 768;
 

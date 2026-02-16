@@ -2,6 +2,9 @@ import React from "react";
 import { CheckCircle, XCircle } from "lucide-react";
 import type { ResumoAgendamentoModulo } from "../services/shedules/HorariosService";
 
+/**
+ * Propriedades para o resumo da geração de horários.
+ */
 interface ScheduleGenerationSummaryProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,6 +12,10 @@ interface ScheduleGenerationSummaryProps {
   totalScheduled: number;
 }
 
+/**
+ * Modal que exibe o resumo da geração automática de horários.
+ * Mostra o sucesso/falha de cada módulo e estatísticas gerais.
+ */
 export default function ScheduleGenerationSummary({
   isOpen,
   onClose,
@@ -80,7 +87,7 @@ export default function ScheduleGenerationSummary({
                           <span
                             className={`badge ${
                               item.concluidoComSucesso
-                                ? "bg-success-subtle text-success border border-success"
+                                ? "bg-success-subtle text-black border border-success"
                                 : "bg-warning-subtle text-black border border-warning"
                             } rounded-pill`}
                           >

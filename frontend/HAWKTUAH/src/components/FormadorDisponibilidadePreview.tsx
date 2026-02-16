@@ -48,6 +48,12 @@ const getSemana = (date: Date) => {
   });
 };
 
+/**
+ * Componente que pré-visualiza a disponibilidade de um formador para uma data específica.
+ * Cruza a disponibilidade definida com os horários já atribuídos.
+ * @param props.data - Data de referência.
+ * @param props.idFormador - ID do formador a verificar.
+ */
 export default function FormadorDisponibilidadePreview({
   data,
   idFormador,

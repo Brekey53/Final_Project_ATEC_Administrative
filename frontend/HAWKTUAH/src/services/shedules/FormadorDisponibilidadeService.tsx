@@ -1,12 +1,18 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
 
+/**
+ * Define a disponibilidade de um formador.
+ */
 export type Disponibilidade = {
   data: string;
   horaInicio: string;
   horaFim: string;
 };
 
+/**
+ * Representa um horário já marcado para um formador.
+ */
 export type HorarioMarcado = {
   data: string;
   horaInicio: string;
@@ -15,7 +21,11 @@ export type HorarioMarcado = {
   nomeCurso: string;
 };
 
-
+/**
+ * Obtém a disponibilidade de um formador.
+ * @param idFormador - ID do formador.
+ * @returns Lista de períodos de disponibilidade.
+ */
 export async function getDisponibilidadeFormador(
   idFormador: number,
 ): Promise<Disponibilidade[]> {
@@ -25,6 +35,11 @@ export async function getDisponibilidadeFormador(
   return res.data;
 }
 
+/**
+ * Obtém os horários marcados de um formador.
+ * @param idFormador - ID do formador.
+ * @returns Lista de horários marcados.
+ */
 export async function getHorariosFormador(
   idFormador: number,
 ): Promise<HorarioMarcado[]> {
