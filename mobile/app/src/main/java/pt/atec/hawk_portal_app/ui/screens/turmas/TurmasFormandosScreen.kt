@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import pt.atec.hawk_portal_app.Routes
 import pt.atec.hawk_portal_app.model.Colegas
 import pt.atec.hawk_portal_app.model.ModulosTurmaFormandos
 import pt.atec.hawk_portal_app.model.ProfessoresTurmaFormando
@@ -42,6 +40,27 @@ import pt.atec.hawk_portal_app.model.TurmasFormando
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.TurmasFormandoViewModel
 
+/**
+ * Composable responsável por apresentar o ecrã da turma do formando.
+ *
+ * Este ecrã:
+ * - Obtém os dados da turma através do TurmasFormandoViewModel.
+ * - Executa a função getMinhaTurma() quando o ecrã é iniciado.
+ * - Mostra um indicador de loading enquanto os dados são obtidos.
+ * - Apresenta diferentes separadores (tabs): Resumo, Módulos,
+ *   Professores e Colegas.
+ * - Alterna dinamicamente o conteúdo consoante o separador selecionado.
+ *
+ * O estado da interface é observado através de uiState,
+ * recolhido a partir do ViewModel.
+ *
+ * @param onDashboard Função de navegação para o ecrã Dashboard.
+ * @param onCursos Função de navegação para o ecrã Cursos.
+ * @param onAvaliacoes Função opcional de navegação para o ecrã Avaliações.
+ * @param onTurmas Função de navegação para o ecrã Turmas.
+ * @param onLogout Função executada ao terminar sessão.
+ * @param viewModel ViewModel responsável por gerir os dados da turma do formando.
+ */
 @Composable
 fun TurmasFormandosScreen(
     onDashboard: () -> Unit,
@@ -113,8 +132,6 @@ fun TurmasFormandosScreen(
                             )
                         }
                 }
-
-
                 when (selectedTab) {
                     0 -> ResumoTabStyled(turma)
                     1 -> ModulosTabStyled(turma.modulos)
@@ -126,7 +143,18 @@ fun TurmasFormandosScreen(
     }
 }
 
-
+/**
+ * Composable responsável por apresentar o separador "Resumo".
+ *
+ * Mostra informação geral da turma:
+ * - Nome da turma
+ * - Nome do curso
+ * - Data de início
+ * - Data de fim
+ * - Estado atual
+ *
+ * @param turma Objeto TurmasFormando com os dados gerais da turma.
+ */
 @Composable
 fun ResumoTabStyled(turma: TurmasFormando) {
 
@@ -155,7 +183,17 @@ fun ResumoTabStyled(turma: TurmasFormando) {
     }
 }
 
-
+/**
+ * Composable responsável por apresentar o separador "Módulos".
+ *
+ * Lista todos os módulos associados à turma,
+ * apresentando:
+ * - Nome do módulo
+ * - Total de horas
+ * - Professor associado (caso exista)
+ *
+ * @param modulos Lista de módulos pertencentes à turma.
+ */
 @Composable
 fun ModulosTabStyled(modulos: List<ModulosTurmaFormandos>) {
 
@@ -198,13 +236,21 @@ fun ModulosTabStyled(modulos: List<ModulosTurmaFormandos>) {
                         color = Color.Gray
                     )
                 }
-
             }
         }
     }
 }
 
-
+/**
+ * Composable responsável por apresentar o separador "Professores".
+ *
+ * Lista todos os professores associados à turma,
+ * apresentando:
+ * - Nome
+ * - Email
+ *
+ * @param professores Lista de professores da turma.
+ */
 @Composable
 fun ProfessoresTabStyled(professores: List<ProfessoresTurmaFormando>) {
 
@@ -230,7 +276,16 @@ fun ProfessoresTabStyled(professores: List<ProfessoresTurmaFormando>) {
     }
 }
 
-
+/**
+ * Composable responsável por apresentar o separador "Colegas".
+ *
+ * Lista todos os colegas pertencentes à turma,
+ * apresentando:
+ * - Nome
+ * - Email
+ *
+ * @param colegas Lista de colegas da turma.
+ */
 @Composable
 fun ColegasTabStyled(colegas: List<Colegas>) {
 
@@ -256,6 +311,19 @@ fun ColegasTabStyled(colegas: List<Colegas>) {
     }
 }
 
+/**
+ * Composable reutilizável que define um cartão com estilo padrão da aplicação.
+ *
+ * Aplica:
+ * - Fundo branco
+ * - Cantos arredondados
+ * - Elevação (shadow)
+ * - Padding
+ *
+ * Recebe como parâmetro o conteúdo composable a ser exibido dentro do cartão.
+ *
+ * @param content Conteúdo composable a ser renderizado dentro do cartão.
+ */
 @Composable
 fun DefaultCard(content: @Composable () -> Unit) {
     Card(

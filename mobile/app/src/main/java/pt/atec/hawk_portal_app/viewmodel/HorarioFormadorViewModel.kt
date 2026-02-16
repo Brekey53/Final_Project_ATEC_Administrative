@@ -9,6 +9,22 @@ import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.model.HorarioFormador
 
+/**
+ * ViewModel responsável por gerir a obtenção
+ * do horário semanal do formador.
+ *
+ * Utiliza Retrofit para comunicar com a API
+ * e expõe os dados através de StateFlow,
+ * permitindo que a interface Compose reaja
+ * automaticamente às alterações.
+ *
+ * Expõe dois estados principais:
+ * - Lista de horários da semana.
+ * - Loading inicial
+ *
+ * @param application Contexto da aplicação necessário
+ * para inicialização do RetrofitClient.
+ */
 class HorarioFormadorViewModel(application: Application)
     : AndroidViewModel(application) {
 
@@ -20,6 +36,16 @@ class HorarioFormadorViewModel(application: Application)
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    /**
+     * Obtém o horário semanal do formador através da API.
+     *
+     * - Ativa o estado de loading antes do pedido.
+     * - Executa a chamada de forma assíncrona utilizando viewModelScope.
+     * - Atualiza a lista de horários em caso de sucesso.
+     * - Em caso de erro, define a lista como vazia.
+     * - Desativa o estado de loading no final da operação.
+     *
+     */
     fun loadHorarioSemana() {
         viewModelScope.launch {
             _loading.value = true

@@ -30,6 +30,13 @@ import pt.atec.hawk_portal_app.ui.screens.turmas.TurmasFormandosScreen
 import pt.atec.hawk_portal_app.ui.screens.twoFactorAuth.TwoFactorAuthScreen
 import pt.atec.hawk_portal_app.utils.JwtUtils
 
+/**
+ * Objeto que centraliza todas as rotas utilizadas
+ * no sistema de navegação da aplicação.
+ *
+ * Cada constante representa o identificador
+ * de um ecrã utilizado pelo NavHost.
+ */
 object Routes {
     const val LOGIN = "login"
     const val TWO_FACTOR = "2fa"
@@ -45,6 +52,17 @@ object Routes {
     const val TURMASFORMADOR = "turmas-formador"
 }
 
+/**
+ * Activity principal da aplicação.
+ *
+ * Responsável por:
+ * - Inicializar o conteúdo Compose.
+ * - Definir a superfície base da aplicação.
+ * - Invocar o sistema de navegação através de AppNavigation().
+ *
+ * Esta Activity serve como ponto de entrada
+ * da aplicação Android.
+ */
 class MainActivity : FragmentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,6 +78,22 @@ class MainActivity : FragmentActivity() {
     }
 }
 
+/**
+ * Composable responsável por configurar o sistema
+ * de navegação da aplicação.
+ *
+ * Utiliza NavHost para definir:
+ * - Ecrã inicial (Login).
+ * - Fluxo de autenticação (Login + 2FA).
+ * - Dashboards específicos por tipo de utilizador.
+ * - Regras de navegação com base em permissões.
+ *
+ * A função:
+ * - Obtém o token guardado no DataStore.
+ * - Extrai o tipo de utilizador a partir do JWT.
+ * - Define permissões dinâmicas de acesso aos ecrãs.
+ * - Controla a navegação condicional consoante o perfil.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
@@ -74,7 +108,7 @@ fun AppNavigation() {
         tipo = token?.let { JwtUtils.getTipoUtilizador(it) }
     }
 
-    val isAdmin = tipo in listOf(1, 4, 6)
+    val isAdmin = tipo in listOf(1, 4)
     val isFormador = tipo == 2
     val isFormando = tipo == 3
 

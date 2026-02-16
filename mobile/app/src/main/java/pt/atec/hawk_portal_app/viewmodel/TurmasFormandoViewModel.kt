@@ -9,6 +9,20 @@ import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.states.TurmasFormandoUiState
 
+/**
+ * ViewModel responsável por gerir a obtenção
+ * da turma associada ao formando autenticado.
+ *
+ * Utiliza Retrofit para comunicar com o servidor
+ * e expõe o estado da interface através de StateFlow,
+ * permitindo que o Compose reaja automaticamente
+ * a alterações como loading, sucesso ou erro.
+ *
+ * O estado é representado por TurmasFormandoUiState.
+ *
+ * @param application Contexto da aplicação necessário
+ * para inicialização do RetrofitClient.
+ */
 class TurmasFormandoViewModel(application: Application)
     : AndroidViewModel(application) {
 
@@ -17,6 +31,22 @@ class TurmasFormandoViewModel(application: Application)
 
     private val api = RetrofitClient.create(application)
 
+    /**
+     * Obtém os dados da turma do formando através da API.
+     *
+     * Fluxo de execução:
+     * - Atualiza o estado para loading antes do pedido.
+     * - Executa a chamada de forma assíncrona usando viewModelScope.
+     * - Em caso de sucesso, atualiza os dados da turma
+     *   e define success como verdadeiro.
+     * - Em caso de erro na resposta, define success como falso
+     *   e apresenta o código de erro.
+     * - Em caso de exceção (ex: falha de rede),
+     *   define uma mensagem de erro genérica.
+     *
+     * O resultado é refletido no uiState,
+     * permitindo atualização automática da interface.
+     */
     fun getMinhaTurma() {
         viewModelScope.launch {
 
@@ -26,12 +56,7 @@ class TurmasFormandoViewModel(application: Application)
             )
 
             try {
-
                 val response = api.getMinhaTurma()
-                println("TURMAS RESPONSE CODE: ${response.code()}")
-                println("TURMAS BODY: ${response.body()}")
-                println("TURMAS ERROR: ${response.errorBody()?.string()}")
-
                 if (response.isSuccessful) {
                     _uiState.value = _uiState.value.copy(
                         loading = false,

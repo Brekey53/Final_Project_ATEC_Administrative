@@ -9,6 +9,20 @@ import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.states.TurmasFormadorUiState
 
+/**
+ * ViewModel responsável por gerir a obtenção
+ * das turmas atribuídas ao formador.
+ *
+ * Utiliza Retrofit para comunicar com o servidor
+ * e expõe o estado da interface através de StateFlow,
+ * permitindo que o Compose reaja automaticamente
+ * a alterações como loading, sucesso ou erro.
+ *
+ * O estado é representado por TurmasFormadorUiState.
+ *
+ * @param application Contexto da aplicação necessário
+ * para inicialização do RetrofitClient.
+ */
 class TurmasFormadorViewModel(application: Application)
     : AndroidViewModel(application) {
 
@@ -17,6 +31,19 @@ class TurmasFormadorViewModel(application: Application)
 
     private val api = RetrofitClient.create(application)
 
+    /**
+     * Obtém a lista de turmas atribuídas ao formador através da API.
+     *
+     * Fluxo de execução:
+     * - Atualiza o estado para loading antes do pedido.
+     * - Executa a chamada de forma assíncrona usando viewModelScope.
+     * - Em caso de sucesso, atualiza a lista de turmas
+     *   e define success como verdadeiro.
+     * - Em caso de erro na resposta, define success como falso
+     *   e apresenta o código de erro.
+     * - Em caso de exceção (ex: falha de rede),
+     *   define uma mensagem de erro genérica.
+     */
     fun getTurmasFormador() {
         viewModelScope.launch {
 
@@ -26,7 +53,6 @@ class TurmasFormadorViewModel(application: Application)
             )
 
             try {
-
                 val response = api.getTurmasFormador()
 
                 if (response.isSuccessful) {

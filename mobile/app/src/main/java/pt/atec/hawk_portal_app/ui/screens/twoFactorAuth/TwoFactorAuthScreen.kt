@@ -35,6 +35,30 @@ import pt.atec.hawk_portal_app.model.AuthSession
 import pt.atec.hawk_portal_app.utils.JwtUtils
 import pt.atec.hawk_portal_app.viewmodel.TwoFactorViewModel
 
+/**
+ * Composable responsável por apresentar o ecrã de verificação
+ * de autenticação em dois fatores (2FA).
+ *
+ * Este ecrã:
+ * - Obtém o email armazenado na AuthSession.
+ * - Redireciona para o login caso não exista sessão válida.
+ * - Permite ao utilizador introduzir um código de 6 dígitos enviado por email.
+ * - Executa a função verifyCode() do TwoFactorViewModel.
+ * - Observa estados de loading, erro e token.
+ * - Guarda o token JWT em TokenDataStore após verificação bem-sucedida.
+ * - Extrai o tipo de utilizador a partir do token e
+ *   executa a navegação correspondente.
+ *
+ * A navegação só ocorre quando o token é válido e o tipo
+ * de utilizador é corretamente identificado (não pode ser 5 ou 6).
+ *
+ * @param onVerifySuccess Função executada após verificação bem-sucedida,
+ * recebendo como argumento o tipo de utilizador extraído do token.
+ * @param onBackToLogin Função executada caso não exista email ativo em sessão,
+ * redirecionando o utilizador para o ecrã de login.
+ * @param viewModel ViewModel responsável por gerir a lógica
+ * de verificação do código 2FA e o estado da interface.
+ */
 @Composable
 fun TwoFactorAuthScreen(
     onVerifySuccess: (Int) -> Unit,
@@ -77,7 +101,6 @@ fun TwoFactorAuthScreen(
         }
     }
 
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFF014D4E)
@@ -110,8 +133,10 @@ fun TwoFactorAuthScreen(
             TextField(
                 value = code,
                 onValueChange = {
-                    if (it.length <= 6) code = it
-                    if (error != null) viewModel.clearError()
+                    if (it.length <= 6)
+                        code = it
+                    if (error != null)
+                        viewModel.clearError()
                 },
                 label = { Text("Código de 6 dígitos") },
                 singleLine = true,
@@ -168,7 +193,6 @@ fun TwoFactorAuthScreen(
                     )
                 }
             }
-
             Spacer(modifier = Modifier.weight(1f))
         }
     }

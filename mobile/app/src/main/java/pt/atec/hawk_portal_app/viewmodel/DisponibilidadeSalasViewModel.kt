@@ -2,7 +2,6 @@ package pt.atec.hawk_portal_app.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,7 +9,24 @@ import kotlinx.coroutines.launch
 import pt.atec.hawk_portal_app.api.RetrofitClient
 import pt.atec.hawk_portal_app.states.DisponibilidadeSalasUiState
 
-
+/**
+ * ViewModel responsável por gerir a lógica de pesquisa
+ * de disponibilidade de salas.
+ *
+ * Responsabilidades:
+ * - Gerir o estado do ecrã através de StateFlow.
+ * - Controlar os filtros introduzidos pelo utilizador
+ *   (data, hora de início e hora de fim).
+ * - Validar e normalizar os valores antes de enviar para a API.
+ * - Executar a chamada assíncrona à API para obter salas disponíveis.
+ * - Atualizar o estado para loading, sucesso ou erro.
+ *
+ * O estado é representado por DisponibilidadeSalasUiState,
+ * podendo assumir diferentes tipos (Ready ou Error).
+ *
+ * @param application Contexto da aplicação necessário
+ * para inicialização do RetrofitClient.
+ */
 class DisponibilidadeSalasViewModel(application: Application)
 : AndroidViewModel(application)  {
 
@@ -261,5 +277,4 @@ class DisponibilidadeSalasViewModel(application: Application)
 
         _uiState.value = DisponibilidadeSalasUiState.Ready()
     }
-
 }

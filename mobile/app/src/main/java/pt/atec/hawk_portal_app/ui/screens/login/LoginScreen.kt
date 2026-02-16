@@ -40,6 +40,24 @@ import pt.atec.hawk_portal_app.R
 import pt.atec.hawk_portal_app.viewmodel.LoginViewModel
 
 
+/**
+ * Composable responsável por apresentar o ecrã de login
+ *
+ * Este ecrã permite ao utilizador:
+ * - Introduzir email e palavra-passe.
+ * - Iniciar o processo de login através do LoginViewModel.
+ * - Visualizar um indicador de loading enquanto a autenticação está a decorrer.
+ * - Receber mensagens de erro ou feedback do processo de login do backend
+ *
+ * Quando a autenticação é bem-sucedida (uiState.isSuccess == true),
+ * é executada a função onLoginSuccess, permitindo a navegação
+ * para o ecrã seguinte - 2FA
+ *
+ * @param viewModel ViewModel responsável por gerir a lógica de autenticação
+ * e o estado do ecrã.
+ * @param onLoginSuccess Função executada após login bem-sucedido,
+ * recebendo como argumento o email do utilizador autenticado.
+ */
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),

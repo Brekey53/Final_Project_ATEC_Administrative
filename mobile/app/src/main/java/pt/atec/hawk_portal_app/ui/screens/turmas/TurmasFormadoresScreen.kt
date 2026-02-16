@@ -33,6 +33,25 @@ import pt.atec.hawk_portal_app.model.TurmaFormador
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.TurmasFormadorViewModel
 
+/**
+ * Composable responsável por apresentar o ecrã de listagem das turmas atribuídas ao formador.
+ *
+ * Este ecrã:
+ * - Obtém as turmas através do TurmasFormadorViewModel.
+ * - Executa a função getTurmasFormador() quando o ecrã é iniciado.
+ * - Mostra um indicador de loading enquanto os dados são obtidos.
+ * - Apresenta uma mensagem caso não existam turmas atribuídas.
+ * - Exibe uma lista de turmas usando LazyColumn.
+ *
+ *
+ * @param onDashboard Função de navegação para o ecrã Dashboard.
+ * @param onCursos Função de navegação para o ecrã Cursos.
+ * @param onTurmas Função de navegação para o ecrã Turmas.
+ * @param onSalas Função opcional de navegação para o ecrã Salas. Opcional
+ * porque depende do utilizador logado
+ * @param onLogout Função executada ao terminar sessão.
+ * @param viewModel ViewModel responsável por gerir os dados das turmas do formador.
+ */
 @Composable
 fun TurmasFormadorScreen(
     onDashboard: () -> Unit,
@@ -108,9 +127,27 @@ fun TurmasFormadorScreen(
 
 
 
+/**
+ * Composable responsável por representar visualmente uma turma atribuída ao formador.
+ *
+ * Cada item apresenta:
+ * - Nome da turma.
+ * - Nome do curso associado.
+ * - Nome do módulo atual.
+ * - Barra de progresso baseada nas horas dadas face ao total do módulo.
+ * - Estado atual da turma (Para começar, A decorrer, Terminado).
+ *
+ * O progresso é calculado com base na relação entre horas dadas
+ * e horas totais do módulo.
+ *
+ * A cor do estado varia conforme o valor do campo estado.
+ *
+ * @param turma Objeto do tipo TurmaFormador contendo os dados da turma a apresentar.
+ */
 @Composable
 fun TurmaFormadorItem(turma: TurmaFormador) {
 
+    // Calcular o progresso entre horas dadas e horas Totais
     val progresso =
         if (turma.horasTotaisModulo > 0)
             turma.horasDadas.toFloat() / turma.horasTotaisModulo.toFloat()
@@ -197,4 +234,3 @@ fun TurmaFormadorItem(turma: TurmaFormador) {
         }
     }
 }
-

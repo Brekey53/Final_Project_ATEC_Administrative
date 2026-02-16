@@ -28,8 +28,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.atec.hawk_portal_app.model.HorarioFormador
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
+import pt.atec.hawk_portal_app.utils.formatarData
 import pt.atec.hawk_portal_app.viewmodel.HorarioFormadorViewModel
 
+/**
+ * Composable responsável por apresentar o Dashboard do Formador.
+ *
+ * Integra o componente AppMenuHamburger para navegação lateral
+ * e apresenta a secção do horário semanal do formador.
+ *
+ * A anotação @RequiresApi(Build.VERSION_CODES.O) é necessária
+ * porque o ecrã depende de funcionalidades da API 26 (Android 8.0)
+ * ou superior, nomeadamente operações relacionadas com datas
+ * e horas da biblioteca java.time.
+ *
+ * @param onDashboard Ação de navegação para o Dashboard.
+ * @param onCursos Ação de navegação para Cursos.
+ * @param onTurmas Ação de navegação para Turmas.
+ * @param onSalas Ação de navegação para Salas.
+ * @param onLogout Ação executada ao efetuar logout.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardFormadoresScreen(
@@ -52,6 +70,19 @@ fun DashboardFormadoresScreen(
 
 }
 
+/**
+ * Composable responsável por carregar e apresentar o horário
+ * semanal do formador.
+ *
+ * Obtém os dados através do HorarioFormadorViewModel,
+ * gere o estado de carregamento e organiza as aulas
+ * agrupadas por data.
+ *
+ * Requer API 26 ou superior devido à utilização de
+ * funcionalidades modernas de manipulação de datas.
+ *
+ * @param viewModel ViewModel responsável por fornecer os dados do horário.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HorarioFormadorSection(
@@ -90,6 +121,8 @@ fun HorarioFormadorSection(
         return
     }
 
+    // esta variável vai agrupar uma lista de objetos com base no critério data e assim
+    // demonstrar as aulas agrupadas por dia
     val groupedByDate = horarios.groupBy { it.data }
 
     androidx.compose.foundation.lazy.LazyColumn(
@@ -136,6 +169,15 @@ fun HorarioFormadorSection(
     }
 }
 
+/**
+ * Composable que representa um cartão individual de aula
+ * no horário do formador.
+ *
+ * Apresenta informação sobre o módulo, turma, horário
+ * e sala correspondente.
+ *
+ * @param aula Objeto contendo os dados da aula.
+ */
 @Composable
 fun AulaFormadorCard(aula: HorarioFormador) {
 

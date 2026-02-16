@@ -28,7 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -54,11 +53,27 @@ import pt.atec.hawk_portal_app.model.DatePickerFragment
 import pt.atec.hawk_portal_app.model.DisponibilidadeSalas
 import pt.atec.hawk_portal_app.states.DisponibilidadeSalasUiState
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
-import pt.atec.hawk_portal_app.viewmodel.CursosViewModel
 import pt.atec.hawk_portal_app.viewmodel.DisponibilidadeSalasViewModel
 
 private val VerdePrincipal = Color(0xFF014D4E)
 
+/**
+ * Composable responsável por apresentar o ecrã de consulta
+ * de disponibilidade de salas.
+ *
+ * Integra o componente AppMenuHamburger para navegação lateral
+ * e gere os diferentes estados da interface (loading,
+ * erro e dados prontos) através do DisponibilidadeSalasViewModel.
+ *
+ * @param onDashboard Ação de navegação para o Dashboard.
+ * @param onCursos Ação de navegação para Cursos.
+ * @param onFormandos Ação de navegação para Formandos.
+ * @param onFormadores Ação de navegação para Formadores.
+ * @param onTurmas Ação de navegação para Turmas.
+ * @param onSalas Ação de navegação para Salas.
+ * @param onLogout Ação executada ao efetuar logout.
+ * @param viewModel ViewModel responsável por gerir o estado da disponibilidade.
+ */
 @Composable
 fun DisponibilidadeSalasScreen(
     onDashboard: () -> Unit,
@@ -185,6 +200,17 @@ fun DisponibilidadeSalasScreen(
     }
 }
 
+/**
+ * Composable responsável por apresentar os filtros de pesquisa
+ * de disponibilidade de salas.
+ *
+ * Permite selecionar data, hora de início e hora de fim,
+ * acionando os métodos do ViewModel para atualizar o estado
+ * e executar a pesquisa.
+ *
+ * @param state Estado atual da interface em modo Ready.
+ * @param viewModel ViewModel responsável pela lógica da pesquisa.
+ */
 @Composable
 private fun FiltrosSalas(
     state: DisponibilidadeSalasUiState.Ready,
@@ -205,7 +231,6 @@ private fun FiltrosSalas(
                 }
             },
             onDismiss = {
-                showTimePickerFor = null
             }
 
         )
@@ -236,7 +261,7 @@ private fun FiltrosSalas(
                         }.show(it.supportFragmentManager, "datePicker")
                     }
                 }
-            ) // CampoFiltro
+            )
 
 
             // Start time field
@@ -245,7 +270,7 @@ private fun FiltrosSalas(
                 onValueChange = viewModel::HoraInicioTextoAlterado,
                 label = "Hora início (HH:mm)",
                 onClick = { showTimePickerFor = "inicio" }
-            ) // CampoFiltro
+            )
 
             // End time field
             CampoFiltro(
@@ -253,7 +278,7 @@ private fun FiltrosSalas(
                 onValueChange = viewModel::HoraFimTextoAlterado,
                 label = "Hora fim (HH:mm)",
                 onClick = { showTimePickerFor = "fim" }
-            ) // CampoFiltro
+            )
 
 
             Button(
@@ -285,6 +310,13 @@ private fun FiltrosSalas(
     }
 }
 
+/**
+ * Composable que representa um cartão individual de sala disponível.
+ *
+ * Apresenta o nome da sala, tipo e capacidade.
+ *
+ * @param sala Objeto contendo os dados da sala.
+ */
 @Composable
 fun SalaItem(sala: DisponibilidadeSalas) {
 
@@ -323,6 +355,17 @@ fun SalaItem(sala: DisponibilidadeSalas) {
     }
 }
 
+/**
+ * Composable que representa um campo de filtro apenas de leitura.
+ *
+ * O campo apresenta um valor e permite abrir um seletor externo
+ * (como DatePicker ou TimePicker) através do clique.
+ *
+ * @param value Valor atual do campo.
+ * @param onValueChange Função de atualização do valor (não utilizada diretamente).
+ * @param label Texto apresentado como label do campo.
+ * @param onClick Ação executada ao clicar no campo.
+ */
 @Composable
 private fun CampoFiltro(
     value: String,
@@ -337,12 +380,11 @@ private fun CampoFiltro(
     ) {
         OutlinedTextField(
             value = value,
-            //onValueChange = onValueChange,
             onValueChange = { /* Não fazer nada */ },
             label = { Text(label) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            readOnly = true, // no show keyboard and prevents editing
+            readOnly = true,
             enabled = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
@@ -357,7 +399,6 @@ private fun CampoFiltro(
             )
         )
 
-        // Transparent clickable surface on top of TextField
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -368,32 +409,15 @@ private fun CampoFiltro(
 
 }
 
-//@Composable
-//fun DatePickerButton(onDateSelected: (String) -> Unit) {
-//    val context = LocalContext.current
-//
-//    Button(
-//        onClick = {
-//            val activity = context as? FragmentActivity
-//            activity?.let {
-//                val datePicker = DatePickerFragment { year, month, day ->
-//                    val formattedDate = String.format("%04d-%02d-%02d", year, month + 1, day)
-//                    onDateSelected(formattedDate)
-//                }
-//                datePicker.show(it.supportFragmentManager, "datePicker")
-//            }
-//        },
-//        modifier = Modifier.fillMaxWidth(),
-//        colors = ButtonDefaults.buttonColors(
-//            containerColor = Color.Gray.copy(alpha = 0.2f),
-//            contentColor = VerdePrincipal
-//        ),
-//        shape = RoundedCornerShape(10.dp)
-//    ) {
-//        Text("Abrir Calendário")
-//    }
-//}
-
+/**
+ * Composable que apresenta um diálogo modal com um selecionador de hora.
+ *
+ * Permite ao utilizador escolher uma hora no formato 24h
+ * e devolve o valor formatado (HH:mm).
+ *
+ * @param onTimeSelected Função chamada quando a hora é confirmada.
+ * @param onDismiss Função chamada ao fechar o diálogo.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickerModal(
@@ -421,7 +445,6 @@ fun TimePickerModal(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Title
                 Text(
                     text = "Selecionar hora",
                     style = MaterialTheme.typography.labelLarge,
@@ -431,12 +454,11 @@ fun TimePickerModal(
                         .padding(bottom = 20.dp)
                 )
 
-                // The Clock with Custom Colors
                 TimePicker(
                     state = timePickerState,
                     colors = TimePickerDefaults.colors(
-                        clockDialColor = Color(0xFFF3F4F6),        // Light gray background
-                        selectorColor = VerdePrincipal,            // Green moving arm
+                        clockDialColor = Color(0xFFF3F4F6),
+                        selectorColor = VerdePrincipal,
                         containerColor = Color.White,
                         periodSelectorSelectedContainerColor = VerdePrincipal.copy(alpha = 0.1f),
                         periodSelectorSelectedContentColor = VerdePrincipal,
@@ -448,7 +470,6 @@ fun TimePickerModal(
                     )
                 )
 
-                // Buttons Row
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

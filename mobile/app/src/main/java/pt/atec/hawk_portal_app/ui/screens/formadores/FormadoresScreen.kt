@@ -24,6 +24,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +40,24 @@ import pt.atec.hawk_portal_app.model.Formador
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.FormadoresViewModel
 
+/**
+ * Composable responsável por apresentar o ecrã de listagem dos formadores.
+ *
+ * Este ecrã:
+ * - Mostra um menu lateral (AppMenuHamburger).
+ * - Apresenta um cabeçalho com título e descriçãoe e foto.
+ * - Mostra um indicador de loading enquanto os dados são carregados.
+ * - Apresenta uma mensagem caso não existam formadores.
+ * - Exibe uma lista de formadores usando LazyColumn.
+ *
+ * @param onDashboard Função de navegação para o ecrã Dashboard.
+ * @param onCursos Função opcional de navegação para o ecrã Cursos.
+ * @param onFormandos Função opcional de navegação para o ecrã Formandos.
+ * @param onFormadores Função opcional de navegação para o ecrã Formadores.
+ * @param onSalas Função opcional de navegação para o ecrã Salas.
+ * @param onLogout Função para fazer logout.
+ * @param viewModel ViewModel responsável por fornecer e gerir os dados dos formadores.
+ */
 
 @Composable
 fun FormadoresScreen(
@@ -50,7 +69,7 @@ fun FormadoresScreen(
     onLogout: () -> Unit,
     viewModel: FormadoresViewModel = viewModel()
 ) {
-
+    val uiState = viewModel.uiState.collectAsState().value
     AppMenuHamburger(
         title = "Formadores",
         onDashboard = onDashboard,
@@ -99,7 +118,7 @@ fun FormadoresScreen(
             }
 
             when {
-                viewModel.isLoading.value -> {
+                uiState.loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -108,7 +127,7 @@ fun FormadoresScreen(
                     }
                 }
 
-                viewModel.formadores.value.isEmpty() -> {
+                uiState.formadores.isEmpty() -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -125,8 +144,8 @@ fun FormadoresScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(viewModel.formadores.value) { formador ->
-                            FormadorItem(formador)
+                        items(uiState.formadores) { formador ->
+                        FormadorItem(formador)
                         }
                     }
                 }
@@ -135,6 +154,19 @@ fun FormadoresScreen(
     }
 }
 
+/**
+ * Composable responsável por representar um card de um formador
+ *
+ * Cada item apresenta:
+ * - Fotografia do formador
+ * - Nome.
+ * - Email.
+ * - Qualificações.
+ *
+ * É utilizado dentro de uma LazyColumn no ecrã FormadoresScreen.
+ *
+ * @param formador Objeto do tipo Formador que contém os dados a apresentar.
+ */
 @Composable
 fun FormadorItem(formador: Formador) {
 
@@ -193,5 +225,3 @@ fun FormadorItem(formador: Formador) {
         }
     }
 }
-
-

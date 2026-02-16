@@ -30,8 +30,25 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.atec.hawk_portal_app.model.HorarioFormando
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
+import pt.atec.hawk_portal_app.utils.formatarData
 import pt.atec.hawk_portal_app.viewmodel.HorarioFormandoViewModel
 
+/**
+ * Composable responsável por apresentar o Dashboard do Formando.
+ *
+ * Integra o componente AppMenuHamburger para navegação lateral
+ * e apresenta a secção do horário da semana do formando.
+ *
+ * A anotação @RequiresApi(Build.VERSION_CODES.O) é necessária
+ * devido à utilização de APIs de datas baseadas em java.time,
+ * disponíveis apenas a partir da API 26 (Android 8.0).
+ *
+ * @param onDashboard Ação de navegação para o Dashboard.
+ * @param onCursos Ação de navegação para Cursos.
+ * @param onAvaliacoes Ação de navegação para Avaliações.
+ * @param onTurmas Ação de navegação para Turmas.
+ * @param onLogout Ação executada ao efetuar logout.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardFormandosScreen(
@@ -50,7 +67,6 @@ fun DashboardFormandosScreen(
         onTurmas = onTurmas,
         onLogout = onLogout
     ) {
-
         Scaffold(
             containerColor = Color(0xFF014D4E)
         ) { paddingValues ->
@@ -60,13 +76,25 @@ fun DashboardFormandosScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-
                 HorarioFormandoSection()
             }
         }
     }
 }
 
+/**
+ * Composable responsável por carregar e apresentar o horário
+ * do formando.
+ *
+ * Obtém os dados através do HorarioFormandoViewModel,
+ * gere o estado de carregamento e organiza as aulas
+ * agrupadas por data.
+ *
+ * Requer API 26 ou superior devido à utilização de
+ * funcionalidades modernas de manipulação de datas.
+ *
+ * @param viewModel ViewModel responsável por fornecer os dados do horário.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HorarioFormandoSection(
@@ -100,6 +128,7 @@ fun HorarioFormandoSection(
         return
     }
 
+    // agrupa por por dias as aulas
     val groupedByDate = horarios.groupBy { it.data }
 
     LazyColumn(
@@ -132,6 +161,7 @@ fun HorarioFormandoSection(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
+            // organiza por hora inicio
             items(aulasDoDia.sortedBy { it.horaInicio }) { aula ->
                 AulaCard(aula)
                 Spacer(modifier = Modifier.height(12.dp))
@@ -144,6 +174,14 @@ fun HorarioFormandoSection(
     }
 }
 
+/**
+ * Composable que representa um cartão individual de aula
+ * no horário do formando.
+ *
+ * Apresenta o módulo, horário e sala associados.
+ *
+ * @param aula Objeto com os dados da aula.
+ */
 @Composable
 fun AulaCard(aula: HorarioFormando) {
 
@@ -180,19 +218,5 @@ fun AulaCard(aula: HorarioFormando) {
                 style = MaterialTheme.typography.bodySmall
             )
         }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun formatarData(data: String): String {
-    return try {
-        val parsed = java.time.LocalDate.parse(data)
-        parsed.dayOfMonth.toString() + " " +
-                parsed.month.name.lowercase()
-                    .replaceFirstChar { it.uppercase() } +
-                " " +
-                parsed.year
-    } catch (e: Exception) {
-        data
     }
 }

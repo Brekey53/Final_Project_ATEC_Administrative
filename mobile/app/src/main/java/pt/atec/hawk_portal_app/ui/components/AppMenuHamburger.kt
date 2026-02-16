@@ -31,6 +31,24 @@ import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 
+/**
+ * Composable que define a estrutura base do ecrã com TopAppBar
+ * e Navigation Drawer lateral (menu hamburguer).
+ *
+ * Permite configurar diferentes opções de navegação e renderizar
+ * conteúdo dinâmico na área principal do ecrã.
+ *
+ * @param title Título apresentado na TopAppBar e no cabeçalho do drawer.
+ * @param onDashboard Ação executada ao selecionar "Dashboard".
+ * @param onCursos Ação executada ao selecionar "Cursos".
+ * @param onAvaliacoes Ação executada ao selecionar "Avaliações".
+ * @param onTurmas Ação executada ao selecionar "Turmas".
+ * @param onFormandos Ação executada ao selecionar "Formandos".
+ * @param onFormadores Ação executada ao selecionar "Formadores".
+ * @param onSalas Ação executada ao selecionar "Salas".
+ * @param onLogout Ação executada ao selecionar "Logout".
+ * @param content Conteúdo principal apresentado no ecrã.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppMenuHamburger(
@@ -56,8 +74,6 @@ fun AppMenuHamburger(
             ModalDrawerSheet(
                 drawerContainerColor = Color.White
             ) {
-
-                // Header
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -145,6 +161,17 @@ fun AppMenuHamburger(
     }
 }
 
+/**
+ * Composable que representa um item individual do Navigation Drawer.
+ *
+ * Se existir uma ação associada, o item é apresentado e,
+ * ao ser selecionado, fecha o drawer e executa essa ação.
+ *
+ * @param label Texto apresentado no item.
+ * @param action Função executada ao clicar no item.
+ * @param scope Scope utilizado para controlar o estado do drawer.
+ * @param drawerState Estado atual do Navigation Drawer.
+ */
 @Composable
 private fun DrawerItem(
     label: String,

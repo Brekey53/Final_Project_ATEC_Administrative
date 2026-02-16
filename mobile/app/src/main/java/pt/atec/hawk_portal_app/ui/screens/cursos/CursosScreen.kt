@@ -38,6 +38,25 @@ import pt.atec.hawk_portal_app.model.Cursos
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.CursosViewModel
 
+/**
+ * Composable responsável por apresentar o ecrã de Cursos.
+ *
+ * Obtém a lista de cursos através do [CursosViewModel] e gere
+ * o estado de carregamento e apresentação dos dados.
+ *
+ * Integra o componente AppMenuHamburger para navegação lateral
+ * entre diferentes secções da aplicação.
+ *
+ * @param onDashboard Ação de navegação para o ecrã Dashboard.
+ * @param onCursos Ação de navegação para o ecrã Cursos.
+ * @param onFormandos Ação de navegação para o ecrã Formandos.
+ * @param onFormadores Ação de navegação para o ecrã Formadores.
+ * @param onAvaliacoes Ação de navegação para o ecrã Avaliações.
+ * @param onTurmas Ação de navegação para o ecrã Turmas.
+ * @param onSalas Ação de navegação para o ecrã Salas.
+ * @param onLogout Ação executada ao efetuar logout.
+ * @param viewModel ViewModel responsável por fornecer o estado dos cursos.
+ */
 @Composable
 fun CursosScreen(
     onDashboard: () -> Unit,
@@ -128,7 +147,14 @@ fun CursosScreen(
     }
 }
 
-
+/**
+ * Composable que representa um item individual da lista de cursos.
+ *
+ * Apresenta o nome do curso e a respetiva área de formação
+ * dentro de um Card.
+ *
+ * @param curso Objeto com os dados do curso.
+ */
 @Composable
 fun CursoItem(curso: Cursos) {
 

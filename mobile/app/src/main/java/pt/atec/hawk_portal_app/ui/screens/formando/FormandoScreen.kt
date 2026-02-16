@@ -24,6 +24,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,22 @@ import pt.atec.hawk_portal_app.model.Formando
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.FormandosViewModel
 
+/**
+ * Composable responsável por apresentar o Ui da
+ * listagem de formandos
+ *
+ * Integra o componente AppMenuHamburger para navegação lateral
+ * e gere os diferentes estados da interface (loading,
+ * erro e dados prontos) através do FormandosViewModel.
+ *
+ * @param onDashboard Ação de navegação para o Dashboard.
+ * @param onCursos Ação de navegação para Cursos.
+ * @param onFormandos Ação de navegação para Formandos.
+ * @param onFormadores Ação de navegação para Formadores.
+ * @param onSalas Ação de navegação para Salas.
+ * @param onLogout Ação executada ao efetuar logout.
+ * @param viewModel ViewModel responsável por gerir o estado da disponibilidade.
+ */
 @Composable
 fun FormandoScreen(
     onDashboard: () -> Unit,
@@ -49,6 +67,8 @@ fun FormandoScreen(
     onLogout: () -> Unit,
     viewModel: FormandosViewModel = viewModel()
 ) {
+
+    val uiState by viewModel.uiState.collectAsState()
 
     AppMenuHamburger(
         title = "Formandos",
@@ -65,8 +85,6 @@ fun FormandoScreen(
                 .fillMaxSize()
                 .background(Color(0xFF014D4E))
         ) {
-
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -97,10 +115,8 @@ fun FormandoScreen(
                     )
                 }
             }
-
-            // Conteúdo
             when {
-                viewModel.isLoading.value -> {
+                uiState.loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -109,7 +125,7 @@ fun FormandoScreen(
                     }
                 }
 
-                viewModel.formandos.value.isEmpty() -> {
+                uiState.formandos.isEmpty() -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -126,7 +142,7 @@ fun FormandoScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(viewModel.formandos.value) { formando ->
+                        items(uiState.formandos) { formando ->
                             FormandoItem(formando)
                         }
                     }
@@ -136,6 +152,16 @@ fun FormandoScreen(
     }
 }
 
+/**
+ * Composable responsável por apresentar os cards de apresentação
+ * dos formandos
+ *
+ * Mostra cards a fundo branco com sombra, e com dados dos formandos que
+ * podem ter uma imagem da API ou, caso não exista, apresenta uma imagem
+ * placeholder
+ *
+ * @param formando Objeto formando com dados
+ */
 @Composable
 fun FormandoItem(formando: Formando) {
 
@@ -194,5 +220,3 @@ fun FormandoItem(formando: Formando) {
         }
     }
 }
-
-

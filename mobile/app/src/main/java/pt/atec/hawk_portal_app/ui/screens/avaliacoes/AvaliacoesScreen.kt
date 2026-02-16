@@ -31,6 +31,22 @@ import pt.atec.hawk_portal_app.model.AvaliacoesFormando
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 import pt.atec.hawk_portal_app.viewmodel.AvaliacoesViewModel
 
+/**
+ * Composable responsável por apresentar o ecrã de Avaliações.
+ *
+ * Obtém os dados através do [AvaliacoesViewModel] e gere os estados
+ * de carregamento, erro e sucesso. Em caso de sucesso, apresenta
+ * a lista de avaliações num LazyColumn.
+ *
+ * Integra o componente AppMenuHamburger para navegação lateral de Formandos.
+ *
+ * @param onDashboard Ação de navegação para o ecrã Dashboard.
+ * @param onCursos Ação de navegação para o ecrã Cursos.
+ * @param onAvaliacoes Ação de navegação para o ecrã Avaliações.
+ * @param onTurmas Ação de navegação para o ecrã Turmas.
+ * @param onLogout Ação executada ao efetuar logout.
+ * @param viewModel ViewModel responsável por fornecer o estado das avaliações.
+ */
 @Composable
 fun AvaliacoesScreen(
     onDashboard: () -> Unit,
@@ -59,7 +75,6 @@ fun AvaliacoesScreen(
         Scaffold(
             containerColor = Color(0xFF014D4E)
         ) { paddingValues ->
-
             when {
                 uiState.loading -> {
                     Box(
@@ -104,6 +119,14 @@ fun AvaliacoesScreen(
     }
 }
 
+/**
+ * Composable que representa um cartão individual de avaliação.
+ *
+ * Apresenta a informação principal da avaliação, incluindo
+ * nome do módulo, nota obtida e data da avaliação.
+ *
+ * @param avaliacao Objeto contendo os dados da avaliação do formando.
+ */
 @Composable
 fun AvaliacaoCard(avaliacao: AvaliacoesFormando) {
 

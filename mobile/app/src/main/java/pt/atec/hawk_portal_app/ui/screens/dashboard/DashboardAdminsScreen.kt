@@ -19,6 +19,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import pt.atec.hawk_portal_app.ui.components.AppMenuHamburger
 
+/**
+ * Composable responsável por apresentar o ecrã principal dos Admins (Dashboard).
+ *
+ * Integra o componente AppMenuHamburger para navegação lateral
+ * e apresenta botões de acesso rápido às principais secções
+ * da aplicação.
+ *
+ * @param onDashboard Ação de navegação para o ecrã Dashboard.
+ * @param onCursos Ação de navegação para o ecrã Cursos.
+ * @param onFormandos Ação de navegação para o ecrã Formandos.
+ * @param onFormadores Ação de navegação para o ecrã Formadores.
+ * @param onSalas Ação de navegação para o ecrã Salas.
+ * @param onLogout Ação executada ao efetuar logout.
+ */
 @Composable
 fun DashboardScreen(
     onDashboard: () -> Unit,
@@ -59,7 +73,15 @@ fun DashboardScreen(
     }
 }
 
-
+/**
+ * Composable que representa um botão de navegação no Dashboard.
+ *
+ * É utilizado para encaminhar o utilizador para diferentes
+ * secções da aplicação.
+ *
+ * @param text Texto apresentado no botão.
+ * @param onClick Ação executada ao clicar no botão.
+ */
 @Composable
 fun DashboardButton(
     text: String,
@@ -83,5 +105,3 @@ fun DashboardButton(
         )
     }
 }
-
-
