@@ -221,8 +221,6 @@ CREATE TABLE horarios (
     FOREIGN KEY (id_sala) REFERENCES salas(id_sala)
 );
 
-
-
 -- ÁREAS
 INSERT INTO areas (nome) VALUES
 ('Informática'),
@@ -230,7 +228,6 @@ INSERT INTO areas (nome) VALUES
 ('Eletrónica'),
 ('Gestão'),
 ('Automação');
-
 
 -- Tipos de Salas
 INSERT INTO tipo_salas (nome) VALUES
@@ -274,7 +271,7 @@ INSERT INTO tipo_materias (tipo) VALUES
 ('IA & Data Science'),
 ('Design & Multimédia'),
 ('Governança & Qualidade'),
-('Gerais (ex: Linguas, Matemática)');
+('Gerais (ex: Linguas, Matemática, Inglês)');
 
 INSERT INTO metodologias_horarios (nome, horario_inicio, horario_fim, pausa_refeicao_inicio, pausa_refeicao_fim) VALUES
 ('Diurno', '09:00:00', '16:00:00', '12:00:00', '13:00:00'),
@@ -294,7 +291,7 @@ INSERT INTO materia_sala_compatibilidade (id_tipo_materia, id_tipo_sala) VALUES
 (10, 3), (10, 5), (10, 7), (10, 8), (10, 10),
 (11, 3), (11 , 10);
 
--- UTILIZADORES (passe é 123)
+-- UTILIZADORES
 INSERT INTO utilizadores
 (nome, nif, data_nascimento, morada, telefone, sexo, email, password_hash, id_google, id_facebook, id_tipo_utilizador, status_ativacao, token_ativacao, ativo, data_desativacao)
 VALUES
@@ -307,8 +304,8 @@ VALUES
 ('Eduardo Formador','555666777','1980-12-12','Pinhal Novo','912300005','Masculino','eduardo@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_005',TRUE,NULL),
 ('Maria Aluna','999888777','2001-05-20','Palmela','913400001','Feminino','maria@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_006',TRUE,NULL),
 ('José Silva','888777666','2000-09-15','Moita','913400002','Masculino','jose@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_007',TRUE,NULL),
-('Sara Santos','777666555','1999-02-28','Montijo','913400003','Feminino','sara@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_008',TRUE,NULL),
-('Pedro Rocha','666555444','2002-11-11','Palmela','913400004','Masculino','pedro@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_009',TRUE,NULL),
+('Sara Santos','777666555','1999-02-28','Montijo','913400003','Feminino','sara@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_008',TRUE,NULL), 
+('Pedro Rocha','666555444','2002-11-11','Palmela','913400004','Masculino','pedro@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_009',TRUE,NULL), 
 ('Inês Costa','555444333','2001-08-05','Setúbal','913400005','Feminino','ines@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_010',TRUE,NULL),
 ('André Ferreira','700000001','2002-01-01','Setúbal','913400006','Masculino','andre.1@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_011',TRUE,NULL),
 ('Beatriz Gomes','700000002','2001-02-02','Moita','913400007','Feminino','beatriz.2@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_012',TRUE,NULL),
@@ -318,7 +315,7 @@ VALUES
 ('Francisca Costa','700000006','2000-06-06','Seixal','913400011','Feminino','francisca.6@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_016',TRUE,NULL),
 ('Gabriel Rodrigues','700000007','2002-07-07','Setúbal','913400012','Masculino','gabriel.7@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_017',TRUE,NULL),
 ('Helena Martins','700000008','2001-08-08','Moita','913400013','Feminino','helena.8@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_018',TRUE,NULL),
-('Igor Pereira','700000009','2000-09-09','Montijo','913400014','Masculino','igor.9@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_019',TRUE,NULL),
+('Igor Pereira','700000009','2000-09-09','Montijo','913400014','Masculino','igor.9@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_019',TRUE,NULL), 
 ('Joana Alves','700000010','2002-10-10','Barreiro','913400015','Feminino','joana.10@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_020',TRUE,NULL),
 ('Kevin Sousa','700000011','2001-11-11','Almada','913400016','Masculino','kevin.11@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_021',TRUE,NULL),
 ('Laura Fernandes','700000012','2000-12-12','Seixal','913400017','Feminino','laura.12@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_022',TRUE,NULL),
@@ -328,7 +325,7 @@ VALUES
 ('Paula Teixeira','700000016','2002-04-16','Barreiro','913400021','Feminino','paula.16@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_026',TRUE,NULL),
 ('Quintino Lopes','700000017','2001-05-17','Almada','913400022','Masculino','quintino.17@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_027',TRUE,NULL),
 ('Rita Mendes','700000018','2000-06-18','Seixal','913400023','Feminino','rita.18@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_028',TRUE,NULL),
-('Sérgio Pinto','700000019','2002-07-19','Setúbal','913400024','Masculino','sergio.19@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_029',TRUE,NULL),
+('Sérgio Pinto','700000019','2002-07-19','Setúbal','913400024','Masculino','sergio.19@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_029',TRUE,NULL), 
 ('Tatiana Moreira','700000020','2001-08-20','Moita','913400025','Feminino','tatiana.20@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_030',TRUE,NULL),
 ('Ulisses Nunes','700000021','2000-09-21','Montijo','913400026','Masculino','ulisses.21@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_031',TRUE,NULL),
 ('Vera Correia','700000022','2002-10-22','Barreiro','913400027','Feminino','vera.22@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_032',TRUE,NULL),
@@ -347,10 +344,10 @@ VALUES
 ('Inês Marques','700000035','2001-11-05','Almada','913400040','Feminino','ines.35@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_045',TRUE,NULL),
 ('Jorge Simões','700000036','2000-12-06','Seixal','913400041','Masculino','jorge.36@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_046',TRUE,NULL),
 ('Karina Batista','700000037','2002-01-07','Setúbal','913400042','Feminino','karina.37@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_047',TRUE,NULL),
-('Luís Fonseca','700000038','2001-02-08','Moita','913400043','Masculino','luis.38@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_048',TRUE,NULL),
-('Mariana Coelho','700000039','2000-03-09','Montijo','913400044','Feminino','mariana.39@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_049',TRUE,NULL),
-('Nelson Pires','700000040','2002-04-10','Barreiro','913400045','Masculino','nelson.40@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,3,1,'tok_050',TRUE,NULL),
-('Rui Matos','666777888','1976-04-12','Lisboa','914500001','Masculino','rui.matos@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_051',TRUE,NULL), -- 50
+('Luís Fonseca','700000038','2001-02-08','Moita','913400043','Masculino','luis.38@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_048',TRUE,NULL),
+('Mariana Coelho','700000039','2000-03-09','Montijo','913400044','Feminino','mariana.39@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_049',TRUE,NULL),
+('Nelson Pires','700000040','2002-04-10','Barreiro','913400045','Masculino','nelson.40@student.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_050',TRUE,NULL),
+('Rui Matos','666777888','1976-04-12','Lisboa','914500001','Masculino','rui.matos@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_051',TRUE,NULL), 
 ('Sofia Pacheco','777888999','1984-09-18','Setúbal','914500002','Feminino','sofia.pacheco@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_052',TRUE,NULL),
 ('Miguel Correia','888999000','1979-06-25','Almada','914500003','Masculino','miguel.correia@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_053',TRUE,NULL),
 ('Patrícia Lopes','999000111','1987-02-14','Barreiro','914500004','Feminino','patricia.lopes@atec.pt','$2a$11$3G0SkkSZ4nd/dom.qeEpRuUJtqamKATGYVC4JD5j6v2.SnKwfmqne',NULL,NULL,2,1,'tok_054',TRUE,NULL),
@@ -358,18 +355,19 @@ VALUES
 
 -- FORMADORES (Ligar aos primeiros 7 utilizadores)
 INSERT INTO formadores (id_utilizador, iban, qualificacoes) VALUES 
-(8, 'PT500001', 'Mestre em Engenharia'),
-(9, 'PT500002', 'Licenciada em Matemática'),
 (3, 'PT500003', 'Especialista Redes'),
 (4, 'PT500004', 'Doutorada em IA'),
 (5, 'PT500005', 'Certificação Cisco'),
 (6, 'PT500006', 'Licenciado em Informática'),
 (7, 'PT500007', 'Especialista em Bases de Dados'),
 (50, 'PT600001', 'Especialista DevOps'),
-(51, 'PT600002', 'UX/UI Designer'),
+(51, 'PT600001', 'Especialista Cloud'),
 (52, 'PT600003', 'Engenheiro de Software'),
-(53, 'PT600004', 'Especialista Cibersegurança'),
-(54, 'PT600005', 'Administrador de Sistemas');
+(53, 'PT600004', 'Especialista WebDesign'),
+(54, 'PT600004', 'Especialista Desenvolvimento Web'),
+(55, 'PT600004', 'Especialista Desenvolvimento Software'),
+(56, 'PT600004', 'Especialista Cibersegurança'),
+(57, 'PT600005', 'Administrador de Sistemas');
 
 -- FORMANDOS
 INSERT INTO formandos (id_utilizador, id_escolaridade) VALUES 
@@ -446,7 +444,7 @@ INSERT INTO modulos (codigo_identificacao, nome, horas_totais, creditos, id_tipo
 ('UFCD0859','Adobe Illustrator',25,2.5,9),
 ('UFCD0862','UX/UI Design',50,4.5,9),
 
--- Gestão & Governança
+-- Gestão 
 ('UFCD0123','Ética Profissional',25,2.0,6),
 ('UFCD0795','Gestão de Projetos',25,2.5,6),
 ('UFCD0874','Scrum',25,2.5,6),
@@ -462,31 +460,43 @@ INSERT INTO modulos (codigo_identificacao, nome, horas_totais, creditos, id_tipo
 -- N:N FORMANDOS <-> TIPO_MATÉRIAS
 INSERT INTO formadores_tipo_materias (id_formador, id_tipo_materia) VALUES
 -- Carlos Professor
-(1,1),(1,4),
+(1,1),(1,2),(1,3),(1,4),
 
 -- Ana Docente
-(2,1),(2,2),
+(2,1),(2,2),(2,3),(2,4),
 
 -- Leonor Joaquim
-(3,2),(3,3),
+(3,2),(3,3),(3,1),(3,4),(3,5),
 
 -- Daniela Instrutora
-(4,1),(4,8),
+(4,1),(4,2),(4,3),(4,4),(4,5),(4,6),(4,7),(4,8),
 
 -- Eduardo Formador
-(5,5),(5,3),
+(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7),(5,8),(5,9),(5,10),(5,11),
 
--- Formador 6
-(6,7),(6,1),
+-- Luís Fonseca
+(6,1),(6,2),(6,3),(6,4),(6,5),(6,6),(6,7),(6,8),
 
--- Formador 7
-(7,4),(7,6),
+-- Mariana Coelho
+(7,1),(7,2),(7,3),(7,4),(7,5),(7,6),(7,7),(7,8),
 
--- Formadores extra
-(8,7),(8,1),
-(9,9),
-(10,5),
-(11,8);
+-- Nelson Pires
+(8,4),(8,5),(8,6),(8,7),(8,8),(8,9),(8,10),(8,11),
+
+-- Rui Matos
+(9,4),(9,5),(9,6),(9,7),(9,8),(9,9),(9,10),(9,11),
+
+-- Sofia Pacheco
+(10,4),(10,5),(10,6),(10,7),(10,8),(10,9),(10,10),(10,11),
+
+-- Miguel Correia
+(11,4),(11,5),(11,6),(11,7),(11,8),(11,9),(11,10),(11,11),
+
+-- Patricia Lopes
+(12,7),(12,8),(12,9),(12,10),(12,11),
+
+-- João Neves
+(13,8),(13,9),(13,10),(13,11);
 
 -- CURSOS
 INSERT INTO cursos (id_area, nome, descricao) VALUES 
@@ -494,7 +504,8 @@ INSERT INTO cursos (id_area, nome, descricao) VALUES
 (1, 'Cibersegurança', 'Gestão de Redes'),
 (2, 'Mecânica Industrial', 'Manutenção Automóvel'), 
 (3, 'Eletrónica Aplicada', 'Circuitos'), 
-(4, 'Gestão Escolar', 'Secretariado');
+(4, 'Gestão Escolar', 'Secretariado'),
+(5, 'Automação - Máquinas', 'Gerir circuitos de máquinas');
 
 -- MATRIZ DE CURSOS
 INSERT INTO cursos_modulos (id_curso, id_modulo, prioridade) VALUES 
@@ -570,17 +581,22 @@ INSERT INTO cursos_modulos (id_curso, id_modulo, prioridade) VALUES
 
 -- TURMAS
 INSERT INTO turmas (id_curso, nome_turma, data_inicio, data_fim, id_metodologia) VALUES 
-(1, 'TPSI-PAL-0525', '2025-11-03', '2026-07-15', 1), (1, 'TPSI-PAL-0626', '2026-01-10', '2026-09-20', 1),
-(2, 'CIBER-2025', '2025-09-01', '2026-06-30', 1), (3, 'MEC-01', '2026-02-01', '2026-12-15', 1),
-(4, 'ELET-01', '2025-10-01', '2026-05-30', 1);
+(1, 'TPSI-PAL-0525', '2025-11-03', '2026-07-15', 1), 
+(1, 'TPSI-PAL-0626', '2026-01-10', '2026-09-20', 1),
+(2, 'CIBER-2025', '2025-09-01', '2026-06-30', 1), 
+(3, 'MEC-01', '2026-02-01', '2026-12-15', 1),
+(1, 'TPSI-PAL-0726', '2026-02-17', '2028-01-30', 2),
+(2, 'CIBER-2026', '2026-03-01', '2028-03-30', 2),
+(3, 'MEC-02', '2026-03-01', '2028-05-30', 2),
+(4, 'Gestão-01', '2026-04-01', '2028-05-30', 2);
 
 -- SALAS
 INSERT INTO salas (descricao, num_max_alunos, id_tipo_sala) VALUES 
 -- Laboratórios Informática
-('Lab Informática 01', 20, 1),
-('Lab Informática 02', 20, 1),
-('Lab Informática 03', 18, 1),
-('Lab Informática 04', 22, 1),
+('Lab 01', 20, 1),
+('Lab 02', 20, 1),
+('Lab 03', 18, 1),
+('Lab 04', 22, 1),
 
 -- Laboratórios Técnicos
 ('Lab Redes e Sistemas', 16, 2),
@@ -588,18 +604,14 @@ INSERT INTO salas (descricao, num_max_alunos, id_tipo_sala) VALUES
 ('Lab Eletrónica', 12, 2),
 ('Lab Robótica', 14, 2),
 ('Lab Automação', 12, 2),
+('Lab Química', 16, 2),
+('Lab Física', 18, 2),
+('Atelier Design', 15, 2),
+('Estúdio Multimédia', 14, 2),
 
 -- Oficinas
 ('Oficina Soldadura', 10, 4),
 ('Oficina Mecânica', 12, 4),
-
--- Outros Laboratórios
-('Lab Química', 16, 2),
-('Lab Física', 18, 2),
-
--- Salas criativas
-('Atelier Design', 15, 2),
-('Estúdio Multimédia', 14, 2),
 
 -- Salas Teóricas
 ('Sala Teórica 01', 30, 3),
@@ -628,34 +640,87 @@ INSERT INTO salas (descricao, num_max_alunos, id_tipo_sala) VALUES
 
 -- ALOCAÇÕES (Quem dá o quê em cada turma)
 INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES 
--- Turma 1: TPSI-PAL-0525
-(1, 1, 1),(1, 2, 2),(1, 3, 3),(1, 4, 4),(1, 5, 5),
-(1, 6, 1),(1, 7, 2),(1, 8, 3),(1, 9, 4),(1, 10, 5),
-(1, 11, 1),(1, 12, 2),(1, 13, 3),(1, 14, 4),(1, 15, 5),
-(1, 16, 6),(1, 17, 7),(1, 18, 1),(1, 19, 2),(1, 20, 3),
-(1, 21, 4),(1, 22, 5),
+(1, 1, 1),
+(1, 2, 2),
+(1, 3, 3),
+(1, 4, 4),
+(1, 5, 5),
+(1, 6, 1),
+(1, 7, 2),
+(1, 8, 3),
+(1, 9, 4),
+(1, 10, 5),
+(1, 11, 1),
+(1, 12, 2),
+(1, 13, 3),
+(1, 14, 4),
+(1, 15, 5),
+(1, 16, 6),
+(1, 17, 7),
+(1, 18, 1),
+(1, 19, 2),
+(1, 20, 3),
+(1, 21, 4),
+(1, 22, 5),
 
--- Turma 2: TPSI-PAL-0626
-(2, 1, 3),(2, 2, 4),(2, 3, 5),(2, 4, 6),(2, 5, 7),
-(2, 6, 3),(2, 7, 4),(2, 8, 5),(2, 9, 6),(2, 10, 7),
-(2, 11, 3),(2, 12, 4),(2, 13, 5),(2, 14, 6),(2, 15, 7),
-(2, 16, 1),(2, 17, 2),(2, 18, 3),(2, 19, 4),(2, 20, 5),
-(2, 21, 6),(2, 22, 7),
+(2, 1, 3),
+(2, 2, 4),
+(2, 3, 5),
+(2, 4, 6),
+(2, 5, 7),
+(2, 6, 3),
+(2, 7, 4),
+(2, 8, 5),
+(2, 9, 6),
+(2, 10, 7),
+(2, 11, 3),
+(2, 12, 4),
+(2, 13, 5),
+(2, 14, 6),
+(2, 15, 7),
+(2, 16, 1),
+(2, 17, 2),
+(2, 18, 3),
+(2, 19, 4),
+(2, 20, 5),
+(2, 21, 6),
+(2, 22, 7),
 
--- Turma 3: CIBER-2025
-(3, 2, 2),(3, 8, 3),(3, 9, 4),(3, 22, 5),
-(3, 23, 6),(3, 24, 7),(3, 25, 1),(3, 26, 3),
-(3, 27, 4),(3, 28, 5),(3, 29, 6),(3, 30, 7),
+(3, 2, 2),
+(3, 8, 3),
+(3, 9, 4),
+(3, 22, 5),
+(3, 23, 6),
+(3, 24, 7),
+(3, 25, 1),
+(3, 26, 3),
+(3, 27, 4),
+(3, 28, 5),
+(3, 29, 6),
+(3, 30, 7),
 
--- Turma 4: MEC-01
-(4, 3, 1),(4, 5, 5),(4, 12, 2),(4, 40, 3),(4, 41, 4),
-(4, 42, 6),(4, 43, 7),(4, 44, 1),(4, 45, 2),
+(4, 3, 1),
+(4, 5, 5),
+(4, 12, 2),
+(4, 40, 11),
+(4, 41, 8),
+(4, 42, 9),
+(4, 43, 10),
+(4, 44, 11),
+(4, 45, 12),
 
--- Turma 5: ELET-01
-(5, 3, 2),(5, 4, 4),(5, 5, 5),(5, 12, 1),(5, 38, 3),
-(5, 39, 4),(5, 40, 6),(5, 41, 7),(5, 42, 1),
-(5, 43, 2),(5, 44, 3),(5, 45, 4);
-
+(5, 3, 2),
+(5, 4, 4),
+(5, 5, 5),
+(5, 12, 1),
+(5, 38, 7),
+(5, 39, 8),
+(5, 40, 9),
+(5, 41, 13),
+(5, 42, 12),
+(5, 43, 11),
+(5, 44, 10),
+(5, 45, 9);
 
 -- INSCRIÇÕES
 INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES 
@@ -710,7 +775,7 @@ INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES
 (42, 4, '2026-01-11', 'Ativo');
 
 -- HORÁRIOS
-INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES 
+INSERT INTO horarios (id_turma, id_curso_modulo, id_formador, id_sala, data, hora_inicio, hora_fim) VALUES
 -- TURMA 1
 (1, 1, 1, 1, '2026-01-26', '09:00:00', '13:00:00'),
 (1, 2, 2, 2, '2026-01-26', '14:00:00', '18:00:00'),
@@ -871,10 +936,10 @@ INSERT INTO avaliacoes (`id_avaliacao`, `id_inscricao`, `id_modulo`, `nota`, `da
 ('84', '32', '9', '17.75', '2025-09-25'),
 ('85', '32', '22', '16.50', '2025-10-05');
 
--- DISPONIBILIDADE DE FORMADORES
 
+-- DISPONIBILIDADE DE FORMADORES
 INSERT INTO disponibilidade_formadores (id_formador, data_disponivel, hora_inicio, hora_fim) VALUES 
--- Formador 1 (Maria Aluna) - Disponível Seg/Qua/Sex manhãs e tardes
+-- Formador 1 
 (1, '2026-02-19', '09:00:00', '13:00:00'),
 (1, '2026-02-19', '14:00:00', '18:00:00'),
 (1, '2026-02-20', '09:00:00', '13:00:00'),
@@ -893,7 +958,7 @@ INSERT INTO disponibilidade_formadores (id_formador, data_disponivel, hora_inici
 (1, '2026-03-03', '09:00:00', '13:00:00'),
 (1, '2026-03-03', '14:00:00', '18:00:00'),
 
--- Formador 4 (Ana Docente) - Disponível Seg/Qua/Sex tardes e Ter/Qui completo
+-- Formador 4
 (4, '2026-02-19', '09:00:00', '13:00:00'),
 (4, '2026-02-19', '14:00:00', '18:00:00'),
 (4, '2026-02-20', '09:00:00', '13:00:00'),
@@ -913,7 +978,7 @@ INSERT INTO disponibilidade_formadores (id_formador, data_disponivel, hora_inici
 (4, '2026-03-03', '14:00:00', '18:00:00'),
 
 
--- Formador 9 - Disponível flexível
+-- Formador 9
 (9, '2026-02-19', '09:00:00', '13:00:00'),
 (9, '2026-02-19', '14:00:00', '18:00:00'),
 (9, '2026-02-20', '09:00:00', '13:00:00'),
