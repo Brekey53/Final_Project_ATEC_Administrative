@@ -1,5 +1,8 @@
 import type { UserRole } from "./MapUserRole";
 
+/**
+ * Chaves de navegação correspondentes às rotas/permissões.
+ */
 export type NavKey =
   | "dashboard"
   | "perfil"
@@ -9,6 +12,9 @@ export type NavKey =
   | "turmas"
   | "turma";
 
+/**
+ * Define as permissões de navegação por tipo de utilizador.
+ */
 export const NAV_PERMISSIONS: Record<UserRole, NavKey[]> = {
   ADMIN: [
     "dashboard",

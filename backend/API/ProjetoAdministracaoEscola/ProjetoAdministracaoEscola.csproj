@@ -32,4 +32,12 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ModelsDTO\Escolaridades\Requests\" />
+    <Folder Include="ModelsDTO\GetMinhaTurma\Responses\" />
+    <Folder Include="ModelsDTO\Login\Requests\" />
+    <Folder Include="ModelsDTO\MobileDTO\Requests\" />
+    <Folder Include="ModelsDTO\TipoMateria\Requests\" />
+  </ItemGroup>
+
 </Project>

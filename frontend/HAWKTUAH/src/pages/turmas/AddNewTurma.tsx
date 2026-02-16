@@ -10,6 +10,7 @@ import {
   getMetodologias,
 } from "../../services/turmas/TurmasService";
 import type { Curso } from "../../services/cursos/CursosService";
+import { getHojeISO, getMaxDataFimISO } from "../../utils/dataUtils";
 
 export default function AddNewTurma() {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ export default function AddNewTurma() {
   ) => {
     const { name, value } = e.target;
 
+
     // Preencher nomeCurso para o backend (não editável pelo utilizador)
     if (name == "idCurso") {
       const cursoId = Number(value);
@@ -81,10 +83,13 @@ export default function AddNewTurma() {
       return;
     }
 
-    if (formData.dataInicio && formData.dataFim && !isDataFimValida(formData.dataInicio, formData.dataFim)) {
-      toast.error("A data de fim deve ser igual ou posterior à data de início.", {
-        id: "erroDataFim",
-      });
+    if(formData.dataInicio <= getHojeISO() || formData.dataInicio >= formData.dataFim){
+      toast.error("Data de Inicio de nova turma não pode ser inferior ao dia de hoje ou posterior à data de fim.", {id: "erroDataInicioTurma"})
+      return;
+    }
+
+    if(formData.dataFim <= formData.dataInicio || formData.dataFim >= getMaxDataFimISO()){
+      toast.error("Data de Fim de nova turma não pode ser inferior ao dia de Inicio ou posterior a 3 anos após o dia de Inicio.", {id: "erroDataFimTurma"})
       return;
     }
 
@@ -127,7 +132,7 @@ export default function AddNewTurma() {
           </p>
         </div>
         <button
-          className="btn btn-light border rounded-pill px-4"
+          className="btn btn-light border"
           onClick={() => navigate("/turmas")}
         >
           Voltar

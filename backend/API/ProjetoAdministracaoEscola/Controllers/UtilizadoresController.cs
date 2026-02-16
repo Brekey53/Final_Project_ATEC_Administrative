@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO.Users;
+using ProjetoAdministracaoEscola.ModelsDTO.Users.Requests;
+using ProjetoAdministracaoEscola.ModelsDTO.Users.Responses;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers
@@ -480,7 +481,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// <response code="404">Utilizador não encontrado.</response>
         /// <response code="403">Acesso negado.</response>
         // DELETE: api/Utilizadores/5
-        [Authorize(Policy = "AdminOrAdministrativo")]
+        [Authorize(Policy = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUtilizador(int id)
         {
@@ -573,6 +574,11 @@ namespace ProjetoAdministracaoEscola.Controllers
 
             var existe = await _context.Utilizadores
                 .AnyAsync(u => u.Email.ToLower() == emailNormalizado);
+
+            if (!existe)
+            {
+                return BadRequest(new { message = "Email não encontrado." });
+            }
 
             return Ok(new { existe });
         }

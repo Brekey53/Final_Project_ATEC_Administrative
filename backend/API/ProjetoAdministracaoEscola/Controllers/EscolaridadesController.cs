@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO.Escolaridades;
+using ProjetoAdministracaoEscola.ModelsDTO.Escolaridades.Responses;
 
 namespace ProjetoAdministracaoEscola.Controllers
 {

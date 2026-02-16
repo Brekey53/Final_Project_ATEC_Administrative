@@ -3,6 +3,8 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { checkEmail } from "../../services/users/UserService";
+
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -13,14 +15,20 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
+
+      const resMail = await checkEmail(email);
+      if (!resMail) {
+        toast.error("Email não encontrado na nossa base de dados.", { id: "errorEmail"});
+        return;
+      }
+
       const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, {
         email,
       });
       toast.success("Irá receber um email com instruções.", { id: "MailEnviado" });
       return res.data;
     } catch (err: any) {
-      toast.error(
-        err.mensagem || "Ocorreu um erro. Tente novamente mais tarde.", { id: "errorNãoEnviado" }
+      toast.error( err.response?.data?.message || "Ocorreu um erro. Tente novamente mais tarde.", { id: "errorNãoEnviado" }
       );
     } finally {
       setLoading(false);

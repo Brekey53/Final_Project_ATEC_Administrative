@@ -2,6 +2,9 @@ import React from "react";
 import "../css/cardsDashboard.css";
 import { Link } from "react-router-dom";
 
+/**
+ * Propriedades do cartão de dashboard.
+ */
 interface CardProps {
   title: string;
   value: number | string;
@@ -10,6 +13,9 @@ interface CardProps {
   detailsLink?: string;
 }
 
+/**
+ * Componente de cartão estatístico para o Dashboard.
+ */
 export default function CardsDashboard({
   title,
   value,
@@ -18,10 +24,7 @@ export default function CardsDashboard({
   detailsLink,
 }: CardProps) {
   return (
-    <Link
-      to={detailsLink ?? "#"}
-      className="dashboard-card-link"
-    >
+    <Link to={detailsLink ?? "#"} className="dashboard-card-link">
       <div className="dashboard-card">
         <div className="dashboard-card-main">
           <div>
@@ -37,11 +40,7 @@ export default function CardsDashboard({
           </div>
         </div>
 
-        {detailsLink && (
-          <div className="card-footer-link">
-            Ver detalhes →
-          </div>
-        )}
+        {detailsLink && <div className="card-footer-link">Ver detalhes →</div>}
       </div>
     </Link>
   );

@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../../css/layoutTabelas.css";
 import { toast } from "react-hot-toast";
-import { getTurmas, deleteTurma, type Turma } from "../../services/turmas/TurmasService";
+import {
+  getTurmas,
+  deleteTurma,
+  type Turma,
+} from "../../services/turmas/TurmasService";
 import { normalizarTexto } from "../../utils/stringUtils";
 import { Pencil, Search, Trash } from "lucide-react";
 import { Tooltip } from "bootstrap";
@@ -25,31 +29,35 @@ export default function AdminTurmas() {
         if (!data) return;
         setTurmas(data);
       } catch (err: any) {
-        toast.error(err || "Erro ao carregar turmas.", { id: "erroAdminTurmas" });
+        toast.error(err || "Erro ao carregar turmas.", {
+          id: "erroAdminTurmas",
+        });
       }
     }
 
     fetchTurmas();
   }, []);
 
-   async function handleDeleteTurma() {
-      if (!turmaSelecionada) return;
-  
-      try {
-        await deleteTurma(turmaSelecionada.idTurma);
-  
-        setTurmas((prev) =>
-          prev.filter((c) => c.idTurma !== turmaSelecionada.idTurma),
-        );
-  
-        setTurmaSelecionada(null);
-        setShowDeleteModal(false);
-  
-        toast.success("Turma eliminada com sucesso", { id: "sucessAdminTurmas" });
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || "Erro ao eliminar Turma", { id: "eoorAdminTurmas" });
-      }
+  async function handleDeleteTurma() {
+    if (!turmaSelecionada) return;
+
+    try {
+      await deleteTurma(turmaSelecionada.idTurma);
+
+      setTurmas((prev) =>
+        prev.filter((c) => c.idTurma !== turmaSelecionada.idTurma),
+      );
+
+      setTurmaSelecionada(null);
+      setShowDeleteModal(false);
+
+      toast.success("Turma eliminada com sucesso", { id: "sucessAdminTurmas" });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Erro ao eliminar Turma", {
+        id: "eoorAdminTurmas",
+      });
     }
+  }
 
   const turmasFiltradas = turmas
     .filter((t) => {
@@ -94,7 +102,7 @@ export default function AdminTurmas() {
     return () => {
       tooltipList.forEach((t) => t.dispose());
     };
-  }, [turmasPaginadas]); 
+  }, [turmasPaginadas]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -228,7 +236,7 @@ export default function AdminTurmas() {
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
                     onClick={() => {
-                      //TODO: Implementar dleete turmas 
+                      //TODO: Implementar dleete turmas
                       setTurmaSelecionada(t);
                       setShowDeleteModal(true);
                     }}

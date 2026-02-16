@@ -5,11 +5,15 @@ import foto from "../img/hawktu.png";
 import fotoDefault from "../img/avatarNavbar.png";
 import { useEffect, useState } from "react";
 
-import NavbarService from "../services/navbar/NavbarService";
+import NavbarService from "../services/Navbar/NavbarService";
 import { mapUserRole } from "../auth/MapUserRole";
 import { NAV_PERMISSIONS } from "../auth/NavPermissions";
 import Dropdown from "bootstrap/js/dist/dropdown";
 
+/**
+ * Componente de navegação principal da aplicação.
+ * Exibe links baseados no role do utilizador e gere o logout.
+ */
 export default function Navbar() {
   const [isNavExpanded, setIsNavExpanded] = useState(false);
 
@@ -118,7 +122,7 @@ export default function Navbar() {
             </li>
           </ul>
         </div>
-        
+
         {/* CENTRO — LINKS */}
         <div
           className={`collapse navbar-collapse justify-content-center ${
@@ -137,7 +141,6 @@ export default function Navbar() {
               ))}
           </ul>
         </div>
-
       </div>
     </nav>
   );

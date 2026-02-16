@@ -1,7 +1,11 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { postNewCurso } from "../../services/cursos/CursosService";
+import {
+  postNewCurso,
+  getAreaCursos,
+  type AreaCurso,
+} from "../../services/cursos/CursosService";
 import { useNavigate } from "react-router-dom";
 
 export default function AddNewCourse() {
@@ -11,11 +15,27 @@ export default function AddNewCourse() {
   const [area, setArea] = useState("");
   const [descricao, setDescricao] = useState("");
 
+  const [areas, setAreas] = useState<AreaCurso[]>([]);
+
+  useEffect(() => {
+    async function loadAreas() {
+      try {
+        const data = await getAreaCursos();
+        setAreas(data);
+      } catch {
+        toast.error("Erro ao carregar áreas.");
+      }
+    }
+    loadAreas();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!nome || !area) {
-      toast.error("Preenche todos os campos obrigatórios.", { id: "erroCamposIncompletos2" });
+      toast.error("Preenche todos os campos obrigatórios.", {
+        id: "erroCamposIncompletos2",
+      });
       return;
     }
 
@@ -40,7 +60,9 @@ export default function AddNewCourse() {
           .flat()
           .forEach((msg: any) => toast.error(msg));
       } else {
-        toast.error(errorData?.message || "Erro ao criar curso.", { id: "erroAoCriarCurso" });
+        toast.error(errorData?.message || "Erro ao criar curso.", {
+          id: "erroAoCriarCurso",
+        });
       }
     } finally {
       setLoading(false);
@@ -51,7 +73,10 @@ export default function AddNewCourse() {
     <div className="container mt-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h2>Registar Novo Curso</h2>
-        <button className="btn btn-light border" onClick={() => navigate("/gerir-cursos")}>
+        <button
+          className="btn btn-light border"
+          onClick={() => navigate("/gerir-cursos")}
+        >
           Voltar
         </button>
       </div>
@@ -100,12 +125,12 @@ export default function AddNewCourse() {
                   onChange={(e) => setArea(e.target.value)}
                   required
                 >
-                  {/*TODO: HARDCODED*/}
                   <option value="">Selecionar área</option>
-                  <option value="1">Informática</option>
-                  <option value="2">Mecânica</option>
-                  <option value="3">Eletrónica</option>
-                  <option value="4">Gestão</option>
+                  {areas.map((a) => (
+                    <option key={a.idArea} value={a.idArea}>
+                      {a.nome}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

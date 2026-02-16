@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
@@ -15,6 +15,10 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    setShowPassword(false);
+  }, []);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
@@ -27,7 +31,7 @@ export default function ResetPassword() {
     }
 
     const isPasswordStrong = (pass: string) => {
-      const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+      const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!.%*?&]{6,}$/;
       return regex.test(pass);
     };
 

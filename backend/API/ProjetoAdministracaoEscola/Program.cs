@@ -31,6 +31,9 @@ builder.Services.AddSwaggerGen();
 // Add Authoritazation services
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("Admin", policy =>
+        policy.RequireClaim("tipoUtilizador", "1", "6")); // 1 = Admin, 6 = SuperAdmin
+
     options.AddPolicy("AdminOrAdministrativo", policy =>
         policy.RequireClaim("tipoUtilizador", "1", "4", "6")); // 1 = Admin, 4 = Administrativo, 6 = SuperAdmin
 

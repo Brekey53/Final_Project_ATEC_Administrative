@@ -2,6 +2,8 @@
 using ProjetoAdministracaoEscola.Controllers;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Horario;
+using ProjetoAdministracaoEscola.ModelsDTO.Horario.Requests;
+using ProjetoAdministracaoEscola.ModelsDTO.Horario.Responses;
 
 namespace ProjetoAdministracaoEscola.Services
 {

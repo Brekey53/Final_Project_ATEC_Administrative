@@ -167,6 +167,7 @@ export default function NewCourse() {
           <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-cursos-admin">
             <div>Curso</div>
             <div>Id Área</div>
+            <div>Area</div>
             <div className="text-end">Ações</div>
           </div>
           {!loading && cursosFiltrados.length === 0 && (
@@ -187,6 +188,9 @@ export default function NewCourse() {
               </div>
               <div className="d-flex align-items-center gap-2 text-muted">
                 <span>{c.idArea}</span>
+              </div>
+              <div className="d-flex align-items-center gap-2 text-muted">
+                <span>{c.nomeArea}</span>
               </div>
               <div className="d-flex justify-content-end gap-3 align-items-center">
                 <Link

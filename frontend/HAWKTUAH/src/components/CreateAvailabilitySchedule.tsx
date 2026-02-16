@@ -8,11 +8,18 @@ import type {
 } from "../services/calendar/CreateAvailabilityScheduleService";
 import { useRef, useState } from "react";
 
+/**
+ * Propriedades para o componente de definição de disponibilidade.
+ */
 interface CreateAvailabilityScheduleProps {
   events: AvailabilityEvent[];
   onSelect: (event: ScheduleEvent) => void;
   onDelete: (id: number) => void;
 }
+/**
+ * Componente interativo (Calendário) para o formador definir a sua disponibilidade.
+ * Permite selecionar intervalos de tempo e visualizar/remover disponibilidades já marcadas.
+ */
 export default function CreateAvailabilitySchedule({
   events,
   onSelect,
@@ -202,7 +209,7 @@ export default function CreateAvailabilitySchedule({
             </div>
             <div className="card-footer d-flex justify-content-end gap-2">
               <button
-                className="btn btn-light"
+                className="btn btn-light border"
                 onClick={() => setShowRemoveModal(false)}
               >
                 Voltar

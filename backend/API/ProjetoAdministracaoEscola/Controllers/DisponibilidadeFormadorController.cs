@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
-using ProjetoAdministracaoEscola.ModelsDTO.DisponibilidadeFormador;
 using ProjetoAdministracaoEscola.ModelsDTO.DisponibilidadeFormador.Request;
+using ProjetoAdministracaoEscola.ModelsDTO.DisponibilidadeFormador.Responses;
 using System.Security.Claims;
 
 namespace ProjetoAdministracaoEscola.Controllers

@@ -103,7 +103,7 @@ export default function NewStudent() {
   // Quando pesquisa muda → voltar à página 1
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, turmaFilter]);
 
   const getBadgeClass = (f: any) => {
     if (!f.nomeTurma || f.nomeTurma === "Sem Turma") {

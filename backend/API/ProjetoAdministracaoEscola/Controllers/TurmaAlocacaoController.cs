@@ -4,8 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using ProjetoAdministracaoEscola.Data;
 using ProjetoAdministracaoEscola.Models;
 using ProjetoAdministracaoEscola.ModelsDTO.Avaliacao;
-using ProjetoAdministracaoEscola.ModelsDTO.Formador;
-using ProjetoAdministracaoEscola.ModelsDTO.Turma;
+using ProjetoAdministracaoEscola.ModelsDTO.Avaliacao.Responses;
+using ProjetoAdministracaoEscola.ModelsDTO.Formador.Responses;
+using ProjetoAdministracaoEscola.ModelsDTO.Turma.Responses;
 using ProjetoAdministracaoEscola.ModelsDTO.TurmaAlocacoes.Request;
 using System.Security.Claims;
 

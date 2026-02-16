@@ -402,7 +402,7 @@ export default function AddNewStudent() {
                   <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                     <button
                       type="button"
-                      className="btn btn-light"
+                      className="btn btn-light border"
                       onClick={() => navigate("/gerir-formandos")}
                     >
                       Voltar

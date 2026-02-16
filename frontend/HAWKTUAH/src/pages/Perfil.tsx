@@ -18,6 +18,12 @@ export default function Perfil() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
 
+    useEffect(() => {
+    if (showPasswordModal) {
+      setShowPassword(false);
+    }
+  }, [showPasswordModal]);
+
   useEffect(() => {
     async function fetchPerfil() {
       try {
@@ -47,6 +53,7 @@ export default function Perfil() {
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
     try {
+
       if (!currentPassword || !newPassword || !confirmPassword) {
         toast.error("Preencha todos os campos", {
           id: "erroCamposIncompletos",
@@ -60,6 +67,24 @@ export default function Perfil() {
         });
         return;
       }
+
+      if (newPassword.length < 6) {
+        toast.error("Tem de ter pelo menos 6 caracteres");
+      }
+
+      const isPasswordStrong = (pass: string) => {
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!.%*?&]{6,}$/;
+        return regex.test(pass);
+      };
+
+      if (!isPasswordStrong(newPassword)) {
+        toast.error(
+          "A password deve ter pelo menos 6 caracteres, incluindo uma letra e um número.",
+          { id: "erro-password-inválida" },
+        );
+        return;
+      }
+
       setLoading(true);
       await axios.post(
         `${API_BASE_URL}/auth/change-password`,

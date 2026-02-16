@@ -1,6 +1,9 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../config.constants";
 
+/**
+ * Interface base para o perfil de utilizador.
+ */
 export interface PerfilBase {
   tipo: number;
   email: string;
@@ -28,6 +31,11 @@ export type Perfil = PerfilBase &
   Partial<PerfilFormando> &
   Partial<PerfilFormador>;
 
+/**
+ * Obtém o perfil do utilizador autenticado.
+ * Combina informações base com dados específicos de Formando/Formador.
+ * @returns Dados do perfil combinados.
+ */
 export async function getMyPerfil(): Promise<Perfil> {
   const res = await axios.get(`${API_BASE_URL}/utilizadores/perfil`, {
     headers: {
@@ -49,6 +57,10 @@ export async function getMyPerfil(): Promise<Perfil> {
   };
 }
 
+/**
+ * Obtém a fotografia de perfil do utilizador autenticado.
+ * @returns URL (blob) da imagem ou string vazia se não existir.
+ */
 export async function getFotoPerfil(): Promise<string> {
   const res = await axios.get(`${API_BASE_URL}/utilizadores/perfil/foto`, {
     responseType: "blob",
