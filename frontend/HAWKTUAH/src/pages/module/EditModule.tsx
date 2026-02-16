@@ -155,7 +155,7 @@ export default function EditModule() {
                   className="form-control"
                   value={formData.horasTotais}
                   onChange={handleChange}
-                  min="1"
+                  min="25"
                   required
                 />
               </div>
@@ -164,7 +164,7 @@ export default function EditModule() {
                 <label className="form-label fw-bold">Créditos</label>
                 <input
                   type="number"
-                  step="0.1"
+                  step="0.5"
                   name="creditos"
                   className="form-control"
                   value={formData.creditos}

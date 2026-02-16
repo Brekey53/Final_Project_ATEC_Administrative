@@ -77,7 +77,7 @@ export default function AddNewUser() {
     }
 
     const isPasswordStrong = (pass: string) => {
-      const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+      const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!.%*?&]{6,}$/;
       return regex.test(pass);
     };
 

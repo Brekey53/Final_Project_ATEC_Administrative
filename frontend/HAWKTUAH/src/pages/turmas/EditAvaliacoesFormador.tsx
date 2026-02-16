@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import "../../css/editAvaliacoesFormador.css";
 import "../../css/layoutTabelas.css";
 import { Search } from "lucide-react";
+import { normalizarTexto } from "../../utils/stringUtils";
 
 type AvaliacaoAlunoDTO = {
   idInscricao: number;
@@ -84,8 +85,12 @@ export default function EditAvaliacoesFormador() {
   };
 
   const alunosFiltrados = alunos.filter((a) =>
-    a.nomeFormando.toLowerCase().includes(searchTerm.toLowerCase()),
+    normalizarTexto(a.nomeFormando).includes(normalizarTexto(searchTerm)),
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const totalPages = Math.ceil(alunosFiltrados.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -104,10 +109,7 @@ export default function EditAvaliacoesFormador() {
         </div>
 
         <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
-          <button
-            className="btn btn-light border"
-            onClick={() => navigate(-1)}
-          >
+          <button className="btn btn-light border" onClick={() => navigate(-1)}>
             Voltar
           </button>
 
@@ -166,7 +168,7 @@ export default function EditAvaliacoesFormador() {
                   min={0}
                   max={20}
                   step={0.01}
-                  value={a.nota ?? ""}
+                  value={a.nota ?? "0"}
                   onChange={(e) => atualizarNota(a.idInscricao, e.target.value)}
                   className="avaliacao-input"
                 />
@@ -208,7 +210,7 @@ export default function EditAvaliacoesFormador() {
       )}
 
       <p className="text-muted small text-center mt-1">
-        {alunosFiltrados.length} módulo(s) encontrado(s)
+        {alunosFiltrados.length} formando(s) encontrado(s)
       </p>
     </div>
   );

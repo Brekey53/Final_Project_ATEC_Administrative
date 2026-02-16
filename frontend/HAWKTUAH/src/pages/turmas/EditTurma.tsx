@@ -31,7 +31,11 @@ import {
 import { Trash, Lock, UserPlus, UserX } from "lucide-react";
 import { Tooltip } from "bootstrap";
 import "../../css/layoutTabelas.css";
-import { isDataFimValida } from "../../utils/dataUtils";
+import {
+  getHojeISO,
+  isDataFimValida,
+  getMaxDataFimISO,
+} from "../../utils/dataUtils";
 
 export default function EditTurma() {
   const { id } = useParams();
@@ -284,17 +288,24 @@ export default function EditTurma() {
     if (!id) return;
     setLoading(true);
 
-    if (
-      formData.dataInicio &&
-      formData.dataFim &&
-      !isDataFimValida(formData.dataInicio, formData.dataFim)
-    ) {
+    if (formData.dataInicio && formData.dataFim && !isDataFimValida(formData.dataInicio, formData.dataFim))
+      {
       toast.error(
         "A data de fim deve ser igual ou posterior à data de início.",
         {
           id: "erroDataFimTurma",
         },
       );
+      return;
+    }
+
+    if(formData.dataInicio <= getHojeISO() || formData.dataInicio >= formData.dataFim){
+      toast.error("Data de Inicio de nova turma não pode ser inferior ao dia de hoje ou posterior à data de fim.", {id: "erroDataInicioTurma"})
+      return;
+    }
+
+    if(formData.dataFim <= formData.dataInicio || formData.dataFim >= getMaxDataFimISO()){
+      toast.error("Data de Fim de nova turma não pode ser inferior ao dia de Inicio ou posterior a 3 anos após o dia de Inicio.", {id: "erroDataFimTurma"})
       return;
     }
 
@@ -491,6 +502,7 @@ export default function EditTurma() {
                     value={formData.dataInicio}
                     onChange={handleChange}
                     max={formData.dataFim || undefined}
+                    min={getHojeISO()}
                     required
                   />
                 </div>
@@ -504,6 +516,7 @@ export default function EditTurma() {
                     value={formData.dataFim}
                     onChange={handleChange}
                     min={formData.dataInicio || undefined}
+                    max={getMaxDataFimISO()}
                     required
                   />
                 </div>
@@ -815,6 +828,7 @@ export default function EditTurma() {
         </div>
       )}
 
+      {/* MODAL REMOVER FORMADOR */}
       {showRemoveModal && alocacaoParaRemover && (
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 z-3">
           <div className="card shadow-lg rounded-4" style={{ width: 360 }}>
