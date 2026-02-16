@@ -25,3 +25,12 @@ export const get1900ISO = (): string => {
   const data = new Date(ano, mes, dia);
   return data.toISOString().split("T")[0];
 };
+
+/**
+ * Retorna a data de hoje + 3 anos no formato YYYY-MM-DD para uso em inputs type="date"
+ */
+export const getMaxDataFimISO = (): string => {
+  const hoje = new Date();
+  hoje.setFullYear(hoje.getFullYear() + 3);
+  return hoje.toISOString().split("T")[0];
+};
