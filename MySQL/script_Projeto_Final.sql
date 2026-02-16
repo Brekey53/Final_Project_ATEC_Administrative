@@ -1,6 +1,9 @@
-DROP DATABASE sistema_gestao_hawk_portal;
+SET NAMES utf8mb4;
 
-CREATE DATABASE sistema_gestao_hawk_portal;
+CREATE DATABASE IF NOT EXISTS sistema_gestao_hawk_portal
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
 USE sistema_gestao_hawk_portal;
 
 -- ESTRUTURA DE APOIO
