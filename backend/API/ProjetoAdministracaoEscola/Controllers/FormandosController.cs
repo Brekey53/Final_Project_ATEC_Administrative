@@ -36,6 +36,7 @@ namespace ProjetoAdministracaoEscola.Controllers
         /// </returns>
         /// <response code="200">Lista devolvida com sucesso.</response>
         // GET: api/Formandos
+        [Authorize(Policy = "AdminOrAdministrativo")]
         [HttpGet]
         public async Task<ActionResult> GetFormandos()
         {

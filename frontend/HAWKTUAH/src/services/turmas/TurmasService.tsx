@@ -153,6 +153,7 @@ export type AvaliacaoAlunoDTO = {
   idInscricao: number;
   idFormando: number;
   nomeFormando: string;
+  email: string;
   nota: number | null;
 };
 

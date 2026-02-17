@@ -5,6 +5,7 @@
         public int IdInscricao { get; set; }
         public int IdFormando { get; set; }
         public string NomeFormando { get; set; }
+        public string Email{ get; set; }
         public decimal? Nota { get; set; }
     }
 }

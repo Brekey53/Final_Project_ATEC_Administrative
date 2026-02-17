@@ -29,7 +29,6 @@ export const NAV_PERMISSIONS: Record<UserRole, NavKey[]> = {
     "dashboard",
     "perfil",
     "cursos",
-    "formandos",
     "turmas"
   ],
 

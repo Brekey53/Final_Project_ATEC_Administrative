@@ -259,6 +259,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     IdInscricao = i.IdInscricao,
                     IdFormando = i.IdFormando,
                     NomeFormando = i.IdFormandoNavigation.IdUtilizadorNavigation.Nome,
+                    Email = i.IdFormandoNavigation.IdUtilizadorNavigation.Email,
                     Nota = _context.Avaliacoes
                         .Where(a => a.IdInscricao == i.IdInscricao && a.IdModulo == moduloId)
                         .Select(a => a.Nota)

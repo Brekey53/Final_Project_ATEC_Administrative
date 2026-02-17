@@ -145,6 +145,7 @@ export default function EditAvaliacoesFormador() {
           {/* HEADER */}
           <div className="avaliacao-header">
             <span>Formando</span>
+            <span> Email </span>
             <span>Nota Final</span>
           </div>
 
@@ -158,7 +159,7 @@ export default function EditAvaliacoesFormador() {
                   </div>
                   <span>{a.nomeFormando}</span>
                 </div>
-
+                <span>{a.email}</span>
                 <input
                   type="number"
                   min={0}
