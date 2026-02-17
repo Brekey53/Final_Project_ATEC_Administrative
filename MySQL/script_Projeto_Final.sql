@@ -712,19 +712,6 @@ INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES
 (4, 44, 11),
 (4, 45, 12),
 
-(5, 3, 2),
-(5, 4, 4),
-(5, 5, 5),
-(5, 12, 1),
-(5, 38, 7),
-(5, 39, 8),
-(5, 40, 9),
-(5, 41, 13),
-(5, 42, 12),
-(5, 43, 11),
-(5, 44, 10),
-(5, 45, 9);
-
 -- INSCRIÇÕES
 INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES 
 -- Turma 1: TPSI-PAL-0525

@@ -39,43 +39,84 @@ namespace ProjetoAdministracaoEscola.Controllers
         public async Task<ActionResult<IEnumerable<DisponibilidadeFormadorDTO>>> GetDisponibilidadeFormador()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) 
-                return Unauthorized(new {messsage = "Utilizador não autorizado"});
+            if (userIdClaim == null)
+                return Unauthorized(new { message = "Utilizador não autorizado" });
 
             int userId = int.Parse(userIdClaim);
 
-            // ir buscar o formador associado ao utilizador
             var formadorId = await _context.Formadores
                 .Where(f => f.IdUtilizador == userId)
                 .Select(f => f.IdFormador)
                 .FirstOrDefaultAsync();
 
-            var disponibilidadeFormador = await _context.DisponibilidadeFormadores
+            if (formadorId == 0)
+                return BadRequest(new { message = "Utilizador não é formador" });
+
+            var disponibilidades = await _context.DisponibilidadeFormadores
                 .Where(df => df.IdFormador == formadorId)
-                .Select(df => new DisponibilidadeFormadorDTO
-                {
-                    Id = df.IdDispFormador,
-                    IdFormador = df.IdFormador,
-                    Data = df.DataDisponivel,
-                    HoraInicio = df.HoraInicio,
-                    HoraFim = df.HoraFim,
-                    EstaMarcado = _context.Horarios.Any(h =>
-                        h.IdFormador == df.IdFormador &&
-                        h.Data == df.DataDisponivel &&
-                        h.HoraInicio == df.HoraInicio &&
-                        h.HoraFim == df.HoraFim
-                    )
-                })
                 .ToListAsync();
 
+            var horarios = await _context.Horarios
+                .Where(h => h.IdFormador == formadorId)
+                .ToListAsync();
 
-            if (disponibilidadeFormador == null)
+            var eventos = new List<DisponibilidadeFormadorDTO>();
+
+            foreach (var disp in disponibilidades)
             {
-                return BadRequest(new {message = "Ainda não marcou nenhuma disponibilidade"});
-            }
+                var horariosDoDia = horarios
+                    .Where(h => h.Data == disp.DataDisponivel &&
+                                h.HoraInicio < disp.HoraFim &&
+                                h.HoraFim > disp.HoraInicio)
+                    .OrderBy(h => h.HoraInicio)
+                    .ToList();
 
-            return Ok(disponibilidadeFormador);
+                var cursor = disp.HoraInicio;
+
+                foreach (var h in horariosDoDia)
+                {
+                    //Bloco disponível antes do horário
+                    if (cursor < h.HoraInicio)
+                    {
+                        eventos.Add(new DisponibilidadeFormadorDTO
+                        {
+                            Id = disp.IdDispFormador,
+                            Data = disp.DataDisponivel,
+                            HoraInicio = cursor,
+                            HoraFim = h.HoraInicio,
+                            Tipo = "Disponivel"
+                        });
+                    }
+
+                    // Bloco ocupado
+                    eventos.Add(new DisponibilidadeFormadorDTO
+                    {
+                        Id = 0, // não é disponibilidade, é horário
+                        Data = h.Data,
+                        HoraInicio = h.HoraInicio,
+                        HoraFim = h.HoraFim,
+                        Tipo = "Ocupado"
+                    });
+
+                    cursor = h.HoraFim;
+                }
+
+                // Bloco final disponível
+                if (cursor < disp.HoraFim)
+                {
+                    eventos.Add(new DisponibilidadeFormadorDTO
+                    {
+                        Id = disp.IdDispFormador,
+                        Data = disp.DataDisponivel,
+                        HoraInicio = cursor,
+                        HoraFim = disp.HoraFim,
+                        Tipo = "Disponivel"
+                    });
+                }
+            }
+            return Ok(eventos);
         }
+
 
         /// <summary>
         /// Adiciona uma nova disponibilidade para o formador autenticado.
@@ -347,6 +388,83 @@ namespace ProjetoAdministracaoEscola.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [Authorize(Policy = "Formador")]
+        [HttpDelete("intervalo")]
+        public async Task<IActionResult> ApagarDisponibilidadeFormadorInputs([FromBody] AdicionarDisponibilidadeFormadorInputsDTO dto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            var formadorId = await _context.Formadores
+                .Where(f => f.IdUtilizador == userId)
+                .Select(f => f.IdFormador)
+                .FirstOrDefaultAsync();
+
+            if (formadorId == 0)
+                return BadRequest(new { message = "Utilizador não é formador" });
+
+            DateOnly dataInicio, dataFim;
+            TimeOnly horaInicio, horaFim;
+
+            try
+            {
+                dataInicio = DateOnly.Parse(dto.DataInicio);
+                dataFim = DateOnly.Parse(dto.DataFim);
+                horaInicio = TimeOnly.Parse(dto.HoraInicio);
+                horaFim = TimeOnly.Parse(dto.HoraFim);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Formato de data ou hora inválido." });
+            }
+
+            if (dataFim < dataInicio)
+                return BadRequest(new { message = "A data de fim tem de ser posterior à data de início." });
+
+            if (horaFim <= horaInicio)
+                return BadRequest(new { message = "A hora de fim tem de ser depois da hora de início." });
+
+            var disponibilidades = await _context.DisponibilidadeFormadores
+                .Where(df =>
+                    df.IdFormador == formadorId &&
+                    df.DataDisponivel >= dataInicio &&
+                    df.DataDisponivel <= dataFim &&
+                    df.HoraInicio == horaInicio &&
+                    df.HoraFim == horaFim)
+                .ToListAsync();
+
+            if (!disponibilidades.Any())
+                return NotFound(new { message = "Nenhuma disponibilidade encontrada para remover." });
+
+            // Verifica se existe horário marcado com base nesta disponibilidade
+            var datas = disponibilidades.Select(d => d.DataDisponivel).ToList();
+
+            var existeHorario = await _context.Horarios
+                .AnyAsync(h =>
+                    h.IdFormador == formadorId &&
+                    datas.Contains(h.Data) &&
+                    h.HoraInicio < horaFim &&
+                    h.HoraFim > horaInicio);
+
+            if (existeHorario)
+                return BadRequest(new
+                {
+                    message = "Existe pelo menos um horário marcado neste intervalo."
+                });
+
+            _context.DisponibilidadeFormadores.RemoveRange(disponibilidades);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Disponibilidades removidas com sucesso.",
+                total = disponibilidades.Count
+            });
         }
     }
 }

@@ -10,7 +10,7 @@ export interface AvailabilityEvent {
   data: string;
   horaInicio: string;
   horaFim: string;
-  estaMarcado: boolean;
+  tipo: string;
 }
 
 /**
@@ -74,5 +74,13 @@ export async function postDisponibilidadeInput(eventData: ScheduleInputEvent) {
       ...eventData,
     },
   );
+  return response.data;
+}
+
+export async function deleteDisponibilidadeInput( data: ScheduleInputEvent
+) {
+  const response = await axios.delete(
+    API_BASE_URL + `/disponibilidadeformador/intervalo`, { data } );
+
   return response.data;
 }

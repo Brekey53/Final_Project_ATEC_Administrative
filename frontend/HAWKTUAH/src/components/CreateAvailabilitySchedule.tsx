@@ -39,7 +39,6 @@ export default function CreateAvailabilitySchedule({
     hoje.setHours(0, 0, 0, 0);
 
     const eventoPassado = dataEvento < hoje;
-    const eventoMarcado = ev.estaMarcado;
 
     let title = "";
     let color = "";
@@ -47,13 +46,13 @@ export default function CreateAvailabilitySchedule({
     if (eventoPassado) {
       title = "Realizado";
       color = "#dd4c4c";
-    } else if (eventoMarcado) {
-      title = "Ocupado";
+    }
+    if (ev.tipo === "Ocupado") {
       color = "#dd4c4c";
     } else {
-      title = "Disponível";
       color = "#4caf50";
     }
+
     return {
       id: String(ev.id),
       start: startISO,

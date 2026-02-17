@@ -9,6 +9,7 @@ import {
   type ScheduleEvent,
   postDisponibilidadeInput,
   type ScheduleInputEvent,
+  deleteDisponibilidadeInput,
 } from "../../services/calendar/CreateAvailabilityScheduleService";
 import toast from "react-hot-toast";
 
@@ -45,7 +46,7 @@ export default function AddNewAvailability() {
       }
     };
     fetchHorariosDisponiveis();
-  }, [horariosDisponiveis.length, setHorariosDisponiveis]);
+  }, []);
 
   const handleAdicionarHorarios = async (event: ScheduleEvent) => {
     try {
@@ -120,6 +121,35 @@ export default function AddNewAvailability() {
       toast.error(
         err.response?.data?.message || "Erro ao adicionar horário disponível",
         { id: "ErroGeralHorario" },
+      );
+    }
+  };
+
+  const handleRemoveDisponibilidade = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    e.preventDefault();
+
+    const { dataInicio, dataFim, horaInicio, horaFim } = scheduleInput;
+
+    if (!dataInicio || !dataFim || !horaInicio || !horaFim) {
+      toast.error("Preencha todos os campos para remover o intervalo.");
+      return;
+    }
+
+    try {
+      await deleteDisponibilidadeInput(scheduleInput);
+
+      toast.success("Disponibilidade removida com sucesso!", {
+        id: "successRemove",
+      });
+
+      const eventos = await getEventosCalendario();
+      setHorariosDisponiveis(eventos);
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message || "Erro ao remover disponibilidade",
+        { id: "erroRemove" },
       );
     }
   };
@@ -276,9 +306,16 @@ export default function AddNewAvailability() {
               </div>
 
               {/* BOTÃO */}
-              <div className="d-flex justify-content-end">
+              <div className="d-flex justify-content-end gap-4">
                 <button className="btn btn-success px-4 py-2">
                   + Adicionar Disponibilidade
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger px-4 py-2"
+                  onClick={handleRemoveDisponibilidade}
+                >
+                  Remover Disponibilidade
                 </button>
               </div>
             </form>

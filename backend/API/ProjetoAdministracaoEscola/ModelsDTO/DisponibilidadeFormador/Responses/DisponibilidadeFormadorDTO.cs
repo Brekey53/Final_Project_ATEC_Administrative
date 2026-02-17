@@ -13,6 +13,6 @@
         public TimeOnly HoraFim { get; set; }
 
         public bool EstaMarcado { get; set; }
-
+        public string Tipo { get; set; }
     }
 }
