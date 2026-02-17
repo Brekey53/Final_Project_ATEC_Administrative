@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useState } from "react";
 import CreateAvailabilitySchedule from "../../components/CreateAvailabilitySchedule";
 import {
@@ -32,11 +32,17 @@ export default function AddNewAvailability() {
 
   const isMobile = window.innerWidth < 768;
 
+  const hasFetched = useRef(false);
+
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     const fetchHorariosDisponiveis = async () => {
       try {
         const eventos = await getEventosCalendario();
         setHorariosDisponiveis(eventos);
+
         setLoading(false);
       } catch (error: any) {
         toast.error(error.message || "Erro ao buscar horários disponíveis: ", {
@@ -50,8 +56,11 @@ export default function AddNewAvailability() {
 
   const handleAdicionarHorarios = async (event: ScheduleEvent) => {
     try {
-      const novoHorario = await postEventosCalendario(event);
-      setHorariosDisponiveis((prev) => [...prev, novoHorario]);
+      await postEventosCalendario(event);
+
+      const eventos = await getEventosCalendario();
+      setHorariosDisponiveis(eventos);
+
       toast.success("Horário adicionado com sucesso!", { id: "addSuccess" });
     } catch (err: any) {
       toast.error(
@@ -64,9 +73,9 @@ export default function AddNewAvailability() {
   const handleDeleteHorario = async (id: number) => {
     try {
       await deleteEventosCalendario(id);
-      setHorariosDisponiveis((prev) =>
-        prev.filter((horario) => horario.id !== id),
-      );
+      const eventos = await getEventosCalendario();
+      setHorariosDisponiveis(eventos);
+
       toast.success("Horário removido com sucesso!", { id: "deleteSuccess" });
     } catch (err: any) {
       toast.error(
@@ -113,10 +122,13 @@ export default function AddNewAvailability() {
 
     try {
       await postDisponibilidadeInput(scheduleInput);
+
       toast.success("Horário adicionado com sucesso!", {
         id: "successHorarioAdicionadoC",
       });
-      setHorariosDisponiveis([]);
+
+      const eventos = await getEventosCalendario();
+      setHorariosDisponiveis(eventos);
     } catch (err: any) {
       toast.error(
         err.response?.data?.message || "Erro ao adicionar horário disponível",
@@ -214,7 +226,7 @@ export default function AddNewAvailability() {
           </li>
         </ul>
       )}
-      {activeTab == "Schedule" && !isMobile && (
+      {activeTab == "Schedule" && !isMobile && !loading && (
         <div className="mt-3 mt-md-5">
           <CreateAvailabilitySchedule
             events={horariosDisponiveis}
@@ -223,6 +235,7 @@ export default function AddNewAvailability() {
           />
         </div>
       )}
+
       {activeTab === "Dados" && (
         <div className="mt-4 mt-md-5">
           <div className="card shadow-sm border-0 rounded-4 p-4 p-md-5">

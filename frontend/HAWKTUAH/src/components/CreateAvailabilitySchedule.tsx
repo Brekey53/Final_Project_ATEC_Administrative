@@ -46,10 +46,11 @@ export default function CreateAvailabilitySchedule({
     if (eventoPassado) {
       title = "Realizado";
       color = "#dd4c4c";
-    }
-    if (ev.tipo === "Ocupado") {
+    } else if (ev.tipo === "Ocupado") {
+      title = "Ocupado";
       color = "#dd4c4c";
     } else {
+      title = "Disponível";
       color = "#4caf50";
     }
 

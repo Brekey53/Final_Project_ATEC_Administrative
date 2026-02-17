@@ -710,7 +710,7 @@ INSERT INTO turma_alocacoes (id_turma, id_modulo, id_formador) VALUES
 (4, 42, 9),
 (4, 43, 10),
 (4, 44, 11),
-(4, 45, 12),
+(4, 45, 12);
 
 -- INSCRIÇÕES
 INSERT INTO inscricoes (id_formando, id_turma, data_inscricao, estado) VALUES 
