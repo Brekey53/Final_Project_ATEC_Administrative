@@ -760,9 +760,8 @@ export default function EditTurma() {
                   ))}
                 </select>
                 {candidatos.length === 0 && (
-                  <div className="form-text text-warning">
-                    Não existem candidatos disponíveis (Tipo 3 ou 5 sem turma
-                    ativa).
+                  <div className="form-text text-danger">
+                    Não existem candidatos disponíveis.
                   </div>
                 )}
               </div>

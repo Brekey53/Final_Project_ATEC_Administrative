@@ -539,7 +539,7 @@ namespace ProjetoAdministracaoEscola.Controllers
                     i.IdFormandoNavigation.IdUtilizador,
                     Nome = i.IdFormandoNavigation.IdUtilizadorNavigation.Nome,
                     Email = i.IdFormandoNavigation.IdUtilizadorNavigation.Email,
-                    Foto = i.IdFormandoNavigation.Fotografia // Optional, if needed
+                    Foto = i.IdFormandoNavigation.Fotografia
                 })
                 .ToListAsync();
 
@@ -636,7 +636,6 @@ namespace ProjetoAdministracaoEscola.Controllers
                 formando = await _context.Formandos.FirstOrDefaultAsync(f => f.IdUtilizador == idUtilizador);
                 if (formando == null)
                 {
-                    // Should exist, but if not create
                     formando = new Formando { IdUtilizador = idUtilizador, Ativo = true };
                     _context.Formandos.Add(formando);
                     await _context.SaveChangesAsync();
