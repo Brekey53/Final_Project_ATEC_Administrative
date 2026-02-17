@@ -93,14 +93,14 @@ namespace ProjetoAdministracaoEscola.Controllers
                 });
             }
 
-            //Random rnd = new Random();
+            Random rnd = new Random();
 
-            //string codigo2FA = rnd.Next(000000, 999999).ToString("D6"); // gerar codigo 2FA
+            string codigo2FA = rnd.Next(000000, 999999).ToString("D6"); // gerar codigo 2FA
 
-            //_cache.Set($"2FA_{utilizador.Email}", codigo2FA, TimeSpan.FromMinutes(5));
-            _cache.Set($"2FA_{utilizador.Email}", "000000", TimeSpan.FromMinutes(5));
+            _cache.Set($"2FA_{utilizador.Email}", codigo2FA, TimeSpan.FromMinutes(5));
+            //_cache.Set($"2FA_{utilizador.Email}", "000000", TimeSpan.FromMinutes(5)); // 
 
-            //await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é:<h2><b> {codigo2FA}</b></h2>");
+            await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é:<h2><b> {codigo2FA}</b></h2>");
 
             return Ok(new
             {
@@ -476,14 +476,14 @@ namespace ProjetoAdministracaoEscola.Controllers
                 });
             }
 
-            //Random rnd = new Random();
+            Random rnd = new Random();
 
-            //string codigo2FA = rnd.Next(000000, 999999).ToString("D6"); // gerar codigo 2FA
+            string codigo2FA = rnd.Next(000000, 999999).ToString("D6"); // gerar codigo 2FA
 
-            //_cache.Set($"2FA_{utilizador.Email}", codigo2FA, TimeSpan.FromMinutes(5));
-            _cache.Set($"2FA_{utilizador.Email}", "000000", TimeSpan.FromMinutes(5));
+            _cache.Set($"2FA_{utilizador.Email}", codigo2FA, TimeSpan.FromMinutes(5));
+            //_cache.Set($"2FA_{utilizador.Email}", "000000", TimeSpan.FromMinutes(5)); // para facilitar os testes, usar sempre o mesmo código 2FA
 
-            //await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é:<h2><b> {codigo2FA}</b></h2>");
+            await _emailService.SendEmailAsync(utilizador.Email, "Código de Verificação", $"O seu código é:<h2><b> {codigo2FA}</b></h2>");
 
             return Ok(new
             {

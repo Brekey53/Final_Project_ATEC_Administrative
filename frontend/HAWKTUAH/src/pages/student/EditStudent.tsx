@@ -25,7 +25,7 @@ export default function EditFormando() {
     idEscolaridade: "",
     estado: "",
     fotografia: null as File | null,
-    anexoFicheiro: null as File | null,
+    documento: null as File | null,
   });
 
   const ESTADOS_INSCRICAO = [
@@ -71,11 +71,11 @@ export default function EditFormando() {
           estado: f.estado ?? "",
           idEscolaridade: f.idEscolaridade ?? "",
           fotografia: null,
-          anexoFicheiro: null,
+          documento: null,
         });
 
         if (f.fotografia) setFotoPreview(f.fotografia);
-        if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro);
+        if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro); // anexoFicheiro pois é o que devolve no getFormandoId
       } catch (err) {
         toast.error("Erro ao carregar dados do formando.", {
           id: "erro-formando",
@@ -135,8 +135,8 @@ export default function EditFormando() {
     if (formData.fotografia instanceof File) {
       data.append("Fotografia", formData.fotografia);
     }
-    if (formData.anexoFicheiro instanceof File) {
-      data.append("Documento", formData.anexoFicheiro);
+    if (formData.documento instanceof File) {
+      data.append("Documento", formData.documento);
     }
 
     try {
@@ -224,7 +224,7 @@ export default function EditFormando() {
             {documentPreview && (
               <div className="mt-2 text-start">
                 {documentPreview.startsWith("data:application/pdf") ||
-                formData.anexoFicheiro?.type === "application/pdf" ? (
+                formData.documento?.type === "application/pdf" ? (
                   <iframe
                     src={documentPreview}
                     style={{

@@ -18,7 +18,7 @@ export interface Formando {
   idEscolaridade: string;
   estado: string;
   fotografia: File | null;
-  anexoFicheiro: File | null;
+  documento: File | null;
   dataFim?: string;
 }
 

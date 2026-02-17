@@ -68,7 +68,7 @@ export default function EditTeacher() {
         });
 
         if (f.fotografia) setFotoPreview(f.fotografia);
-        if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro);
+        if (f.anexoFicheiro) setDocumentPreview(f.anexoFicheiro); // anexoFicheiro pois é o que devolve no getFormandoId
       } catch {
         toast.error("Erro ao carregar dados do formador.", { id: "errorAoCarregarDadosFormador" });
       } finally {

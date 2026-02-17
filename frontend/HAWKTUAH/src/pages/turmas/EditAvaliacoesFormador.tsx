@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   getTurmaAvaliacao,
   postTurmaAvaliacao,
+  type AvaliacaoAlunoDTO,
 } from "../../services/turmas/TurmasService";
 import { toast } from "react-hot-toast";
 import "../../css/editAvaliacoesFormador.css";
@@ -10,12 +11,7 @@ import "../../css/layoutTabelas.css";
 import { Search } from "lucide-react";
 import { normalizarTexto } from "../../utils/stringUtils";
 
-type AvaliacaoAlunoDTO = {
-  idInscricao: number;
-  idFormando: number;
-  nomeFormando: string;
-  nota: number | null;
-};
+
 
 export default function EditAvaliacoesFormador() {
   const navigate = useNavigate();

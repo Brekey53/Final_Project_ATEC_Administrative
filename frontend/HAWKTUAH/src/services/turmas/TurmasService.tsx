@@ -149,7 +149,7 @@ export async function getTurmasFormadorHorario(idFormador: number) {
   return res.data;
 }
 
-type AvaliacaoAlunoDTO = {
+export type AvaliacaoAlunoDTO = {
   idInscricao: number;
   idFormando: number;
   nomeFormando: string;
