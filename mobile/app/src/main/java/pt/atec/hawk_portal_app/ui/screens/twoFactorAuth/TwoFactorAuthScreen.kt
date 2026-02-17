@@ -1,0 +1,199 @@
+package pt.atec.hawk_portal_app.ui.screens.twoFactorAuth
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.atec.hawk_portal_app.dataStore.TokenDataStore
+import pt.atec.hawk_portal_app.model.AuthSession
+import pt.atec.hawk_portal_app.utils.JwtUtils
+import pt.atec.hawk_portal_app.viewmodel.TwoFactorViewModel
+
+/**
+ * Composable responsável por apresentar o ecrã de verificação
+ * de autenticação em dois fatores (2FA).
+ *
+ * Este ecrã:
+ * - Obtém o email armazenado na AuthSession.
+ * - Redireciona para o login caso não exista sessão válida.
+ * - Permite ao utilizador introduzir um código de 6 dígitos enviado por email.
+ * - Executa a função verifyCode() do TwoFactorViewModel.
+ * - Observa estados de loading, erro e token.
+ * - Guarda o token JWT em TokenDataStore após verificação bem-sucedida.
+ * - Extrai o tipo de utilizador a partir do token e
+ *   executa a navegação correspondente.
+ *
+ * A navegação só ocorre quando o token é válido e o tipo
+ * de utilizador é corretamente identificado (não pode ser 5 ou 6).
+ *
+ * @param onVerifySuccess Função executada após verificação bem-sucedida,
+ * recebendo como argumento o tipo de utilizador extraído do token.
+ * @param onBackToLogin Função executada caso não exista email ativo em sessão,
+ * redirecionando o utilizador para o ecrã de login.
+ * @param viewModel ViewModel responsável por gerir a lógica
+ * de verificação do código 2FA e o estado da interface.
+ */
+@Composable
+fun TwoFactorAuthScreen(
+    onVerifySuccess: (Int) -> Unit,
+    onBackToLogin: () -> Unit,
+    viewModel: TwoFactorViewModel = viewModel()
+) {
+
+    val email = AuthSession.email
+
+    LaunchedEffect(email) {
+        if (email == null) {
+            onBackToLogin()
+        }
+    }
+
+    if (email == null) return
+
+    var code by remember { mutableStateOf("") }
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val token by viewModel.token.collectAsState()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+
+        val currentToken = token
+
+        if (!currentToken.isNullOrBlank()) {
+
+            TokenDataStore.saveToken(context, currentToken)
+
+            val tipo = JwtUtils.getTipoUtilizador(currentToken)
+
+            if (tipo != null) {
+                viewModel.clearToken()
+                onVerifySuccess(tipo)
+            }
+        }
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFF014D4E)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                text = "Verificação de Dois Passos",
+                color = Color.White,
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Introduz o código enviado para o teu e-mail",
+                color = Color.White.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            TextField(
+                value = code,
+                onValueChange = {
+                    if (it.length <= 6)
+                        code = it
+                    if (error != null)
+                        viewModel.clearError()
+                },
+                label = { Text("Código de 6 dígitos") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color(0xFF014D4E),
+                    unfocusedTextColor = Color(0xFF014D4E),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White.copy(alpha = 0.95f),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = Color(0xFF014D4E),
+                    focusedLabelColor = Color(0xFF014D4E),
+                    unfocusedLabelColor = Color(0xFF014D4E)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = { viewModel.verifyCode(email, code) },
+                enabled = code.length == 6 && !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF014D4E)
+                )
+            ) {
+                Text(
+                    text = if (isLoading) "A verificar..." else "Verificar",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            if (error != null) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Surface(
+                    color = Color.Red.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = error!!,
+                        color = Color(0xFFFEB2B1),
+                        modifier = Modifier.padding(12.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+}

@@ -1,0 +1,59 @@
+.tabela-formadores {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1.2fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tabela-formadores:first-child {
+    display: none;
+  }
+
+  .tabela-formadores {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+
+  .tabela-formadores > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tabela-formadores .avatar-circle {
+    display: none !important;
+  }
+
+  .tabela-formadores .text-muted {
+    text-align: right;
+  }
+
+  .tabela-formadores .action-icon {
+    font-size: 1.1rem;
+    padding: 0.4rem;
+  }
+
+  .tabela-formadores .d-flex.justify-content-end {
+    justify-content: flex-start !important;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    border-radius: 12px;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 0.95rem;
+  }
+
+  h2 {
+    text-align: center;
+  }
+}

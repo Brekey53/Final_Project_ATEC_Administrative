@@ -1,0 +1,27 @@
+.dashboard-pesquisa {
+    background-color: white;
+}
+
+.tab-div {
+    background-color: rgb(199, 207, 215);
+    border: 1px solid rgb(176, 174, 174);
+    border-radius: 999999px;
+}
+
+.tab-div button {
+  background: none;
+  border: none;
+  padding: 12px 24px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-div button:hover {
+  color: #0d6efd;
+}
+
+.tab-active {
+  border-bottom: 2px solid #0d6efd;
+  color: #0d6efd;
+}

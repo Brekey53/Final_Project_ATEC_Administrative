@@ -1,0 +1,125 @@
+.tabela-formador-turmas {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 2fr 1fr 1fr 0.7fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-formador-turmas > div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+  .tabela-formador-turmas:first-child {
+    display: none;
+  }
+
+  .tabela-formador-turmas {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+
+  .tabela-formador-turmas > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    white-space: normal;
+  }
+
+  .tabela-formador-turmas > div:nth-child(1)::before {
+    content: "Turma";
+  }
+
+  .tabela-formador-turmas > div:nth-child(2)::before {
+    content: "Curso";
+  }
+
+  .tabela-formador-turmas > div:nth-child(3)::before {
+    content: "Módulo";
+  }
+
+  .tabela-formador-turmas > div:nth-child(4)::before {
+    content: "Horas";
+  }
+
+  .tabela-formador-turmas > div:nth-child(5)::before {
+    content: "Estado";
+  }
+
+  .tabela-formador-turmas > div::before {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+    flex-shrink: 0;
+  }
+
+  .avatar-circle {
+    display: none;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.6em;
+  }
+
+  .tabela-formador-turmas > div:last-child {
+    justify-content: flex-end;
+  }
+}
+
+
+/* DESKTOP */
+.tabela-turmas-header,
+.tabela-turmas-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.label-mobile {
+  display: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .tabela-turmas-header {
+    display: none;
+  }
+
+  .tabela-turmas-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 1.25rem !important;
+  }
+
+  .coluna {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .label-mobile {
+    display: block;
+  }
+}

@@ -1,0 +1,170 @@
+import React from "react";
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import {
+  postNewCurso,
+  getAreaCursos,
+  type AreaCurso,
+} from "../../services/cursos/CursosService";
+import { useNavigate } from "react-router-dom";
+
+export default function AddNewCourse() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [nome, setNome] = useState("");
+  const [area, setArea] = useState("");
+  const [descricao, setDescricao] = useState("");
+
+  const [areas, setAreas] = useState<AreaCurso[]>([]);
+
+  useEffect(() => {
+    async function loadAreas() {
+      try {
+        const data = await getAreaCursos();
+        setAreas(data);
+      } catch {
+        toast.error("Erro ao carregar áreas.");
+      }
+    }
+    loadAreas();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!nome || !area) {
+      toast.error("Preenche todos os campos obrigatórios.", {
+        id: "erroCamposIncompletos2",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    const payload = {
+      nome,
+      idArea: Number(area),
+      descricao,
+    };
+
+    try {
+      await postNewCurso(payload);
+
+      toast.success("Curso criado com sucesso!", { id: "sucessCursoCriado" });
+      navigate(-1);
+    } catch (err: any) {
+      const errorData = err.response?.data;
+
+      if (errorData?.errors) {
+        Object.values(errorData.errors)
+          .flat()
+          .forEach((msg: any) => toast.error(msg));
+      } else {
+        toast.error(errorData?.message || "Erro ao criar curso.", {
+          id: "erroAoCriarCurso",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mt-5">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <h2>Registar Novo Curso</h2>
+        <button
+          className="btn btn-light border"
+          onClick={() => navigate("/gerir-cursos")}
+        >
+          Voltar
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="row">
+        {/* COLUNA ESQUERDA: ICONE/RESUMO */}
+        <div className="col-lg-4 d-none d-lg-block">
+          <div className="card p-4 shadow-sm text-center border-0 rounded-4 bg-light">
+            <div className="display-1 text-primary mb-3">
+              <i className="bi bi-book"></i>
+              Curso 📚
+            </div>
+            <h5>Informação do Curso</h5>
+            <p className="text-muted small">
+              Preencha os detalhes técnicos do Curso. O código de curso deve ser
+              único (Ex: 1).
+            </p>
+          </div>
+        </div>
+
+        {/* COLUNA DIREITA: FORMULÁRIO */}
+        <div className="col-lg-8">
+          <div className="card p-4 shadow-sm border-0 rounded-4">
+            <h5 className="text-primary mb-4">Dados Técnicos</h5>
+
+            <div className="row">
+              {/* NOME DO MÓDULO */}
+              <div className="col-md-12 mb-3">
+                <label className="form-label fw-bold">Nome do Curso</label>
+                <input
+                  type="text"
+                  className="form-control form-control-lg"
+                  placeholder="Ex: Técnico/a de Programação"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* SELECT PARA ÁREA DO CURSO */}
+              <div className="mb-3 col-md-6">
+                <label className="form-label fw-semibold">Área do Curso</label>
+                <select
+                  className="form-select"
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
+                  required
+                >
+                  <option value="">Selecionar área</option>
+                  {areas.map((a) => (
+                    <option key={a.idArea} value={a.idArea}>
+                      {a.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label fw-semibold">Descrição</label>
+              <textarea
+                className="form-control"
+                rows={3}
+                placeholder="Breve descrição do curso..."
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+              />
+            </div>
+
+            <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
+              <button
+                type="button"
+                className="btn btn-light px-4"
+                onClick={() => navigate("/gerir-cursos")}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary px-5"
+                disabled={loading}
+              >
+                {loading ? "A processar..." : "Criar Curso"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}

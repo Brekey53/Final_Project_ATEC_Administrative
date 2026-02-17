@@ -1,0 +1,173 @@
+import { useState, useEffect } from "react";
+import "../../css/turmas.css";
+import { toast } from "react-hot-toast";
+import {
+  getTurmasGeralDashboard,
+  type Turma,
+} from "../../services/turmas/TurmasService";
+import { Search } from "lucide-react";
+
+export default function GeralTurmas() {
+  const [turmas, setTurmas] = useState<Turma[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    async function fetchTurmas() {
+      try {
+        const data = await getTurmasGeralDashboard();
+        if (!data) return;
+        setTurmas(data);
+      } catch (err: any) {
+        toast.error(err || "Erro ao carregar turmas.", {
+          id: "erroGeralTurmas",
+        });
+      }
+    }
+
+    fetchTurmas();
+  }, []);
+
+  const turmasFiltradas = turmas.filter((t) =>
+    `${t.nomeTurma} ${t.nomeCurso}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(turmasFiltradas.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const turmasPaginadas = turmasFiltradas.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  return (
+    <div className="container-fluid container-lg py-4 py-lg-5">
+      {/* HEADER */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <div>
+          <h2 className="fw-bold mb-1">Verificar Turmas</h2>
+          <p className="text-muted mb-0">Verificar turmas para começar</p>
+        </div>
+      </div>
+
+      {/* PESQUISA */}
+      <div className="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div className="row g-2 align-items-center p-2">
+          <div className="col-md-12">
+            <div className="input-group bg-white rounded-3 border px-2">
+              <span className="input-group-text bg-white border-0">
+                <Search size={18} className="text-muted" />
+              </span>
+              <input
+                type="text"
+                className="form-control border-0 bg-white shadow-none py-2"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TABELA */}
+      <div className="card shadow-sm border-0 rounded-4">
+        <div className="card-body p-0">
+          {/* HEADER DESKTOP */}
+          <div className="px-4 py-3 border-bottom text-muted fw-semibold tabela-turmas-header">
+            <div>Turma</div>
+            <div>Curso</div>
+            <div>Data Início</div>
+            <div>Data Fim</div>
+            <div>Estado</div>
+          </div>
+
+          {turmasPaginadas.length > 0 ? (
+            turmasPaginadas.map((t) => (
+              <div
+                key={t.idTurma}
+                className="px-4 py-3 border-bottom tabela-turmas-row"
+              >
+                <div className="coluna">
+                  <span className="label-mobile">Turma</span>
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="rounded-circle p-2 bg-light d-flex align-items-center justify-content-center fw-semibold">
+                      {t.nomeTurma.charAt(0)}
+                    </div>
+                    <span className="fw-medium">{t.nomeTurma}</span>
+                  </div>
+                </div>
+
+                <div className="coluna">
+                  <span className="label-mobile">Curso</span>
+                  <span className="text-muted">
+                    {t.nomeCurso || "-"}
+                  </span>
+                </div>
+
+                <div className="coluna">
+                  <span className="label-mobile">Data Início</span>
+                  <span className="text-muted">
+                    {t.dataInicio || "-"}
+                  </span>
+                </div>
+
+                <div className="coluna">
+                  <span className="label-mobile">Data Fim</span>
+                  <span className="text-muted">
+                    {t.dataFim || "-"}
+                  </span>
+                </div>
+
+                <div className="coluna">
+                  <span className="label-mobile">Estado</span>
+                  <span className="badge bg-secondary rounded-pill py-1">
+                    Em Breve
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-5 text-center text-muted">
+              De momento não existe turmas por começar, volte mais tarde.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* PAGINAÇÃO */}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center align-items-center gap-3 py-4">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span className="text-muted">
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Seguinte
+          </button>
+        </div>
+      )}
+
+      <p className="text-muted small text-center mt-2">
+        {turmasFiltradas.length} turma(s) encontrada(s)
+      </p>
+    </div>
+  );
+}

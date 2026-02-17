@@ -1,0 +1,47 @@
+.tabela-modulos {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tabela-modulos:first-child {
+    display: none;
+  }
+
+  .tabela-modulos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+
+  .tabela-modulos > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tabela-modulos .avatar-circle {
+    display: none !important;
+  }
+
+  .tabela-modulos .hide-mobile {
+    display: flex !important;
+  }
+
+  .tabela-modulos .action-icon {
+    font-size: 1.1rem;
+  }
+
+  .tabela-modulos .d-flex.justify-content-end {
+    justify-content: flex-start !important;
+    gap: 1rem;
+  }
+
+  .tabela-modulos .text-muted {
+    text-align: right;
+  }
+}

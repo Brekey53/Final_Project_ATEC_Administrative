@@ -1,0 +1,50 @@
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1050;
+}
+
+.custom-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  z-index: 1060;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  animation: fadeInScale 0.2s ease;
+  padding: 20px;
+}
+
+.custom-modal-header,
+.custom-modal-footer {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-modal-footer {
+  border-top: 1px solid #e5e7eb;
+  border-bottom: none;
+}
+
+.custom-modal-body {
+  padding: 20px;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

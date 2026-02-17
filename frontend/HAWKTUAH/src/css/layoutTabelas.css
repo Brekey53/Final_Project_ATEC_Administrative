@@ -1,0 +1,222 @@
+:root {
+  --avatar-col: 56px;
+}
+
+.tabela-turmas {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr 100px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-colegas {
+  display: grid;
+  grid-template-columns: var(--avatar-col) 2fr 3fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-professores {
+  display: grid;
+  grid-template-columns: var(--avatar-col) 2fr 3fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-modulos-avaliacoes {
+  display: grid;
+  grid-template-columns: var(--avatar-col) 2.5fr 1fr 2fr 100px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tabela-turma-alocacoes {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 60px;
+  gap: 1rem;
+  align-items: center;
+}
+
+.avatar-circle {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  /* ESCONDER HEADERS */
+  .tabela-colegas.fw-semibold,
+  .tabela-professores.fw-semibold,
+  .tabela-modulos-avaliacoes.fw-semibold {
+    display: none;
+  }
+
+  /* COLEGAS & PROFESSORES */
+  .tabela-colegas,
+  .tabela-professores {
+    grid-template-columns: 64px 1fr;
+    gap: 0.75rem;
+  }
+
+  .tabela-colegas > div:nth-child(3),
+  .tabela-professores > div:nth-child(3) {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  /* MÓDULOS */
+  .tabela-modulos-avaliacoes {
+    grid-template-columns: 64px 1fr auto;
+    row-gap: 0.25rem;
+  }
+
+  /* Nome do módulo */
+  .tabela-modulos-avaliacoes > div:nth-child(2) {
+    grid-column: 2 / -1;
+    font-weight: 600;
+  }
+
+  /* Horas */
+  .tabela-modulos-avaliacoes > div:nth-child(3) {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  /* Professor */
+  .tabela-modulos-avaliacoes > div:nth-child(4) {
+    grid-column: 2;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  /* Nota */
+  .tabela-modulos-avaliacoes > div:nth-child(5) {
+    grid-column: 3;
+    align-self: center;
+  }
+}
+
+.tabela-turmas-admin {
+  display: grid;
+  grid-template-columns: 4fr 3fr 2fr 2fr 1.5fr 1fr;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.tabela-cursos-admin {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 0.5fr 1fr;
+  align-items: center;
+}
+
+
+.tabela-turma-alocacoes {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 60px;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .tabela-turma-alocacoes {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .tabela-turma-alocacoes > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .tabela-turma-alocacoes > div::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6c757d;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  .tabela-turma-alocacoes-header {
+    display: none;
+  }
+}
+
+
+/* Bootstrap */
+.form-control:focus {
+  border-color: #065f5a !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: none !important;
+}
+
+.input-group:focus-within {
+  border-color: #065f5a !important;
+  box-shadow: 0 0 0 0.25rem rgba(6, 95, 90, 0.25) !important;
+  transition:
+    box-shadow 0.5s ease,
+    border-color 0.5s ease !important;
+}
+
+.input-group {
+  border: 0.5px solid #dee2e6 !important;
+  border-radius: 6px;
+  background-color: #fff;
+  transition:
+    border-color 0.5s ease-in-out,
+    box-shadow 0.5s ease-in-out !important;
+}
+
+
+
+.tabela-turmas-admin {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tabela-turmas-admin:first-child {
+    display: none;
+  }
+
+  .tabela-turmas-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+
+  .tabela-turmas-admin > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .tabela-turmas-admin .avatar-circle {
+    display: none !important;
+  }
+
+  .tabela-turmas-admin .action-icon {
+    font-size: 1.1rem;
+  }
+
+  .tabela-turmas-admin .d-flex.justify-content-end {
+    justify-content: flex-start !important;
+    gap: 1rem;
+  }
+
+  /* TODO: TUDO IR PARA FICHEIRO CSS */
+  .tabela-turmas-admin .text-muted {
+    text-align: right;
+  }
+}
