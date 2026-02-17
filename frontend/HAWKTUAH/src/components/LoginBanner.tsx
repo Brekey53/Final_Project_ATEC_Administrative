@@ -13,10 +13,10 @@ export default function LoginBanner() {
       <div className="col-12 col-lg-4 banner-login">
         <div className="ball ball-1"></div>
         <div className="container-login">
-          <p className="eyebrow-login">Manager Hawk Portal</p>
+          <p className="eyebrow-login">Hawk Portal</p>
           <h1 className="title-login">
             Sistema de <br />
-            Gestão de Notas
+            Gestão de Secretaria
           </h1>
           <p className="description-login mb-5 mt-3">
             Gerir cursos, formandos, formadores e horários
