@@ -1,5 +1,6 @@
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import ptLocale from "@fullcalendar/core/locales/pt";
 import type {
@@ -102,7 +103,7 @@ export default function CreateAvailabilitySchedule({
     <>
       <FullCalendar
         ref={calendarRef}
-        plugins={[timeGridPlugin, interactionPlugin]}
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         customButtons={{
           irParaDisponivel: {
             text: "Mês Disponível para Marcar",
@@ -115,7 +116,7 @@ export default function CreateAvailabilitySchedule({
         headerToolbar={{
           left: "prev,next irParaDisponivel",
           center: "title",
-          right: "timeGridWeek,timeGridDay",
+          right: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
         initialView="timeGridWeek"
         locale={ptLocale}
